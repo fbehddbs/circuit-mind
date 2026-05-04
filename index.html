@@ -1,0 +1,2994 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CircuitMind — AI 전자회로 도우미</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+
+    /* ── 상단 네비게이션 ── */
+    .nav {
+      background: #1a1d2e;
+      border-bottom: 1px solid #2d3250;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+
+    .nav-brand .logo {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, #63b3ed, #9f7aea);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 4px;
+    }
+
+    .nav-tab {
+      padding: 8px 18px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: #718096;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .nav-tab.active {
+      background: #2d3250;
+      color: #e2e8f0;
+    }
+
+    .nav-tab:hover:not(.active) { color: #a0aec0; }
+
+    .nav-settings {
+      padding: 6px 12px;
+      border: 1px solid #2d3250;
+      border-radius: 8px;
+      background: transparent;
+      color: #718096;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .nav-settings:hover { border-color: #63b3ed; color: #63b3ed; }
+
+    /* ── 뷰 공통 ── */
+    .view { display: none; max-width: 900px; margin: 0 auto; padding: 32px 24px; }
+    .view.active { display: block; }
+
+    /* ── 카드 ── */
+    .card {
+      background: #1a1d2e;
+      border: 1px solid #2d3250;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-size: 0.78rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #7c8db0;
+      margin-bottom: 20px;
+    }
+
+    /* ── 입력 폼 ── */
+    .input-group { margin-bottom: 16px; }
+    .input-group label { display: block; font-size: 0.85rem; color: #a0aec0; margin-bottom: 6px; }
+
+    input[type="text"], input[type="password"], textarea, select {
+      width: 100%;
+      background: #0f1117;
+      border: 1px solid #2d3250;
+      border-radius: 8px;
+      color: #e2e8f0;
+      padding: 10px 14px;
+      font-size: 0.92rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, textarea:focus, select:focus { border-color: #63b3ed; }
+    select option { background: #1a1d2e; }
+
+    /* ── 부품 리스트 ── */
+    .part-row {
+      display: grid;
+      grid-template-columns: 1fr 80px 36px;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .part-row input { margin: 0; }
+
+    .btn-icon {
+      width: 36px; height: 36px;
+      border: none;
+      border-radius: 8px;
+      background: #2d3748;
+      color: #a0aec0;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .btn-icon:hover { background: #4a5568; color: #e2e8f0; }
+    .btn-icon.danger:hover { background: #2d1515; color: #fc8181; }
+
+    .btn-add {
+      padding: 8px 16px;
+      background: transparent;
+      border: 1px dashed #2d3250;
+      border-radius: 8px;
+      color: #718096;
+      font-size: 0.85rem;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.2s;
+      margin-top: 4px;
+    }
+    .btn-add:hover { border-color: #63b3ed; color: #63b3ed; }
+
+    /* ── 버튼 ── */
+    .btn-primary {
+      padding: 13px 28px;
+      background: linear-gradient(135deg, #63b3ed, #9f7aea);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.2s;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(99,179,237,0.35); }
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .btn-secondary {
+      padding: 10px 20px;
+      background: #2d3748;
+      border: none;
+      border-radius: 8px;
+      color: #a0aec0;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover { background: #4a5568; color: #e2e8f0; }
+
+    /* ── 분석 결과 ── */
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 24px;
+    }
+
+    .result-title { font-size: 1.4rem; font-weight: 700; color: #e2e8f0; }
+    .result-meta { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+
+    .badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge-blue { background: #1a365d; color: #63b3ed; }
+    .badge-purple { background: #2d1b69; color: #b794f4; }
+    .badge-green { background: #1a3d2a; color: #68d391; }
+
+    /* 연결 순서 */
+    .steps-list { counter-reset: step; }
+    .step-item {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      padding: 12px 0;
+      border-bottom: 1px solid #2d3250;
+    }
+    .step-item:last-child { border-bottom: none; }
+    .step-num {
+      min-width: 28px; height: 28px;
+      background: linear-gradient(135deg, #63b3ed40, #9f7aea40);
+      border: 1px solid #63b3ed60;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #63b3ed;
+    }
+    .step-text { font-size: 0.9rem; color: #cbd5e0; line-height: 1.6; padding-top: 4px; }
+
+    /* 핀맵 테이블 */
+    .pin-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .pin-table th {
+      text-align: left;
+      padding: 8px 12px;
+      background: #0f1117;
+      color: #718096;
+      font-weight: 600;
+      font-size: 0.75rem;
+      letter-spacing: 1px;
+    }
+    .pin-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #1a1d2e;
+      color: #cbd5e0;
+    }
+    .pin-table tr:last-child td { border-bottom: none; }
+    .pin-table tr:hover td { background: #1a1d2e30; }
+    .pin-table .code {
+      font-family: monospace;
+      background: #0f1117;
+      padding: 2px 8px;
+      border-radius: 4px;
+      color: #90cdf4;
+    }
+
+    /* 경고 */
+    .warning-item {
+      padding: 14px 16px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .warning-item:last-child { margin-bottom: 0; }
+    .warning-icon { font-size: 1.2rem; min-width: 24px; }
+    .warning-body {}
+    .warning-type { font-size: 0.78rem; font-weight: 700; letter-spacing: 1px; margin-bottom: 4px; }
+    .warning-desc { font-size: 0.87rem; line-height: 1.5; }
+    .warning-sol { font-size: 0.82rem; margin-top: 6px; opacity: 0.8; }
+
+    .severity-위험 { background: #2d151540; border: 1px solid #fc818140; }
+    .severity-위험 .warning-type { color: #fc8181; }
+    .severity-경고 { background: #2d2515; border: 1px solid #f6ad5540; }
+    .severity-경고 .warning-type { color: #f6ad55; }
+    .severity-주의 { background: #1a2d35; border: 1px solid #63b3ed40; }
+    .severity-주의 .warning-type { color: #63b3ed; }
+
+    /* 저항 계산 */
+    .resistor-box {
+      background: #0f1117;
+      border-radius: 10px;
+      padding: 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .resistor-value {
+      font-size: 2.5rem;
+      font-weight: 200;
+      color: #9f7aea;
+      letter-spacing: 2px;
+    }
+    .resistor-label { font-size: 0.75rem; color: #718096; margin-top: 4px; }
+    .formula-box {
+      background: #1a1d2e;
+      border-radius: 8px;
+      padding: 12px;
+      font-family: monospace;
+      font-size: 0.82rem;
+      color: #90cdf4;
+      line-height: 1.8;
+      grid-column: 1 / -1;
+    }
+
+    /* 주의사항 */
+    .precaution-list { list-style: none; }
+    .precaution-list li {
+      padding: 8px 0;
+      border-bottom: 1px solid #2d3250;
+      font-size: 0.88rem;
+      color: #a0aec0;
+      display: flex;
+      gap: 10px;
+    }
+    .precaution-list li:last-child { border-bottom: none; }
+    .precaution-list li::before {
+      content: '▸';
+      color: #9f7aea;
+      flex-shrink: 0;
+    }
+
+    /* 로딩 */
+    .loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: #0f111790;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      gap: 20px;
+    }
+    .spinner {
+      width: 48px; height: 48px;
+      border: 3px solid #2d3250;
+      border-top-color: #63b3ed;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { color: #a0aec0; font-size: 0.9rem; }
+
+    /* API 키 설정 모달 */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: #0f111790;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+    }
+    .modal {
+      background: #1a1d2e;
+      border: 1px solid #2d3250;
+      border-radius: 16px;
+      padding: 32px;
+      width: 480px;
+      max-width: 90vw;
+    }
+    .modal-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
+    .modal-sub { font-size: 0.85rem; color: #718096; margin-bottom: 24px; line-height: 1.6; }
+
+    /* 기록 */
+    .history-item {
+      background: #1a1d2e;
+      border: 1px solid #2d3250;
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .history-item:hover { border-color: #63b3ed50; transform: translateY(-1px); }
+    .history-info {}
+    .history-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; }
+    .history-meta { font-size: 0.78rem; color: #718096; }
+    .history-actions { display: flex; gap: 8px; }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #4a5568;
+    }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 16px; }
+    .empty-state p { font-size: 0.9rem; line-height: 1.7; }
+
+    /* 결과 없음 / API 키 없음 배너 */
+    .alert {
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      margin-bottom: 20px;
+    }
+    .alert-warn { background: #2d251540; border: 1px solid #f6ad5540; color: #f6ad55; }
+    .alert-info { background: #1a253d40; border: 1px solid #63b3ed40; color: #63b3ed; }
+
+    /* 저장 완료 토스트 */
+    .toast {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #1a1d2e;
+      border: 1px solid #68d39150;
+      color: #68d391;
+      padding: 12px 24px;
+      border-radius: 40px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      transition: transform 0.3s ease;
+      z-index: 300;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    .row { display: flex; gap: 12px; }
+    .row > * { flex: 1; }
+
+    /* ── 모의실험 탭 ── */
+    .sim-type-tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .sim-type-btn {
+      padding: 7px 14px;
+      border: 1px solid #2d3250;
+      border-radius: 20px;
+      background: transparent;
+      color: #718096;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .sim-type-btn.active {
+      background: linear-gradient(135deg,#63b3ed30,#9f7aea30);
+      border-color: #63b3ed;
+      color: #e2e8f0;
+    }
+    .sim-type-btn:hover:not(.active) { color: #a0aec0; border-color: #4a5568; }
+
+    /* 슬라이더 파라미터 */
+    .sim-param-row {
+      margin-bottom: 18px;
+    }
+    .sim-param-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: #a0aec0;
+      margin-bottom: 6px;
+    }
+    .sim-param-label .val {
+      color: #63b3ed;
+      font-weight: 700;
+      min-width: 70px;
+      text-align: right;
+    }
+
+    /* 결과 수치 그리드 */
+    .sim-value-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+    }
+    .sim-value-box {
+      background: #0f1117;
+      border-radius: 10px;
+      padding: 14px;
+      text-align: center;
+    }
+    .sim-value-num {
+      font-size: 1.8rem;
+      font-weight: 200;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+    .sim-value-unit { font-size: 0.8rem; color: #718096; }
+    .sim-value-label { font-size: 0.72rem; color: #4a5568; margin-top: 4px; letter-spacing: 1px; text-transform: uppercase; }
+
+    /* 추가 부품 UI */
+    .extra-add-row {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .extra-add-row .ea-group { display: flex; flex-direction: column; gap: 4px; }
+    .extra-add-row .ea-group.wide { flex: 1; min-width: 160px; }
+    .extra-add-row label { font-size: 0.75rem; color: #718096; }
+    .extra-add-row input[type="number"] { width: 80px; }
+    .extra-unit-label { font-size: 0.82rem; color: #718096; padding-bottom: 10px; white-space: nowrap; }
+    .extra-tip { font-size: 0.77rem; color: #4a5568; min-height: 14px; margin-bottom: 10px; line-height: 1.4; }
+    .extra-part-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: #1a2d3e;
+      border: 1px solid #2d4a6e;
+      border-radius: 20px;
+      padding: 5px 6px 5px 12px;
+      font-size: 0.82rem;
+      color: #a0aec0;
+      margin: 3px;
+    }
+    .extra-part-tag .ep-val { color: #63b3ed; font-weight: 700; }
+    .extra-empty { color: #4a5568; font-size: 0.82rem; text-align: center; padding: 12px 0; }
+
+    /* 기록 카테고리 */
+    .history-cat {
+      font-size: 0.72rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #7c8db0;
+      padding: 20px 0 10px;
+      border-bottom: 1px solid #2d3250;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .history-cat:first-child { padding-top: 4px; }
+    .history-tag {
+      display: inline-block;
+      padding: 2px 9px;
+      border-radius: 10px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-right: 4px;
+      vertical-align: middle;
+    }
+    .tag-ai  { background: #1a2d3e; color: #63b3ed; border: 1px solid #2d4a6e; }
+    .tag-sim { background: #1a3a2e; color: #68d391; border: 1px solid #2d5a3e; }
+    .history-empty-sub { color: #4a5568; font-size: 0.83rem; padding: 12px 0; }
+
+    /* ── 실시간 연결 ── */
+    .connect-row {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px;
+    }
+    .connect-status {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.85rem; color: #718096;
+    }
+    .status-dot {
+      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+    }
+    .status-dot.connected {
+      background: #68d391;
+      box-shadow: 0 0 8px #68d39190;
+      animation: rt-blink 2s ease-in-out infinite;
+    }
+    .status-dot.disconnected { background: #4a5568; }
+    @keyframes rt-blink { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+    .arduino-code-block {
+      background: #080c18;
+      border: 1px solid #2d3250;
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.76rem;
+      color: #90cdf4;
+      line-height: 1.75;
+      white-space: pre;
+      overflow-x: auto;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .rt-value-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .rt-value-box {
+      background: #0f1117; border-radius: 10px; padding: 12px; text-align: center;
+    }
+    .rt-value-num { font-size: 1.6rem; font-weight: 200; letter-spacing: 1px; margin-bottom: 4px; }
+    .rt-value-label { font-size: 0.7rem; color: #4a5568; text-transform: uppercase; letter-spacing: 1px; }
+    .rt-no-serial {
+      text-align: center; padding: 40px 20px;
+      color: #fc8181; font-size: 0.9rem; line-height: 1.8;
+    }
+    .rt-analysis-box {
+      background: #0f1117; border-radius: 10px; padding: 16px;
+      font-size: 0.88rem; color: #cbd5e0; line-height: 1.9;
+      margin-top: 14px;
+      border-left: 3px solid #9f7aea;
+    }
+    .alert-info {
+      background: #1a2d3e; border: 1px solid #2d4a6e;
+      border-radius: 8px; padding: 10px 14px;
+      font-size: 0.82rem; color: #a0aec0; margin-top: 8px;
+    }
+
+    /* 모의실험 선택 모달 */
+    .sim-pick-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .sim-pick-box {
+      background: #1a1d2e;
+      border: 1px solid #2d3250;
+      border-radius: 20px;
+      padding: 28px 28px 24px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+    }
+    .sim-pick-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      margin-bottom: 6px;
+    }
+    .sim-pick-sub {
+      font-size: 0.82rem;
+      color: #718096;
+      margin-bottom: 18px;
+      line-height: 1.5;
+    }
+    .sim-pick-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .sim-pick-btn {
+      padding: 12px 10px;
+      background: #0f1117;
+      border: 1px solid #2d3250;
+      border-radius: 10px;
+      color: #a0aec0;
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s;
+      line-height: 1.4;
+    }
+    .sim-pick-btn:hover { border-color: #63b3ed; color: #e2e8f0; background: #1a253d; }
+    .sim-pick-btn.recommended {
+      border-color: #68d391;
+      background: #1a3a2e;
+      color: #e2e8f0;
+    }
+    .sim-pick-btn .rec-badge {
+      display: inline-block;
+      font-size: 0.62rem;
+      background: #68d391;
+      color: #0f1117;
+      padding: 1px 6px;
+      border-radius: 6px;
+      font-weight: 700;
+      margin-left: 4px;
+      vertical-align: middle;
+    }
+    .extra-btn-add {
+      padding: 9px 14px;
+      background: #1a3a2e;
+      border: 1px solid #2d5a3e;
+      border-radius: 8px;
+      color: #68d391;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .extra-btn-add:hover { background: #2d5a3e; }
+
+    /* ── 실험 추천 카드 ── */
+    .exp-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 10px;
+    }
+
+    .exp-card {
+      background: #0f1117;
+      border: 1px solid #2d3250;
+      border-radius: 12px;
+      padding: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+    }
+    .exp-card:hover {
+      border-color: #63b3ed60;
+      background: #1a253d;
+      transform: translateY(-2px);
+    }
+    .exp-card .exp-icon { font-size: 1.6rem; margin-bottom: 8px; }
+    .exp-card .exp-name { font-size: 0.85rem; font-weight: 600; color: #e2e8f0; margin-bottom: 4px; }
+    .exp-card .exp-parts { font-size: 0.73rem; color: #718096; line-height: 1.5; }
+
+    @media (max-width: 600px) {
+      .resistor-box { grid-template-columns: 1fr; }
+      .result-header { flex-direction: column; gap: 12px; }
+      .row { flex-direction: column; }
+      .exp-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 네비게이션 -->
+<nav class="nav">
+  <div class="nav-brand">
+    <div class="logo">⚡</div>
+    CircuitMind
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showView('home')">홈</button>
+    <button class="nav-tab" onclick="showView('sim')">모의실험</button>
+    <button class="nav-tab" onclick="showView('realtime')">실시간</button>
+    <button class="nav-tab" onclick="showView('history')">기록</button>
+  </div>
+  <button class="nav-settings" onclick="openSettings()">⚙ API 키</button>
+</nav>
+
+<!-- ── 홈 뷰 ── -->
+<div id="view-home" class="view active">
+  <div id="alert-no-key" class="alert alert-warn" style="display:none">
+    ⚠ Claude API 키가 없습니다. 우측 상단 <strong>⚙ API 키</strong>를 눌러 설정하세요.
+  </div>
+
+  <!-- 실험별 추천 -->
+  <div class="card">
+    <div class="card-title">실험별 부품 추천</div>
+    <div class="exp-grid" id="exp-grid"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">부품 목록</div>
+    <div id="parts-list"></div>
+    <button class="btn-add" onclick="addPart()">+ 부품 추가</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">회로 목적</div>
+    <div class="input-group">
+      <label>목적 선택</label>
+      <select id="purpose-select" onchange="toggleCustomPurpose()">
+        <option value="LED 점등">LED 점등 (기본 발광 회로)</option>
+        <option value="버튼으로 LED 제어">버튼으로 LED 제어</option>
+        <option value="아두이노로 LED PWM 제어">아두이노로 LED PWM 밝기 제어</option>
+        <option value="모터 제어">모터 제어</option>
+        <option value="센서 데이터 읽기">센서 데이터 읽기 (온도/거리/빛 등)</option>
+        <option value="직렬/병렬 저항 분압">저항 분압 회로</option>
+        <option value="기타">기타 (직접 입력)</option>
+      </select>
+    </div>
+    <div class="input-group" id="custom-purpose-group" style="display:none">
+      <label>목적 직접 입력</label>
+      <input type="text" id="custom-purpose" placeholder="예: 초음파 센서로 거리 측정 후 LED 밝기 조절">
+    </div>
+  </div>
+
+  <button class="btn-primary" id="analyze-btn" onclick="analyze()">⚡ AI 분석 시작</button>
+</div>
+
+<!-- ── 결과 뷰 ── -->
+<div id="view-result" class="view">
+  <div id="result-content"></div>
+  <div class="row">
+    <button class="btn-primary" onclick="saveToHistory()">💾 기록에 저장</button>
+    <button class="btn-secondary" onclick="showView('home')">← 홈으로</button>
+  </div>
+</div>
+
+<!-- ── 모의실험 뷰 ── -->
+<div id="view-sim" class="view">
+
+  <!-- 실험 선택 탭 -->
+  <div class="card" style="padding:16px 20px">
+    <div class="sim-type-tabs" id="sim-type-tabs"></div>
+  </div>
+
+  <!-- 파라미터 입력 -->
+  <div class="card" id="sim-param-card">
+    <div class="card-title" id="sim-param-title">파라미터</div>
+    <div id="sim-params"></div>
+  </div>
+
+  <!-- 추가 부품 -->
+  <div class="card">
+    <div class="card-title">➕ 추가 부품 넣기</div>
+    <div class="extra-add-row">
+      <div class="ea-group wide">
+        <label>부품 선택</label>
+        <select id="extra-part-select" onchange="onExtraSelectChange()">
+          <option value="">-- 부품 선택 --</option>
+        </select>
+      </div>
+      <div class="ea-group">
+        <label id="extra-val-label">값</label>
+        <input type="number" id="extra-part-value" min="0" style="width:80px;padding:9px 8px;text-align:center" placeholder="0">
+      </div>
+      <div class="extra-unit-label" id="extra-part-unit"></div>
+      <button class="extra-btn-add" onclick="addExtraPart()">＋ 추가</button>
+    </div>
+    <div class="extra-tip" id="extra-part-tip"></div>
+    <div id="sim-extra-list"><div class="extra-empty">추가된 부품이 없습니다</div></div>
+  </div>
+
+  <!-- 실행 버튼 -->
+  <button class="btn-primary" id="sim-run-btn" onclick="runSim()" style="margin-bottom:20px">▶ 시뮬레이션 실행</button>
+
+  <!-- 결과 패널 -->
+  <div id="sim-result-area" style="display:none">
+
+    <!-- 시각화 -->
+    <div class="card">
+      <div class="card-title" id="sim-viz-title">시각화</div>
+      <canvas id="sim-canvas" style="width:100%;border-radius:8px;display:block"></canvas>
+    </div>
+
+    <!-- 수치 결과 -->
+    <div class="card">
+      <div class="card-title">측정 결과값</div>
+      <div id="sim-values"></div>
+    </div>
+
+    <!-- 시계열 데이터 테이블 -->
+    <div class="card" id="sim-table-card">
+      <div class="card-title">실험 데이터 로그</div>
+      <div style="overflow-x:auto">
+        <table class="pin-table" id="sim-table">
+          <thead id="sim-table-head"></thead>
+          <tbody id="sim-table-body"></tbody>
+        </table>
+      </div>
+      <button class="btn-secondary" onclick="exportCSV()" style="margin-top:14px;width:100%">📥 CSV 내보내기</button>
+    </div>
+
+    <!-- 해석 -->
+    <div class="card" style="border-color:#9f7aea40">
+      <div class="card-title">실험 해석</div>
+      <div id="sim-interpretation" style="font-size:0.9rem;color:#cbd5e0;line-height:1.9"></div>
+    </div>
+
+    <!-- 저장 -->
+    <div class="row" style="margin-bottom:8px">
+      <button class="btn-primary" onclick="saveSimToHistory()">💾 기록에 저장</button>
+      <button class="btn-secondary" onclick="document.getElementById('sim-result-area').scrollIntoView({block:'start'})">↑ 결과로</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── 실시간 연결 뷰 ── -->
+<div id="view-realtime" class="view">
+
+  <!-- 브라우저 미지원 -->
+  <div id="rt-no-serial" style="display:none">
+    <div class="card">
+      <div class="rt-no-serial">
+        ⚠️ Web Serial API 미지원 브라우저입니다.<br>
+        <strong>Chrome 또는 Edge</strong> 브라우저를 사용해 주세요.<br><br>
+        <span style="color:#718096;font-size:0.82rem">Safari, Firefox는 지원하지 않습니다.</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="rt-main">
+
+    <!-- 연결 설정 -->
+    <div class="card">
+      <div class="card-title">🔌 장치 연결 (Arduino / 시리얼 포트)</div>
+      <div class="connect-row">
+        <select id="baud-select" style="width:140px">
+          <option value="9600">9600 baud</option>
+          <option value="115200" selected>115200 baud</option>
+          <option value="57600">57600 baud</option>
+          <option value="38400">38400 baud</option>
+        </select>
+        <button class="btn-primary" id="rt-connect-btn" onclick="toggleSerialConnect()"
+          style="width:auto;padding:10px 24px">🔌 연결</button>
+        <div class="connect-status">
+          <span class="status-dot disconnected" id="rt-status-dot"></span>
+          <span id="rt-status-text">연결 안됨</span>
+        </div>
+      </div>
+      <div class="alert-info">
+        💡 Arduino를 USB로 연결 → 위 버튼 클릭 → 포트 선택. 아두이노 시리얼 모니터는 닫아야 합니다.
+      </div>
+    </div>
+
+    <!-- 데이터 형식 + 아두이노 코드 -->
+    <div class="card">
+      <div class="card-title">📡 데이터 형식 &amp; 아두이노 코드</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div>
+          <label style="font-size:0.78rem;color:#718096;display:block;margin-bottom:5px">수신 형식</label>
+          <select id="rt-format-select" onchange="onRtFormatChange()">
+            <option value="auto">자동 감지</option>
+            <option value="kv">키:값 (temp:25.3,hum:60)</option>
+            <option value="csv">CSV (25.3,60.2)</option>
+            <option value="json">JSON ({"temp":25.3})</option>
+          </select>
+        </div>
+        <div id="rt-csv-group" style="display:none">
+          <label style="font-size:0.78rem;color:#718096;display:block;margin-bottom:5px">CSV 컬럼명 (쉼표 구분)</label>
+          <input type="text" id="rt-csv-labels" placeholder="예: 온도,습도" value="값1,값2">
+        </div>
+      </div>
+      <div>
+        <label style="font-size:0.78rem;color:#718096;display:block;margin-bottom:6px">아두이노 예제 코드</label>
+        <select id="rt-code-select" onchange="showArduinoCode()" style="margin-bottom:10px">
+          <option value="dht11">DHT11 온습도 센서</option>
+          <option value="ultrasonic">HC-SR04 초음파 센서</option>
+          <option value="ldr">조도 센서 (LDR)</option>
+          <option value="pot">가변저항 (포텐셔미터)</option>
+          <option value="multi">다중 센서 (JSON)</option>
+        </select>
+        <div class="arduino-code-block" id="rt-code-display"></div>
+        <button class="btn-secondary" onclick="copyArduinoCode()" style="margin-top:8px;font-size:0.82rem">📋 코드 복사</button>
+      </div>
+    </div>
+
+    <!-- 실시간 차트 -->
+    <div class="card">
+      <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
+        <span>📈 실시간 데이터</span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span id="rt-rate" style="font-size:0.75rem;color:#4a5568"></span>
+          <button class="btn-secondary" onclick="clearRtData()" style="font-size:0.75rem;padding:4px 10px">초기화</button>
+        </div>
+      </div>
+      <canvas id="rt-canvas" style="width:100%;border-radius:8px;display:block"></canvas>
+      <div class="rt-value-grid" id="rt-values"></div>
+    </div>
+
+    <!-- 데이터 로그 -->
+    <div class="card">
+      <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
+        <span>📋 수신 로그</span>
+        <button class="btn-secondary" onclick="exportRtCSV()" style="font-size:0.75rem;padding:4px 10px">📥 CSV 저장</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="pin-table">
+          <thead id="rt-thead"></thead>
+          <tbody id="rt-tbody"></tbody>
+        </table>
+      </div>
+      <div id="rt-empty" style="text-align:center;color:#4a5568;font-size:0.85rem;padding:24px">
+        연결 후 데이터를 수신하면 여기에 표시됩니다
+      </div>
+    </div>
+
+    <!-- AI 분석 -->
+    <div class="card">
+      <div class="card-title">🤖 AI 실시간 분석</div>
+      <div style="font-size:0.85rem;color:#a0aec0;margin-bottom:14px;line-height:1.6">
+        수신된 최근 데이터를 Claude AI에게 보내 이상값·패턴·권고사항을 분석받습니다.<br>
+        <span style="color:#4a5568;font-size:0.78rem">API 키가 필요합니다. 최소 5개 이상 데이터 수신 후 사용 가능합니다.</span>
+      </div>
+      <button class="btn-primary" id="rt-analyze-btn" onclick="analyzeRtData()">⚡ 현재 데이터 AI 분석</button>
+      <div id="rt-analysis-result" style="display:none" class="rt-analysis-box"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── 기록 뷰 ── -->
+<div id="view-history" class="view">
+  <div class="card">
+    <div class="history-cat">🤖 AI 분석 기록</div>
+    <div id="history-ai-list"></div>
+    <div class="history-cat">🔬 모의실험 기록</div>
+    <div id="history-sim-list"></div>
+  </div>
+</div>
+
+<!-- ── 로딩 ── -->
+<div class="loading-overlay" id="loading" style="display:none">
+  <div class="spinner"></div>
+  <div class="loading-text">AI가 회로를 분석하고 있습니다...</div>
+</div>
+
+<!-- ── API 키 설정 모달 ── -->
+<div class="modal-overlay" id="settings-modal" style="display:none">
+  <div class="modal">
+    <div class="modal-title">Claude API 키 설정</div>
+    <div class="modal-sub">
+      <strong style="color:#fc8181">API 키가 없거나 유효하지 않습니다.</strong><br><br>
+      1. <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:#63b3ed">console.anthropic.com</a> 접속<br>
+      2. <strong>API Keys</strong> → <strong>Create Key</strong> 클릭<br>
+      3. 생성된 <code style="background:#0f1117;padding:1px 6px;border-radius:4px;color:#90cdf4">sk-ant-...</code> 키를 아래에 붙여넣기<br><br>
+      키는 이 기기의 브라우저에만 저장됩니다.
+    </div>
+    <div class="input-group">
+      <label>API 키</label>
+      <input type="password" id="api-key-input" placeholder="sk-ant-..." autocomplete="off">
+    </div>
+    <div class="row" style="margin-top: 16px;">
+      <button class="btn-primary" onclick="saveApiKey()">저장</button>
+      <button class="btn-secondary" onclick="closeSettings()">취소</button>
+    </div>
+  </div>
+</div>
+
+<!-- 모의실험 선택 모달 -->
+<div class="sim-pick-modal" id="sim-pick-modal" style="display:none" onclick="if(event.target===this)closeSimPicker()">
+  <div class="sim-pick-box">
+    <div class="sim-pick-title">🔬 모의실험 유형 선택</div>
+    <div class="sim-pick-sub" id="sim-pick-sub"></div>
+    <div class="sim-pick-grid" id="sim-pick-grid"></div>
+    <button class="btn-secondary" style="width:100%" onclick="closeSimPicker()">취소</button>
+  </div>
+</div>
+
+<!-- 토스트 -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── 상태 ──
+let parts = [];
+let lastResult = null;
+let lastMeta = null;
+
+// ── 실험 프리셋 데이터 ──
+const EXPERIMENTS = [
+  {
+    icon: '💡', name: 'LED 기본 점등',
+    purpose: 'LED 점등',
+    parts: [
+      { name: '아두이노 우노', quantity: 1 },
+      { name: 'LED (빨강)', quantity: 1 },
+      { name: '220Ω 저항', quantity: 1 }
+    ]
+  },
+  {
+    icon: '🔘', name: '버튼으로 LED 제어',
+    purpose: '버튼으로 LED 제어',
+    parts: [
+      { name: '아두이노 우노', quantity: 1 },
+      { name: 'LED', quantity: 1 },
+      { name: '220Ω 저항', quantity: 1 },
+      { name: '푸시버튼', quantity: 1 },
+      { name: '10kΩ 저항', quantity: 1 }
+    ]
+  },
+  {
+    icon: '🌈', name: 'RGB LED 제어',
+    purpose: '아두이노로 LED PWM 제어',
+    parts: [
+      { name: '아두이노 우노', quantity: 1 },
+      { name: 'RGB LED (공통 캐소드)', quantity: 1 },
+      { name: '220Ω 저항', quantity: 3 }
+    ]
+  },
+  {
+    icon: '🌡️', name: '온도/습도 측정',
+    purpose: '센서 데이터 읽기',
+    parts: [
+      { name: '아두이노 우노', quantity: 1 },
+      { name: 'DHT11 온습도 센서', quantity: 1 },
+      { name: '10kΩ 저항', quantity: 1 }
+    ]
+  },
+  {
+    icon: '📡', name: '초음파 거리 측정',
+    purpose: '센서 데이터 읽기',
+    parts: [
+      { name: '아두이노 우노', quantity: 1 },
+      { name: 'HC-SR04 초음파 센서', quantity: 1 }
+    ]
+  },
+  {
+    icon: '⚙️', name: 'DC 모터 제어',
+    purpose: '모터 제어',
+    parts: [
+      { name: '아두이노 우노', quantity: 1 },
+      { name: 'L298N 모터 드라이버', quantity: 1 },
+      { name: 'DC 모터 (5V)', quantity: 1 }
+    ]
+  },
+  {
+    icon: '🔁', name: '서보모터 제어',
+    purpose: '모터 제어',
+    parts: [
+      { name: '아두이노 우노', quantity: 1 },
+      { name: 'SG90 서보모터', quantity: 1 }
+    ]
+  },
+  {
+    icon: '🔢', name: '7세그먼트 숫자 표시',
+    purpose: '기타',
+    purposeCustom: '7세그먼트 디스플레이로 숫자 0~9 순서대로 표시',
+    parts: [
+      { name: '아두이노 우노', quantity: 1 },
+      { name: '7세그먼트 디스플레이 (공통 캐소드)', quantity: 1 },
+      { name: '220Ω 저항', quantity: 8 }
+    ]
+  },
+  {
+    icon: '📺', name: 'LCD 문자 출력',
+    purpose: '기타',
+    purposeCustom: 'LCD 1602에 텍스트 출력',
+    parts: [
+      { name: '아두이노 우노', quantity: 1 },
+      { name: 'LCD 1602 디스플레이', quantity: 1 },
+      { name: '10kΩ 가변저항 (밝기 조절)', quantity: 1 }
+    ]
+  },
+  {
+    icon: '☀️', name: '조도 감지 LED',
+    purpose: '센서 데이터 읽기',
+    parts: [
+      { name: '아두이노 우노', quantity: 1 },
+      { name: '조도 센서 (CdS)', quantity: 1 },
+      { name: '10kΩ 저항', quantity: 1 },
+      { name: 'LED', quantity: 1 },
+      { name: '220Ω 저항', quantity: 1 }
+    ]
+  },
+  {
+    icon: '🔊', name: '부저 알람',
+    purpose: '기타',
+    purposeCustom: '피에조 부저로 멜로디 출력',
+    parts: [
+      { name: '아두이노 우노', quantity: 1 },
+      { name: '피에조 부저', quantity: 1 },
+      { name: '100Ω 저항', quantity: 1 }
+    ]
+  },
+  {
+    icon: '⚡', name: '저항 분압 회로',
+    purpose: '직렬/병렬 저항 분압',
+    parts: [
+      { name: '브레드보드', quantity: 1 },
+      { name: '10kΩ 저항', quantity: 1 },
+      { name: '10kΩ 저항', quantity: 1 },
+      { name: '9V 배터리', quantity: 1 }
+    ]
+  }
+];
+
+// ── 초기화 ──
+window.addEventListener('DOMContentLoaded', () => {
+  addPart();
+  checkApiKey();
+  renderHistory();
+  renderExperiments();
+});
+
+// ── 뷰 전환 ──
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(`view-${name}`).classList.add('active');
+  const tabs = document.querySelectorAll('.nav-tab');
+  if (name === 'home')     tabs[0].classList.add('active');
+  if (name === 'sim')    { tabs[1].classList.add('active'); }
+  if (name === 'realtime'){ tabs[2].classList.add('active'); initRealtime(); }
+  if (name === 'history') { tabs[3].classList.add('active'); renderHistory(); }
+  if (name === 'result')  { /* no tab highlight */ }
+}
+
+// ── 실험 추천 렌더링 ──
+function renderExperiments() {
+  const grid = document.getElementById('exp-grid');
+  grid.innerHTML = EXPERIMENTS.map((exp, i) => `
+    <div class="exp-card" onclick="applyExperiment(${i})">
+      <div class="exp-icon">${exp.icon}</div>
+      <div class="exp-name">${exp.name}</div>
+      <div class="exp-parts">${exp.parts.map(p => `${p.name} ×${p.quantity}`).join('<br>')}</div>
+    </div>
+  `).join('');
+}
+
+function applyExperiment(i) {
+  const exp = EXPERIMENTS[i];
+  parts = exp.parts.map(p => ({ ...p }));
+  renderParts();
+
+  const sel = document.getElementById('purpose-select');
+  const found = Array.from(sel.options).find(o => o.value === exp.purpose);
+  if (found) {
+    sel.value = exp.purpose;
+    document.getElementById('custom-purpose-group').style.display = 'none';
+  } else {
+    sel.value = '기타';
+    document.getElementById('custom-purpose-group').style.display = 'block';
+  }
+  if (exp.purposeCustom) {
+    sel.value = '기타';
+    document.getElementById('custom-purpose-group').style.display = 'block';
+    document.getElementById('custom-purpose').value = exp.purposeCustom;
+  }
+
+  // 부품 목록 카드로 스크롤
+  document.getElementById('parts-list').closest('.card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  showToast(`${exp.name} 부품이 자동으로 입력되었습니다`);
+}
+
+// ── 부품 관리 ──
+function addPart() {
+  parts.push({ name: '', quantity: 1 });
+  renderParts();
+}
+
+function removePart(i) {
+  if (parts.length === 1) return;
+  parts.splice(i, 1);
+  renderParts();
+}
+
+function renderParts() {
+  const container = document.getElementById('parts-list');
+  container.innerHTML = parts.map((p, i) => `
+    <div class="part-row">
+      <input type="text" placeholder="부품명 (예: 아두이노 우노, LED 빨강, 220Ω 저항)"
+        value="${p.name}"
+        oninput="parts[${i}].name = this.value">
+      <input type="number" min="1" max="99" value="${p.quantity}" style="text-align:center"
+        oninput="parts[${i}].quantity = parseInt(this.value)||1">
+      <button class="btn-icon danger" onclick="removePart(${i})" title="삭제">✕</button>
+    </div>
+  `).join('');
+}
+
+// ── 목적 선택 ──
+function toggleCustomPurpose() {
+  const sel = document.getElementById('purpose-select').value;
+  document.getElementById('custom-purpose-group').style.display =
+    sel === '기타' ? 'block' : 'none';
+}
+
+function getPurpose() {
+  const sel = document.getElementById('purpose-select').value;
+  if (sel === '기타') return document.getElementById('custom-purpose').value.trim() || '기타';
+  return sel;
+}
+
+// ── API 키 ──
+function getApiKey() { return localStorage.getItem('cm_api_key') || ''; }
+
+function checkApiKey() {
+  const hasKey = !!getApiKey();
+  document.getElementById('alert-no-key').style.display = hasKey ? 'none' : 'block';
+}
+
+function openSettings() {
+  document.getElementById('api-key-input').value = getApiKey();
+  document.getElementById('settings-modal').style.display = 'flex';
+}
+
+function closeSettings() {
+  document.getElementById('settings-modal').style.display = 'none';
+}
+
+function saveApiKey() {
+  const key = document.getElementById('api-key-input').value.trim();
+  if (!key) { showToast('API 키를 입력하세요'); return; }
+  localStorage.setItem('cm_api_key', key);
+  closeSettings();
+  checkApiKey();
+  showToast('API 키가 저장되었습니다');
+}
+
+// ── 분석 ──
+async function analyze() {
+  const apiKey = getApiKey();
+  if (!apiKey) { openSettings(); return; }
+
+  const validParts = parts.filter(p => p.name.trim());
+  if (validParts.length === 0) {
+    showToast('부품을 최소 1개 이상 입력하세요'); return;
+  }
+
+  const purpose = getPurpose();
+
+  document.getElementById('loading').style.display = 'flex';
+  document.getElementById('analyze-btn').disabled = true;
+
+  try {
+    const result = await callClaudeAPI(validParts, purpose, apiKey);
+    lastResult = result;
+    lastMeta = {
+      components: validParts,
+      purpose,
+      date: new Date().toISOString()
+    };
+    renderResult(result, lastMeta);
+    showView('result');
+  } catch (err) {
+    const msg = err.message || '알 수 없는 오류';
+    // API 키 오류 → 모달 자동 오픈
+    if (msg.includes('invalid x-api-key') || msg.includes('authentication') || msg.includes('401')) {
+      showToast('API 키가 유효하지 않습니다. 키를 다시 확인해 주세요.');
+      localStorage.removeItem('cm_api_key');
+      checkApiKey();
+      setTimeout(() => openSettings(), 400);
+    } else {
+      showToast('분석 실패: ' + msg);
+    }
+    console.error(err);
+  } finally {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('analyze-btn').disabled = false;
+  }
+}
+
+async function callClaudeAPI(components, purpose, apiKey) {
+  const compStr = components.map(c => `${c.name} x${c.quantity}`).join(', ');
+
+  // 시스템 프롬프트: JSON 템플릿에 한국어 주석 없이 명확한 타입 지정
+  const system = `You are an expert electronics engineer. Analyze the given components and circuit purpose, then respond ONLY with a valid JSON object — no markdown, no code fences, no extra text before or after.
+
+Required JSON structure (all fields mandatory):
+{
+  "title": string,
+  "difficulty": "초급" | "중급" | "고급",
+  "summary": string,
+  "connectionGuide": {
+    "steps": string[],
+    "pinMap": Array<{ "from": string, "to": string, "note": string }>
+  },
+  "errorWarnings": Array<{
+    "severity": "위험" | "경고" | "주의",
+    "type": string,
+    "description": string,
+    "solution": string
+  }>,
+  "resistorCalculation": {
+    "needed": boolean,
+    "recommended": number,
+    "unit": "Ω",
+    "formula": string,
+    "explanation": string
+  },
+  "precautions": string[],
+  "expectedResults": string
+}
+
+Rules:
+- All string values must be in Korean.
+- "difficulty" must be exactly one of: "초급", "중급", "고급"
+- "severity" must be exactly one of: "위험", "경고", "주의"
+- "resistorCalculation.needed" must be a JSON boolean (true or false, not a string)
+- "resistorCalculation.recommended" must be a JSON number (e.g. 220), not a string
+- "connectionGuide.steps" must have at least 3 items
+- Respond with ONLY the JSON object, starting with { and ending with }`;
+
+  const userMsg = `부품 목록: ${compStr}\n회로 목적: ${purpose}`;
+
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-opus-4-6',
+      max_tokens: 4096,
+      system,
+      messages: [{ role: 'user', content: userMsg }]
+    })
+  });
+
+  const data = await resp.json();
+  if (!resp.ok) {
+    throw new Error(data.error?.message || `API 오류 (HTTP ${resp.status})`);
+  }
+
+  let text = data.content[0].text.trim();
+
+  // 마크다운 코드블록 제거 (모델이 무시하는 경우 대비)
+  text = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+
+  // { ... } 범위만 추출 (앞뒤 잡음 제거)
+  const jsonStart = text.indexOf('{');
+  const jsonEnd = text.lastIndexOf('}');
+  if (jsonStart === -1 || jsonEnd === -1) {
+    throw new Error(`응답에서 JSON을 찾을 수 없습니다. 응답: ${text.slice(0, 200)}`);
+  }
+  text = text.slice(jsonStart, jsonEnd + 1);
+
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    throw new Error(`JSON 파싱 실패: ${e.message}\n응답 일부: ${text.slice(0, 300)}`);
+  }
+}
+
+// ── 결과 렌더링 ──
+function renderResult(r, meta) {
+  const compStr = meta.components.map(c => `${c.name} ×${c.quantity}`).join(' · ');
+  const dateStr = new Date(meta.date).toLocaleString('ko-KR');
+
+  const diffBadge = { '초급': 'badge-green', '중급': 'badge-blue', '고급': 'badge-purple' };
+
+  const stepsHtml = (r.connectionGuide?.steps || []).map((s, i) => `
+    <div class="step-item">
+      <div class="step-num">${i+1}</div>
+      <div class="step-text">${escHtml(s)}</div>
+    </div>`).join('');
+
+  const pinMapHtml = (r.connectionGuide?.pinMap || []).length > 0 ? `
+    <div class="card">
+      <div class="card-title">핀 연결 맵</div>
+      <table class="pin-table">
+        <thead><tr><th>출발</th><th>→</th><th>도착</th><th>주의</th></tr></thead>
+        <tbody>
+          ${(r.connectionGuide.pinMap).map(p => `
+            <tr>
+              <td><span class="code">${escHtml(p.from)}</span></td>
+              <td style="color:#718096">→</td>
+              <td><span class="code">${escHtml(p.to)}</span></td>
+              <td style="color:#a0aec0;font-size:0.82rem">${escHtml(p.note || '')}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>` : '';
+
+  const sevIcon = { '위험': '🔴', '경고': '🟡', '주의': '🔵' };
+  const warningsHtml = (r.errorWarnings || []).length > 0 ? `
+    <div class="card">
+      <div class="card-title">오류 경고</div>
+      ${r.errorWarnings.map(w => `
+        <div class="warning-item severity-${w.severity}">
+          <div class="warning-icon">${sevIcon[w.severity] || '⚠'}</div>
+          <div class="warning-body">
+            <div class="warning-type">${escHtml(w.severity)} — ${escHtml(w.type)}</div>
+            <div class="warning-desc">${escHtml(w.description)}</div>
+            ${w.solution ? `<div class="warning-sol">💡 ${escHtml(w.solution)}</div>` : ''}
+          </div>
+        </div>`).join('')}
+    </div>` : '';
+
+  const resistorHtml = r.resistorCalculation?.needed !== false ? `
+    <div class="card">
+      <div class="card-title">저항 계산</div>
+      <div class="resistor-box">
+        <div>
+          <div class="resistor-value">${r.resistorCalculation?.recommended ?? '—'}<span style="font-size:1.2rem"> ${r.resistorCalculation?.unit || 'Ω'}</span></div>
+          <div class="resistor-label">권장 저항값</div>
+        </div>
+        <div style="font-size:0.85rem;color:#a0aec0;display:flex;align-items:center">
+          ${escHtml(r.resistorCalculation?.explanation || '')}
+        </div>
+        ${r.resistorCalculation?.formula ? `<div class="formula-box">${escHtml(r.resistorCalculation.formula)}</div>` : ''}
+      </div>
+    </div>` : '';
+
+  const precautionsHtml = (r.precautions || []).length > 0 ? `
+    <div class="card">
+      <div class="card-title">주의사항</div>
+      <ul class="precaution-list">
+        ${r.precautions.map(p => `<li>${escHtml(p)}</li>`).join('')}
+      </ul>
+    </div>` : '';
+
+  const expectedHtml = r.expectedResults ? `
+    <div class="card" style="border-color:#9f7aea40;background:linear-gradient(135deg,#1a1d2e,#1a1533)">
+      <div class="card-title">예상 결과</div>
+      <p style="font-size:0.92rem;color:#cbd5e0;line-height:1.8">${escHtml(r.expectedResults)}</p>
+    </div>` : '';
+
+  document.getElementById('result-content').innerHTML = `
+    <div class="card">
+      <div class="result-header">
+        <div>
+          <div class="result-title">${escHtml(r.title || '회로 분석 결과')}</div>
+          <div class="result-meta">
+            <span class="badge ${diffBadge[r.difficulty] || 'badge-blue'}">${escHtml(r.difficulty || '')}</span>
+            <span class="badge badge-blue" style="font-size:0.7rem">${escHtml(compStr)}</span>
+          </div>
+        </div>
+        <div style="font-size:0.75rem;color:#4a5568;white-space:nowrap;margin-top:4px">${dateStr}</div>
+      </div>
+      ${r.summary ? `<p style="color:#a0aec0;font-size:0.9rem">${escHtml(r.summary)}</p>` : ''}
+    </div>
+
+    <div class="card">
+      <div class="card-title">연결 순서</div>
+      <div class="steps-list">${stepsHtml}</div>
+    </div>
+
+    ${pinMapHtml}
+    ${warningsHtml}
+    ${resistorHtml}
+    ${precautionsHtml}
+    ${expectedHtml}
+  `;
+}
+
+// ── 기록 ──
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem('cm_history') || '[]'); } catch { return []; }
+}
+
+function saveHistory(history) {
+  localStorage.setItem('cm_history', JSON.stringify(history));
+}
+
+function saveToHistory() {
+  if (!lastResult || !lastMeta) { showToast('저장할 결과가 없습니다'); return; }
+  const history = getHistory();
+  history.unshift({ type: 'ai', result: lastResult, meta: lastMeta, id: Date.now() });
+  if (history.length > 50) history.pop();
+  saveHistory(history);
+  showToast('기록에 저장되었습니다 ✓');
+}
+
+function renderHistory() {
+  const history = getHistory();
+  const aiList  = document.getElementById('history-ai-list');
+  const simList = document.getElementById('history-sim-list');
+  if (!aiList || !simList) return;
+
+  const aiItems  = history.map((item, idx) => ({ item, idx })).filter(({ item }) => !item.type || item.type === 'ai');
+  const simItems = history.map((item, idx) => ({ item, idx })).filter(({ item }) => item.type === 'sim');
+
+  // AI 기록
+  if (aiItems.length === 0) {
+    aiList.innerHTML = '<div class="history-empty-sub">저장된 AI 분석 기록이 없습니다.</div>';
+  } else {
+    aiList.innerHTML = aiItems.map(({ item, idx }) => {
+      const compStr = (item.meta?.components || []).map(c => `${c.name} ×${c.quantity}`).join(', ');
+      const dateStr = new Date(item.meta?.date || item.id).toLocaleDateString('ko-KR');
+      return `
+        <div class="history-item" style="flex-wrap:wrap;gap:8px">
+          <div class="history-info" onclick="loadHistory(${idx})" style="flex:1;cursor:pointer;min-width:0">
+            <div class="history-title"><span class="history-tag tag-ai">AI</span>${escHtml(item.result?.title || '분석 결과')}</div>
+            <div class="history-meta">${escHtml(compStr)} · ${dateStr} · ${escHtml(item.meta?.purpose || '')}</div>
+          </div>
+          <div class="history-actions" style="flex-wrap:wrap">
+            <button class="btn-secondary" onclick="openSimPicker(${idx})" style="font-size:0.8rem;padding:7px 12px;border-color:#2d5a3e;color:#68d391">🔬 모의실험</button>
+            <button class="btn-secondary" onclick="reanalyze(${idx})" style="font-size:0.8rem;padding:7px 12px">재분석</button>
+            <button class="btn-icon danger" onclick="deleteHistory(${idx})">✕</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // 모의실험 기록
+  if (simItems.length === 0) {
+    simList.innerHTML = '<div class="history-empty-sub">저장된 모의실험 기록이 없습니다.</div>';
+  } else {
+    simList.innerHTML = simItems.map(({ item, idx }) => {
+      const dateStr = new Date(item.date || item.id).toLocaleDateString('ko-KR');
+      const extraStr = (item.extraParts || []).length > 0
+        ? ' · ' + item.extraParts.map(p => `${p.label} ${p.value}${p.unit}`).join(', ')
+        : '';
+      const valSummary = (item.result?.values || []).slice(0, 3).map(v => `${v.label} ${v.num}${v.unit}`).join(' / ');
+      return `
+        <div class="history-item">
+          <div class="history-info" onclick="reloadSim(${idx})" style="flex:1;cursor:pointer">
+            <div class="history-title"><span class="history-tag tag-sim">실험</span>${escHtml(item.simTypeName || '모의실험')}</div>
+            <div class="history-meta">${dateStr}${escHtml(extraStr)}</div>
+            <div class="history-meta" style="color:#4a5568;margin-top:2px;font-size:0.78rem">${escHtml(valSummary)}</div>
+          </div>
+          <div class="history-actions">
+            <button class="btn-secondary" onclick="reloadSim(${idx})" style="font-size:0.8rem;padding:7px 12px">불러오기</button>
+            <button class="btn-icon danger" onclick="deleteHistory(${idx})">✕</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+}
+
+function loadHistory(idx) {
+  const history = getHistory();
+  const item = history[idx];
+  if (!item) return;
+  lastResult = item.result;
+  lastMeta = item.meta;
+  renderResult(item.result, item.meta);
+  showView('result');
+}
+
+function reanalyze(idx) {
+  const history = getHistory();
+  const item = history[idx];
+  if (!item) return;
+
+  // 홈으로 이동하고 부품 채우기
+  parts = item.meta.components.map(c => ({ name: c.name, quantity: c.quantity }));
+  renderParts();
+
+  // 목적 설정
+  const sel = document.getElementById('purpose-select');
+  const found = Array.from(sel.options).find(o => o.value === item.meta.purpose);
+  if (found) {
+    sel.value = item.meta.purpose;
+  } else {
+    sel.value = '기타';
+    document.getElementById('custom-purpose').value = item.meta.purpose;
+  }
+  toggleCustomPurpose();
+
+  showView('home');
+  showToast('부품이 불러와졌습니다. 분석을 눌러주세요');
+}
+
+function deleteHistory(idx) {
+  const history = getHistory();
+  history.splice(idx, 1);
+  saveHistory(history);
+  renderHistory();
+  showToast('삭제되었습니다');
+}
+
+function saveSimToHistory() {
+  if (!simResult) { showToast('저장할 실험 결과가 없습니다'); return; }
+  const sim = SIM_TYPES[simType];
+  const params = getSimParams();
+  const history = getHistory();
+  history.unshift({
+    type: 'sim',
+    id: Date.now(),
+    date: new Date().toISOString(),
+    simTypeIdx: simType,
+    simTypeName: sim.name,
+    params,
+    extraParts: [...simExtraParts],
+    result: simResult,
+  });
+  if (history.length > 50) history.pop();
+  saveHistory(history);
+  showToast('모의실험 기록에 저장되었습니다 ✓');
+}
+
+function reloadSim(idx) {
+  const history = getHistory();
+  const item = history[idx];
+  if (!item || item.type !== 'sim') return;
+
+  showView('sim');
+
+  simType = item.simTypeIdx ?? 0;
+  simExtraParts = [...(item.extraParts || [])];
+
+  // 탭 버튼 활성화
+  document.querySelectorAll('.sim-type-btn').forEach((b, i) => b.classList.toggle('active', i === simType));
+  document.getElementById('sim-result-area').style.display = 'none';
+
+  renderSimParams();
+  updateExtraSelect();
+  renderExtraParts();
+
+  // 슬라이더 값 복원 후 실행
+  requestAnimationFrame(() => {
+    const sim = SIM_TYPES[simType];
+    const inputs = document.getElementById('sim-params').querySelectorAll('input[type=range]');
+    sim.params.forEach((param, i) => {
+      const saved = item.params?.[param.id];
+      if (inputs[i] && saved !== undefined) {
+        inputs[i].value = saved;
+        const valEl = document.getElementById(`val-${param.id}`);
+        if (valEl) valEl.textContent = saved + ' ' + param.unit;
+      }
+    });
+    runSim();
+    showToast(`${item.simTypeName} 기록을 불러왔습니다`);
+  });
+}
+
+// ── 유틸 ──
+function escHtml(str) {
+  if (typeof str !== 'string') str = String(str || '');
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ESC로 모달 닫기
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeSettings(); closeSimPicker(); }
+});
+
+// ── AI 기록 → 모의실험 연결 ──
+function detectSimType(item) {
+  const text = [
+    ...(item.meta?.components || []).map(c => c.name),
+    item.meta?.purpose || '',
+    item.result?.title || '',
+    item.result?.summary || '',
+  ].join(' ').toLowerCase();
+
+  if (text.includes('pwm') || (text.includes('밝기') && text.includes('제어'))) return 4;
+  if (text.includes('dht') || (text.includes('온도') && text.includes('습도'))) return 2;
+  if (text.includes('초음파') || text.includes('sr04') || text.includes('거리 측정')) return 3;
+  if (text.includes('모터') || text.includes('motor') || text.includes('dc 모터')) return 5;
+  if (text.includes('led') || text.includes('점등') || text.includes('발광')) return 0;
+  if (text.includes('저항') || text.includes('분압')) return 1;
+  return 0;
+}
+
+let _simPickerHistIdx = null;
+
+function openSimPicker(histIdx) {
+  _simPickerHistIdx = histIdx;
+  const history = getHistory();
+  const item = history[histIdx];
+  if (!item) return;
+
+  const compStr = (item.meta?.components || []).map(c => c.name).join(', ');
+  const recommended = detectSimType(item);
+
+  document.getElementById('sim-pick-sub').innerHTML =
+    `<b style="color:#e2e8f0">${escHtml(item.result?.title || '분석 결과')}</b><br>` +
+    `부품: ${escHtml(compStr)}<br>` +
+    `아래에서 연결할 모의실험을 선택하세요. <span style="color:#68d391">초록색</span>은 자동 추천입니다.`;
+
+  document.getElementById('sim-pick-grid').innerHTML = SIM_TYPES.map((s, i) => `
+    <button class="sim-pick-btn ${i === recommended ? 'recommended' : ''}"
+      onclick="pickSimFromAI(${i})">
+      ${s.name}${i === recommended ? '<span class="rec-badge">추천</span>' : ''}
+    </button>
+  `).join('');
+
+  document.getElementById('sim-pick-modal').style.display = 'flex';
+}
+
+function closeSimPicker() {
+  document.getElementById('sim-pick-modal').style.display = 'none';
+  _simPickerHistIdx = null;
+}
+
+function pickSimFromAI(simTypeIdx) {
+  closeSimPicker();
+  showView('sim');
+
+  simType = simTypeIdx;
+  simExtraParts = [];
+
+  document.querySelectorAll('.sim-type-btn').forEach((b, i) => b.classList.toggle('active', i === simType));
+  document.getElementById('sim-result-area').style.display = 'none';
+
+  renderSimParams();
+  updateExtraSelect();
+  renderExtraParts();
+
+  showToast(`${SIM_TYPES[simTypeIdx].name} 모의실험으로 이동했습니다`);
+}
+
+/* ══════════════════════════════════════════════════
+   모의실험 시스템
+══════════════════════════════════════════════════ */
+
+// ── 실험 정의 ──
+const SIM_TYPES = [
+  {
+    id: 'led',
+    name: '💡 LED 회로',
+    params: [
+      { id: 'vcc',  label: '공급 전압 (Vcc)', unit: 'V',  min: 1,   max: 12,   step: 0.1, def: 5   },
+      { id: 'vf',   label: 'LED 순방향 전압 (Vf)', unit: 'V', min: 1.5, max: 3.5, step: 0.1, def: 2.0 },
+      { id: 'r',    label: '저항 (R)',         unit: 'Ω',  min: 10,  max: 2000, step: 10,  def: 220 },
+    ],
+    availableExtra: [
+      { id:'r_series',   label:'직렬 저항 추가',   unit:'Ω',  min:10,  max:5000, def:100,  step:10,  tip:'저항값에 더해집니다. 전류가 낮아집니다.' },
+      { id:'led_series', label:'직렬 LED 추가',    unit:'V',  min:1.5, max:3.5,  def:2.0,  step:0.1, tip:'Vf(순방향전압)가 추가됩니다. LED 직렬 연결 효과.' },
+      { id:'r_parallel', label:'병렬 저항 추가',   unit:'Ω',  min:10,  max:5000, def:1000, step:10,  tip:'기존 저항과 병렬로 연결됩니다. 합성저항이 낮아집니다.' },
+      { id:'cap',        label:'커패시터 (병렬)',  unit:'μF', min:1,   max:1000, def:100,  step:1,   tip:'RC 시정수(τ=RC)를 계산합니다. LED 응답 지연 확인.' },
+    ],
+    run(p, ex = {}) {
+      let totalR = p.r + (ex.r_series || 0);
+      let totalVf = p.vf + (ex.led_series || 0);
+      if (ex.r_parallel) totalR = (totalR * ex.r_parallel) / (totalR + ex.r_parallel);
+      const vr = Math.max(0, p.vcc - totalVf);
+      const I  = vr / totalR * 1000;
+      const P  = (I / 1000) * totalVf * 1000;
+      const brightness = Math.min(1, I / 20);
+      const rc_ms = ex.cap ? (totalR * ex.cap / 1e6 * 1000) : null;
+      const rows = [];
+      for (let v = 1; v <= 12; v += 0.5) {
+        const vr2 = Math.max(0, v - totalVf);
+        const i2  = vr2 / totalR * 1000;
+        rows.push({ '전압(V)': v.toFixed(1), '전류(mA)': i2.toFixed(2), '밝기(%)': Math.min(100, (i2/20*100)).toFixed(0), '소비전력(mW)': (i2/1000*totalVf*1000).toFixed(2) });
+      }
+      const extraVals = [];
+      if (ex.r_series || ex.r_parallel) extraVals.push({ num: totalR.toFixed(1), unit: 'Ω', label: '실제 합성저항', color: '#f6ad55' });
+      if (ex.led_series) extraVals.push({ num: totalVf.toFixed(1), unit: 'V', label: '실제 전체 Vf', color: '#f6ad55' });
+      if (rc_ms) extraVals.push({ num: rc_ms.toFixed(2), unit: 'ms', label: 'RC 시정수', color: '#a0aec0' });
+      const interp = ledInterp(I, p.vcc, totalVf, totalR)
+        + (rc_ms ? `<br>💡 RC 시정수 τ = ${totalR.toFixed(0)}Ω × ${ex.cap}μF = <b>${rc_ms.toFixed(2)}ms</b> — LED 전류 응답 지연을 나타냅니다.` : '');
+      return {
+        values: [
+          { num: I.toFixed(2), unit: 'mA', label: '전류', color: '#63b3ed' },
+          { num: vr.toFixed(2), unit: 'V', label: '저항 전압강하', color: '#9f7aea' },
+          { num: P.toFixed(2), unit: 'mW', label: '소비전력', color: '#f6ad55' },
+          { num: (brightness*100).toFixed(0), unit: '%', label: '밝기', color: '#68d391' },
+          ...extraVals,
+        ],
+        rows,
+        extra: { brightness, color: '#ff4444', I, p },
+        type: 'led',
+        interpretation: interp,
+      };
+    }
+  },
+  {
+    id: 'resistor',
+    name: '⚡ 저항 회로',
+    params: [
+      { id: 'vcc', label: '전원 전압 (V)',   unit: 'V', min: 1,  max: 30, step: 0.5, def: 9 },
+      { id: 'r1',  label: '저항 R1',        unit: 'Ω', min: 10, max: 10000, step: 10, def: 1000 },
+      { id: 'r2',  label: '저항 R2',        unit: 'Ω', min: 10, max: 10000, step: 10, def: 1000 },
+    ],
+    availableExtra: [
+      { id:'r3_series',   label:'R3 저항 직렬 추가',  unit:'Ω',  min:10, max:10000, def:500,  step:10,  tip:'R1+R2에 직렬로 더해집니다. 전체 저항과 분압이 바뀝니다.' },
+      { id:'r3_parallel', label:'R3 저항 병렬 추가',  unit:'Ω',  min:10, max:10000, def:2000, step:10,  tip:'전체 직렬 저항과 병렬로 연결합니다. 합성저항이 낮아집니다.' },
+      { id:'cap',         label:'커패시터 (RC 필터)', unit:'μF', min:1,  max:1000,  def:100,  step:1,   tip:'RC 필터 차단주파수 f=1/(2πRC)를 계산합니다.' },
+    ],
+    run(p, ex = {}) {
+      const rs  = p.r1 + p.r2 + (ex.r3_series || 0);
+      let   rp  = (p.r1 * p.r2) / (p.r1 + p.r2);
+      if (ex.r3_parallel) rp = (rs * ex.r3_parallel) / (rs + ex.r3_parallel);
+      else rp = (p.r1 * p.r2) / (p.r1 + p.r2);
+      const Is  = p.vcc / rs * 1000;
+      const Ip  = p.vcc / rp * 1000;
+      const v2  = p.vcc * p.r2 / rs;
+      const fc  = ex.cap ? (1 / (2 * Math.PI * rs * ex.cap / 1e6)) : null;
+      const rows = [];
+      for (let v = 0; v <= 30; v += 1) {
+        const i = v / rs * 1000;
+        const vd = v * p.r2 / rs;
+        rows.push({ '전압(V)': v.toFixed(0), '직렬전류(mA)': i.toFixed(2), 'R2 전압(V)': vd.toFixed(2) });
+      }
+      const extraVals = [];
+      if (ex.r3_series) extraVals.push({ num: rs.toFixed(0), unit: 'Ω', label: '전체 직렬 합성', color: '#f6ad55' });
+      if (ex.r3_parallel) extraVals.push({ num: rp.toFixed(1), unit: 'Ω', label: '전체 병렬 합성', color: '#f6ad55' });
+      if (fc) extraVals.push({ num: fc.toFixed(1), unit: 'Hz', label: 'RC 차단주파수', color: '#68d391' });
+      const interp = resistorInterp(p, rs, rp, Is, v2)
+        + (ex.r3_series ? `<br>💡 R3(${ex.r3_series}Ω) 직렬 추가 → 전체 저항 ${rs}Ω, 분압 출력 ${v2.toFixed(2)}V.` : '')
+        + (fc ? `<br>💡 RC 차단주파수 f = 1/(2π×${rs}Ω×${ex.cap}μF) = <b>${fc.toFixed(0)}Hz</b> — 이 주파수 이하만 통과합니다.` : '');
+      return {
+        values: [
+          { num: rs.toFixed(0), unit: 'Ω',  label: '직렬 합성저항', color: '#63b3ed' },
+          { num: rp.toFixed(1), unit: 'Ω',  label: '병렬 합성저항', color: '#9f7aea' },
+          { num: Is.toFixed(2), unit: 'mA', label: '직렬 전류',     color: '#f6ad55' },
+          { num: Ip.toFixed(2), unit: 'mA', label: '병렬 전류',     color: '#fc8181' },
+          { num: v2.toFixed(2), unit: 'V',  label: 'R2 분압',       color: '#68d391' },
+          ...extraVals,
+        ],
+        rows,
+        extra: { p, rs, rp, Is, v2 },
+        type: 'resistor',
+        interpretation: interp,
+      };
+    }
+  },
+  {
+    id: 'dht11',
+    name: '🌡️ 온습도 센서',
+    params: [
+      { id: 'temp', label: '환경 온도 설정', unit: '°C', min: -10, max: 60, step: 1, def: 25 },
+      { id: 'hum',  label: '환경 습도 설정', unit: '%',  min: 0,   max: 100, step: 1, def: 60 },
+      { id: 'time', label: '측정 시간',     unit: '초',  min: 5,   max: 60,  step: 1, def: 20 },
+    ],
+    availableExtra: [
+      { id:'pullup',    label:'풀업 저항',           unit:'kΩ', min:1,  max:20,  def:4.7, step:0.1, tip:'데이터선 풀업 저항. DHT11 권장값: 4.7kΩ (1~10kΩ 범위).' },
+      { id:'decap',     label:'디커플링 커패시터',   unit:'μF', min:10, max:470, def:100, step:10,  tip:'전원 노이즈 필터링. 권장 100μF. 센서 가까이 배치.' },
+      { id:'noise_add', label:'추가 노이즈 배율',    unit:'배', min:1,  max:5,   def:2,   step:0.5, tip:'센서 노이즈를 배로 키워 열악한 환경을 시뮬레이션합니다.' },
+    ],
+    run(p, ex = {}) {
+      const noiseScale = ex.noise_add || 1;
+      const rows = [];
+      let sumT = 0, sumH = 0;
+      for (let t = 0; t <= p.time; t += 2) {
+        const noise_t = (Math.random() - 0.5) * 1.2 * noiseScale;
+        const noise_h = (Math.random() - 0.5) * 3 * noiseScale;
+        const T = Math.round((p.temp + noise_t) * 10) / 10;
+        const H = Math.min(100, Math.max(0, Math.round((p.hum + noise_h) * 10) / 10));
+        sumT += T; sumH += H;
+        rows.push({ '시간(초)': t, '온도(°C)': T.toFixed(1), '습도(%)': H.toFixed(1), '이슬점(°C)': dewPoint(T, H).toFixed(1) });
+      }
+      const cnt = rows.length;
+      const avgT = sumT / cnt, avgH = sumH / cnt;
+      const pullupOk = ex.pullup ? (ex.pullup >= 1 && ex.pullup <= 10) : null;
+      const extraVals = [];
+      if (ex.pullup !== undefined) extraVals.push({ num: ex.pullup.toFixed(1), unit: 'kΩ', label: `풀업저항 ${pullupOk ? '✓ 적절' : '⚠ 범위 초과'}`, color: pullupOk ? '#68d391' : '#fc8181' });
+      if (ex.decap) extraVals.push({ num: ex.decap, unit: 'μF', label: '디커플링 커패시터', color: '#9f7aea' });
+      const interp = dhtInterp(p, avgT, avgH)
+        + (ex.pullup !== undefined ? `<br>💡 풀업 ${ex.pullup}kΩ: 권장 범위(1~10kΩ) ${pullupOk ? '✓ 만족' : '⚠ 초과 — 신호 불안정 가능'}.` : '')
+        + (ex.decap ? `<br>💡 디커플링 커패시터 ${ex.decap}μF: 전원 노이즈를 필터링합니다. 반드시 센서 전원핀 가까이 배치하세요.` : '')
+        + (ex.noise_add > 1 ? `<br>💡 노이즈 ${ex.noise_add}배 적용 — 실제 열악한 환경(전자기 간섭 등)의 측정 오차를 시뮬레이션합니다.` : '');
+      return {
+        values: [
+          { num: p.temp.toFixed(1), unit: '°C', label: '설정 온도',    color: '#fc8181' },
+          { num: p.hum.toFixed(0),  unit: '%',  label: '설정 습도',    color: '#63b3ed' },
+          { num: avgT.toFixed(1),   unit: '°C', label: '측정 평균온도', color: '#f6ad55' },
+          { num: avgH.toFixed(1),   unit: '%',  label: '측정 평균습도', color: '#9f7aea' },
+          { num: dewPoint(avgT, avgH).toFixed(1), unit: '°C', label: '이슬점', color: '#68d391' },
+          ...extraVals,
+        ],
+        rows,
+        extra: { rows, p },
+        type: 'dht11',
+        interpretation: interp,
+      };
+    }
+  },
+  {
+    id: 'ultrasonic',
+    name: '📡 초음파 센서',
+    params: [
+      { id: 'dist',  label: '실제 거리',    unit: 'cm', min: 2,   max: 400, step: 1,   def: 50 },
+      { id: 'temp',  label: '현재 온도',    unit: '°C', min: -10, max: 50,  step: 1,   def: 25 },
+      { id: 'count', label: '측정 횟수',   unit: '회', min: 5,   max: 30,  step: 1,   def: 10 },
+    ],
+    availableExtra: [
+      { id:'noise_add', label:'추가 측정 노이즈',  unit:'cm', min:0.5, max:10, def:2,  step:0.5, tip:'노이즈 범위를 추가로 키웁니다. 반사면 불균일 등을 시뮬레이션.' },
+      { id:'temp_err',  label:'온도 측정 오차',    unit:'°C', min:0,   max:10, def:2,  step:0.5, tip:'온도 오차가 음속에 미치는 영향을 계산합니다.' },
+      { id:'cap_filter',label:'디커플링 커패시터', unit:'μF', min:10,  max:100, def:47, step:1,   tip:'HC-SR04 전원 안정화 커패시터 (권장: 47~100μF).' },
+    ],
+    run(p, ex = {}) {
+      const speed = 331.5 + 0.606 * p.temp;
+      const speedWithErr = 331.5 + 0.606 * (p.temp + (ex.temp_err || 0));
+      const noiseScale = 1 + (ex.noise_add ? ex.noise_add / 2 : 0);
+      const rows = [];
+      let sum = 0, minD = Infinity, maxD = 0;
+      for (let i = 1; i <= p.count; i++) {
+        const noise = (Math.random() - 0.5) * 2.0 * noiseScale;
+        const measured = Math.max(2, p.dist + noise);
+        const tof_us = (measured / 100 / speedWithErr) * 2 * 1000000;
+        sum += measured;
+        if (measured < minD) minD = measured;
+        if (measured > maxD) maxD = measured;
+        rows.push({ '측정#': i, '거리(cm)': measured.toFixed(1), 'TOF(μs)': tof_us.toFixed(0), '오차(cm)': (measured - p.dist).toFixed(1) });
+      }
+      const avg = sum / p.count;
+      const speedDiff = Math.abs(speedWithErr - speed);
+      const extraVals = [];
+      if (ex.noise_add) extraVals.push({ num: (maxD - minD).toFixed(1), unit: 'cm', label: '실제 오차 범위', color: '#fc8181' });
+      if (ex.temp_err) extraVals.push({ num: speedDiff.toFixed(2), unit: 'm/s', label: '온도 오차 → 음속 영향', color: '#f6ad55' });
+      if (ex.cap_filter) extraVals.push({ num: ex.cap_filter, unit: 'μF', label: '전원 필터 커패시터', color: '#9f7aea' });
+      const interp = ultrasonicInterp(p, avg, speed)
+        + (ex.temp_err ? `<br>💡 온도 오차 ±${ex.temp_err}°C → 음속 오차 ±${(0.606 * ex.temp_err).toFixed(2)}m/s → 거리 오차 ±${(p.dist / speed * 0.606 * ex.temp_err).toFixed(2)}cm.` : '')
+        + (ex.cap_filter ? `<br>💡 커패시터 ${ex.cap_filter}μF: HC-SR04 전원 핀에 연결하여 측정 불안정을 줄입니다.` : '');
+      return {
+        values: [
+          { num: avg.toFixed(1),           unit: 'cm',  label: '평균 거리',    color: '#63b3ed' },
+          { num: (maxD - minD).toFixed(1), unit: 'cm',  label: '측정 오차범위', color: '#fc8181' },
+          { num: speed.toFixed(1),         unit: 'm/s', label: '음속',         color: '#9f7aea' },
+          { num: ((avg/100/speed)*2*1e6).toFixed(0), unit: 'μs', label: 'TOF', color: '#68d391' },
+          ...extraVals,
+        ],
+        rows,
+        extra: { avg, p, speed },
+        type: 'ultrasonic',
+        interpretation: interp,
+      };
+    }
+  },
+  {
+    id: 'pwm',
+    name: '🔵 PWM 밝기제어',
+    params: [
+      { id: 'duty',  label: '듀티 사이클', unit: '%',  min: 0,   max: 100, step: 1,  def: 50 },
+      { id: 'freq',  label: '주파수',      unit: 'Hz', min: 100, max: 5000, step: 100, def: 1000 },
+      { id: 'vcc',   label: '공급 전압',   unit: 'V',  min: 3,   max: 12,  step: 0.5, def: 5 },
+    ],
+    availableExtra: [
+      { id:'r_out',      label:'출력 저항 (RC 필터)', unit:'Ω',  min:100,  max:10000, def:1000, step:100, tip:'커패시터와 함께 저역통과 필터를 만듭니다.' },
+      { id:'cap_filter', label:'커패시터 (RC 필터)',  unit:'μF', min:1,    max:1000,  def:10,   step:1,   tip:'RC 필터 차단주파수 f=1/(2πRC)를 계산합니다.' },
+      { id:'load_r',     label:'부하 저항',           unit:'Ω',  min:10,   max:10000, def:100,  step:10,  tip:'LED나 모터 등 부하에 의한 출력 전압 강하를 계산합니다.' },
+    ],
+    run(p, ex = {}) {
+      const vavg = p.vcc * p.duty / 100;
+      const period = 1 / p.freq * 1000;
+      const ton = period * p.duty / 100;
+      const toff = period - ton;
+      const fc = (ex.r_out && ex.cap_filter) ? (1 / (2 * Math.PI * ex.r_out * ex.cap_filter / 1e6)) : null;
+      const vload = ex.load_r ? (vavg * ex.load_r / (ex.load_r + (ex.r_out || 0))) : null;
+      const rows = [];
+      for (let i = 0; i <= 20; i++) {
+        const dc = i * 5;
+        rows.push({ '듀티사이클(%)': dc, '평균전압(V)': (p.vcc * dc / 100).toFixed(2), '밝기(%)': dc, 'ON시간(ms)': (period * dc / 100).toFixed(3) });
+      }
+      const extraVals = [];
+      if (fc) extraVals.push({ num: fc.toFixed(0), unit: 'Hz', label: 'RC 차단주파수', color: '#f6ad55' });
+      if (vload !== null) extraVals.push({ num: vload.toFixed(2), unit: 'V', label: '부하 출력전압', color: '#68d391' });
+      const interp = pwmInterp(p, vavg)
+        + (fc ? `<br>💡 RC 필터 차단주파수 f = 1/(2π×${ex.r_out}Ω×${ex.cap_filter}μF) = <b>${fc.toFixed(0)}Hz</b>. ${p.freq}Hz 신호는 이 필터를 ${p.freq > fc ? '⚠ 감쇠합니다' : '✓ 통과합니다'}.` : '')
+        + (vload !== null ? `<br>💡 부하 저항 ${ex.load_r}Ω: 분압으로 인해 실제 출력 전압 ${vload.toFixed(2)}V (평균 ${vavg.toFixed(2)}V에서 강하).` : '');
+      return {
+        values: [
+          { num: vavg.toFixed(2),       unit: 'V',  label: '평균 출력전압', color: '#63b3ed' },
+          { num: p.duty.toFixed(0),     unit: '%',  label: '밝기',          color: '#f6ad55' },
+          { num: period.toFixed(2),     unit: 'ms', label: '주기',           color: '#9f7aea' },
+          { num: ton.toFixed(2),        unit: 'ms', label: 'ON 시간',        color: '#68d391' },
+          { num: toff.toFixed(2),       unit: 'ms', label: 'OFF 시간',       color: '#fc8181' },
+          ...extraVals,
+        ],
+        rows,
+        extra: { duty: p.duty, vcc: p.vcc, period },
+        type: 'pwm',
+        interpretation: interp,
+      };
+    }
+  },
+  {
+    id: 'motor',
+    name: '⚙️ DC 모터',
+    params: [
+      { id: 'volt',  label: '공급 전압',    unit: 'V',   min: 1.5, max: 12, step: 0.5, def: 6 },
+      { id: 'kv',    label: 'KV 계수 (RPM/V)', unit: '',  min: 100, max: 2000, step: 50, def: 300 },
+      { id: 'load',  label: '부하율',       unit: '%',   min: 0,   max: 100, step: 5,  def: 30 },
+    ],
+    availableExtra: [
+      { id:'r_coil',    label:'코일 저항',         unit:'Ω',  min:0.1, max:10,  def:1.5, step:0.1, tip:'모터 내부 코일 저항. 실제 인가 전압이 낮아집니다.' },
+      { id:'driver_r',  label:'드라이버 저항',     unit:'Ω',  min:0.1, max:5,   def:0.5, step:0.1, tip:'L298N 등 모터 드라이버의 내부 저항에 의한 전압 강하.' },
+      { id:'cap_back',  label:'역기전력 커패시터', unit:'μF', min:10,  max:100, def:47,  step:1,   tip:'모터 정지 시 역기전력 차단. 아두이노 보호에 필수.' },
+    ],
+    run(p, ex = {}) {
+      const totalDropR = (ex.r_coil || 0) + (ex.driver_r || 0);
+      const current = 0.1 + (p.load / 100) * (p.volt / 3);
+      const vDrop = totalDropR * current;
+      const effVolt = Math.max(0, p.volt - vDrop);
+      const rpm = effVolt * p.kv * (1 - p.load / 100 * 0.5);
+      const power = p.volt * current;
+      const eff = (1 - p.load / 100 * 0.3) * 100;
+      const rows = [];
+      for (let v = 0; v <= 12; v += 0.5) {
+        const c = 0.1 + (p.load / 100) * (v / 3);
+        const drop = totalDropR * c;
+        const ev = Math.max(0, v - drop);
+        const r = ev * p.kv * (1 - p.load / 100 * 0.5);
+        rows.push({ '전압(V)': v.toFixed(1), 'RPM': Math.max(0, r).toFixed(0), '전류(A)': c.toFixed(2), '전력(W)': (v * c).toFixed(2) });
+      }
+      const extraVals = [];
+      if (totalDropR > 0) {
+        extraVals.push({ num: effVolt.toFixed(2), unit: 'V',  label: '실제 인가 전압', color: '#f6ad55' });
+        extraVals.push({ num: vDrop.toFixed(2),   unit: 'V',  label: '저항 전압 강하', color: '#fc8181' });
+      }
+      if (ex.cap_back) extraVals.push({ num: ex.cap_back, unit: 'μF', label: '역기전력 커패시터', color: '#9f7aea' });
+      const interp = motorInterp(p, rpm, current, power)
+        + (totalDropR > 0 ? `<br>💡 코일+드라이버 저항 합계 ${totalDropR.toFixed(1)}Ω → 전압 강하 ${vDrop.toFixed(2)}V → 실제 인가전압 <b>${effVolt.toFixed(2)}V</b>.` : '')
+        + (ex.cap_back ? `<br>💡 역기전력 커패시터 ${ex.cap_back}μF: 모터 정지 시 발생하는 역기전력을 흡수해 아두이노 손상을 방지합니다.` : '');
+      return {
+        values: [
+          { num: rpm.toFixed(0),     unit: 'RPM', label: '회전수',   color: '#63b3ed' },
+          { num: current.toFixed(2), unit: 'A',   label: '전류',     color: '#fc8181' },
+          { num: power.toFixed(2),   unit: 'W',   label: '소비전력', color: '#f6ad55' },
+          { num: eff.toFixed(0),     unit: '%',   label: '효율',     color: '#68d391' },
+          ...extraVals,
+        ],
+        rows,
+        extra: { rpm, p },
+        type: 'motor',
+        interpretation: interp,
+      };
+    }
+  },
+];
+
+// 해석 함수들
+function ledInterp(I, vcc, vf, r) {
+  const lines = [];
+  if (vcc <= vf) lines.push('⚠️ 공급 전압이 LED 순방향 전압보다 낮아 LED가 점등되지 않습니다.');
+  else if (I < 1) lines.push('전류가 너무 낮습니다 (1mA 미만). LED가 거의 보이지 않습니다. 저항값을 낮추세요.');
+  else if (I > 30) lines.push('⚠️ 전류가 30mA를 초과합니다! LED가 손상될 위험이 있습니다. 저항을 높이세요.');
+  else if (I >= 5 && I <= 20) lines.push(`전류 ${I.toFixed(1)}mA는 일반 LED의 권장 범위(5~20mA)입니다. 회로가 안정적으로 동작합니다.`);
+  else lines.push(`전류 ${I.toFixed(1)}mA로 동작 중입니다. 권장 범위(5~20mA)를 참고하세요.`);
+  lines.push(`옴의 법칙 계산: I = (${vcc}V - ${vf}V) ÷ ${r}Ω = ${I.toFixed(2)}mA`);
+  lines.push(`권장 저항값 (20mA 기준): R = (${vcc}V - ${vf}V) ÷ 0.02A = ${Math.round((vcc-vf)/0.02)}Ω`);
+  return lines.join('<br>');
+}
+
+function resistorInterp(p, rs, rp, Is, v2) {
+  return [
+    `직렬 연결: 합성저항 = R1 + R2 = ${p.r1}Ω + ${p.r2}Ω = ${rs}Ω`,
+    `병렬 연결: 합성저항 = (R1 × R2) ÷ (R1 + R2) = ${rp.toFixed(1)}Ω`,
+    `직렬 회로 전류: I = ${p.vcc}V ÷ ${rs}Ω = ${Is.toFixed(2)}mA`,
+    `R2 분압 전압: Vout = ${p.vcc}V × ${p.r2}Ω ÷ ${rs}Ω = ${v2.toFixed(2)}V`,
+    `💡 분압 회로는 센서의 기준 전압, 아날로그 입력 레벨 조정 등에 활용됩니다.`,
+  ].join('<br>');
+}
+
+function dewPoint(T, H) {
+  const a = 17.27, b = 237.7;
+  const alpha = (a * T) / (b + T) + Math.log(H / 100);
+  return (b * alpha) / (a - alpha);
+}
+
+function dhtInterp(p, avgT, avgH) {
+  const dp = dewPoint(avgT, avgH);
+  const comfort = avgT >= 20 && avgT <= 26 && avgH >= 40 && avgH <= 60 ? '쾌적한 환경' : '불쾌한 환경';
+  return [
+    `DHT11 센서 정확도: 온도 ±2°C, 습도 ±5% (시뮬레이션 오차 반영)`,
+    `측정 주기: 2초 (DHT11 최소 샘플링 간격 준수)`,
+    `이슬점 ${dp.toFixed(1)}°C: 온도가 이슬점 이하로 내려가면 결로가 발생합니다.`,
+    `현재 환경 판단: ${comfort} (쾌적 기준: 20~26°C, 습도 40~60%)`,
+    `아두이노 읽기 함수: float t = dht.readTemperature(); float h = dht.readHumidity();`,
+  ].join('<br>');
+}
+
+function ultrasonicInterp(p, avg, speed) {
+  return [
+    `음속 계산: v = 331.5 + 0.606 × ${p.temp}°C = ${speed.toFixed(1)} m/s`,
+    `거리 계산식: d = (TOF × 음속) ÷ 2  (왕복 시간이므로 2로 나눔)`,
+    `HC-SR04 측정 범위: 2cm ~ 400cm`,
+    `평균 측정값 ${avg.toFixed(1)}cm는 설정값 ${p.dist}cm와 ${Math.abs(avg - p.dist).toFixed(1)}cm 차이입니다.`,
+    `아두이노 코드: digitalWrite(TRIG, HIGH); delayMicroseconds(10); long duration = pulseIn(ECHO, HIGH); float dist = duration * 0.034 / 2;`,
+  ].join('<br>');
+}
+
+function pwmInterp(p, vavg) {
+  return [
+    `PWM 원리: 디지털 신호를 빠르게 ON/OFF하여 평균 전압을 조절합니다.`,
+    `듀티 사이클 ${p.duty}% → 평균 출력전압 ${vavg.toFixed(2)}V (${p.vcc}V × ${p.duty}% ÷ 100)`,
+    `아두이노 PWM: analogWrite(pin, ${Math.round(p.duty * 2.55)}) (0~255 범위로 변환)`,
+    `주파수 ${p.freq}Hz: 인간의 눈은 약 50Hz 이상에서 깜빡임을 느끼지 못합니다.`,
+    `LED 밝기 제어, 모터 속도 제어, 가열 제어 등 다양한 분야에 활용됩니다.`,
+  ].join('<br>');
+}
+
+function motorInterp(p, rpm, current, power) {
+  return [
+    `무부하 RPM = ${p.volt}V × KV ${p.kv} = ${(p.volt * p.kv).toFixed(0)} RPM`,
+    `부하 ${p.load}% 적용 후 실제 RPM: ${rpm.toFixed(0)} RPM`,
+    `소비전력: P = ${p.volt}V × ${current.toFixed(2)}A = ${power.toFixed(2)}W`,
+    `주의: 부하가 클수록 전류가 증가하며, 모터 드라이버(L298N 등) 최대 전류를 초과하지 않도록 확인하세요.`,
+    `L298N 드라이버: 최대 2A/채널. 현재 전류 ${current.toFixed(2)}A ${current > 2 ? '⚠️ 초과!' : '✓ 안전'}`,
+  ].join('<br>');
+}
+
+// ── 상태 ──
+let simType = 0;
+let simResult = null;
+let simExtraParts = []; // [{ id, label, unit, value }, ...]
+
+function initSim() {
+  const tabs = document.getElementById('sim-type-tabs');
+  tabs.innerHTML = SIM_TYPES.map((s, i) => `
+    <button class="sim-type-btn ${i === 0 ? 'active' : ''}" onclick="selectSimType(${i})">${s.name}</button>
+  `).join('');
+  renderSimParams();
+  updateExtraSelect();
+  renderExtraParts();
+}
+
+function selectSimType(i) {
+  simType = i;
+  simExtraParts = [];
+  document.querySelectorAll('.sim-type-btn').forEach((b, idx) => b.classList.toggle('active', idx === i));
+  document.getElementById('sim-result-area').style.display = 'none';
+  renderSimParams();
+  updateExtraSelect();
+  renderExtraParts();
+}
+
+function renderSimParams() {
+  const sim = SIM_TYPES[simType];
+  document.getElementById('sim-param-title').textContent = sim.name.replace(/./u, '').trim() + ' 파라미터';
+  document.getElementById('sim-params').innerHTML = sim.params.map(p => `
+    <div class="sim-param-row">
+      <div class="sim-param-label">
+        <span>${p.label}</span>
+        <span class="val" id="val-${p.id}">${p.def} ${p.unit}</span>
+      </div>
+      <input type="range" min="${p.min}" max="${p.max}" step="${p.step}" value="${p.def}"
+        oninput="document.getElementById('val-${p.id}').textContent = this.value + ' ${p.unit}'">
+    </div>
+  `).join('');
+}
+
+function getSimParams() {
+  const sim = SIM_TYPES[simType];
+  const p = {};
+  sim.params.forEach((param, i) => {
+    const inputs = document.getElementById('sim-params').querySelectorAll('input[type=range]');
+    p[param.id] = parseFloat(inputs[i].value);
+  });
+  return p;
+}
+
+function runSim() {
+  const p = getSimParams();
+  const ex = getExtraParamsObj();
+  const sim = SIM_TYPES[simType];
+  simResult = sim.run(p, ex);
+  renderSimResult(simResult);
+  document.getElementById('sim-result-area').style.display = 'block';
+  document.getElementById('sim-result-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function renderSimResult(r) {
+  // 수치 값
+  document.getElementById('sim-values').innerHTML = `
+    <div class="sim-value-grid">
+      ${r.values.map(v => `
+        <div class="sim-value-box">
+          <div class="sim-value-num" style="color:${v.color}">${v.num}<span style="font-size:1rem"> ${v.unit}</span></div>
+          <div class="sim-value-label">${v.label}</div>
+        </div>`).join('')}
+    </div>`;
+
+  // 테이블
+  if (r.rows.length > 0) {
+    const keys = Object.keys(r.rows[0]);
+    document.getElementById('sim-table-head').innerHTML = `<tr>${keys.map(k => `<th>${k}</th>`).join('')}</tr>`;
+    document.getElementById('sim-table-body').innerHTML = r.rows.map(row =>
+      `<tr>${keys.map(k => `<td>${row[k]}</td>`).join('')}</tr>`
+    ).join('');
+  }
+
+  // 해석
+  document.getElementById('sim-interpretation').innerHTML = r.interpretation;
+
+  // 시각화
+  drawSimCanvas(r);
+}
+
+function drawSimCanvas(r) {
+  const canvas = document.getElementById('sim-canvas');
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.parentElement.clientWidth;
+  const H = Math.min(280, W * 0.45);
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+
+  if (r.type === 'led') drawLEDViz(ctx, W, H, r.extra);
+  else if (r.type === 'resistor') drawResistorViz(ctx, W, H, r.extra);
+  else if (r.type === 'dht11') drawLineChart(ctx, W, H, r.rows, '시간(초)', '온도(°C)', '#fc8181', '습도(%)', '#63b3ed');
+  else if (r.type === 'ultrasonic') drawBarChart(ctx, W, H, r.rows, '측정#', '거리(cm)', '#63b3ed');
+  else if (r.type === 'pwm') drawPWMWave(ctx, W, H, r.extra);
+  else if (r.type === 'motor') drawLineChart(ctx, W, H, r.rows, '전압(V)', 'RPM', '#63b3ed', '전류(A)', '#fc8181');
+}
+
+function drawLEDViz(ctx, W, H, ex) {
+  // 배경
+  ctx.fillStyle = '#0f1117';
+  ctx.fillRect(0, 0, W, H);
+
+  const b = ex.brightness;
+  const cx = W / 2, cy = H / 2;
+  const r = Math.min(H, W) * 0.22;
+
+  // 빛 퍼짐
+  if (b > 0.05) {
+    const grd = ctx.createRadialGradient(cx, cy, r * 0.5, cx, cy, r * 3.5);
+    grd.addColorStop(0, `rgba(255,68,68,${b * 0.5})`);
+    grd.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grd;
+    ctx.beginPath(); ctx.arc(cx, cy, r * 3.5, 0, Math.PI * 2); ctx.fill();
+  }
+
+  // LED 몸체
+  const ledColor = `rgba(255,68,68,${0.2 + b * 0.8})`;
+  ctx.fillStyle = ledColor;
+  ctx.strokeStyle = b > 0.1 ? '#ff4444' : '#4a5568';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+  // 단자
+  ctx.strokeStyle = '#718096'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(cx - r * 0.4, cy + r); ctx.lineTo(cx - r * 0.4, cy + r + 24); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx + r * 0.4, cy + r); ctx.lineTo(cx + r * 0.4, cy + r + 18); ctx.stroke();
+
+  // 텍스트
+  ctx.fillStyle = '#a0aec0'; ctx.font = '13px Segoe UI'; ctx.textAlign = 'center';
+  ctx.fillText(`${(ex.I).toFixed(1)} mA`, cx, H - 12);
+  ctx.fillText(`밝기 ${(b * 100).toFixed(0)}%`, cx, 20);
+}
+
+function drawResistorViz(ctx, W, H, ex) {
+  ctx.fillStyle = '#0f1117'; ctx.fillRect(0, 0, W, H);
+  const pad = 40, bw = (W - pad * 3) / 2, bh = H - 80;
+
+  // 직렬
+  const x1 = pad, y1 = 40;
+  ctx.fillStyle = '#1a253d'; ctx.strokeStyle = '#63b3ed'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.roundRect(x1, y1, bw, bh, 8); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#63b3ed'; ctx.font = 'bold 14px Segoe UI'; ctx.textAlign = 'center';
+  ctx.fillText('직렬', x1 + bw/2, y1 + 24);
+  ctx.fillStyle = '#e2e8f0'; ctx.font = '13px Segoe UI';
+  ctx.fillText(`R합성 = ${ex.rs.toFixed(0)}Ω`, x1 + bw/2, y1 + 50);
+  ctx.fillText(`I = ${ex.Is.toFixed(2)} mA`, x1 + bw/2, y1 + 72);
+  ctx.fillText(`Vout = ${ex.v2.toFixed(2)} V`, x1 + bw/2, y1 + 94);
+
+  // 병렬
+  const x2 = pad * 2 + bw;
+  ctx.fillStyle = '#2d1b69'; ctx.strokeStyle = '#9f7aea'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.roundRect(x2, y1, bw, bh, 8); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#b794f4'; ctx.font = 'bold 14px Segoe UI';
+  ctx.fillText('병렬', x2 + bw/2, y1 + 24);
+  ctx.fillStyle = '#e2e8f0'; ctx.font = '13px Segoe UI';
+  ctx.fillText(`R합성 = ${ex.rp.toFixed(1)}Ω`, x2 + bw/2, y1 + 50);
+  const Ip = ex.p.vcc / ex.rp * 1000;
+  ctx.fillText(`I = ${Ip.toFixed(2)} mA`, x2 + bw/2, y1 + 72);
+  ctx.fillText(`(직렬의 ${(ex.rp/ex.rs*100).toFixed(0)}%)`, x2 + bw/2, y1 + 94);
+}
+
+function drawLineChart(ctx, W, H, rows, xKey, y1Key, c1, y2Key, c2) {
+  ctx.fillStyle = '#0f1117'; ctx.fillRect(0, 0, W, H);
+  const pad = { l: 50, r: 20, t: 20, b: 36 };
+  const cw = W - pad.l - pad.r, ch = H - pad.t - pad.b;
+
+  const xs = rows.map(r => parseFloat(r[xKey]));
+  const y1s = rows.map(r => parseFloat(r[y1Key]));
+  const y2s = y2Key ? rows.map(r => parseFloat(r[y2Key])) : [];
+
+  const xMin = Math.min(...xs), xMax = Math.max(...xs);
+  const allY = [...y1s, ...y2s];
+  const yMin = Math.min(...allY) * 0.9, yMax = Math.max(...allY) * 1.1;
+
+  const px = x => pad.l + (x - xMin) / (xMax - xMin || 1) * cw;
+  const py = y => pad.t + ch - (y - yMin) / (yMax - yMin || 1) * ch;
+
+  // 그리드
+  ctx.strokeStyle = '#2d3250'; ctx.lineWidth = 1;
+  for (let i = 0; i <= 5; i++) {
+    const y = pad.t + ch * i / 5;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l + cw, y); ctx.stroke();
+    const val = yMax - (yMax - yMin) * i / 5;
+    ctx.fillStyle = '#4a5568'; ctx.font = '10px Segoe UI'; ctx.textAlign = 'right';
+    ctx.fillText(val.toFixed(1), pad.l - 4, y + 4);
+  }
+
+  // 선 그리기 함수
+  function drawLine(ys, color) {
+    ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.lineJoin = 'round';
+    ctx.beginPath();
+    ys.forEach((y, i) => i === 0 ? ctx.moveTo(px(xs[i]), py(y)) : ctx.lineTo(px(xs[i]), py(y)));
+    ctx.stroke();
+    // 점
+    ys.forEach((y, i) => {
+      ctx.fillStyle = color; ctx.beginPath(); ctx.arc(px(xs[i]), py(y), 3, 0, Math.PI * 2); ctx.fill();
+    });
+  }
+  drawLine(y1s, c1);
+  if (y2s.length) drawLine(y2s, c2);
+
+  // X 라벨
+  ctx.fillStyle = '#718096'; ctx.font = '10px Segoe UI'; ctx.textAlign = 'center';
+  rows.forEach((r, i) => {
+    if (i % Math.ceil(rows.length / 6) === 0)
+      ctx.fillText(r[xKey], px(xs[i]), H - 6);
+  });
+  ctx.fillText(xKey, W / 2, H - 0);
+
+  // 범례
+  ctx.fillStyle = c1; ctx.fillRect(pad.l, 6, 12, 8);
+  ctx.fillStyle = '#a0aec0'; ctx.font = '10px Segoe UI'; ctx.textAlign = 'left';
+  ctx.fillText(y1Key, pad.l + 16, 14);
+  if (y2Key) {
+    ctx.fillStyle = c2; ctx.fillRect(pad.l + 80, 6, 12, 8);
+    ctx.fillStyle = '#a0aec0'; ctx.fillText(y2Key, pad.l + 96, 14);
+  }
+}
+
+function drawBarChart(ctx, W, H, rows, xKey, yKey, color) {
+  ctx.fillStyle = '#0f1117'; ctx.fillRect(0, 0, W, H);
+  const pad = { l: 50, r: 20, t: 30, b: 36 };
+  const cw = W - pad.l - pad.r, ch = H - pad.t - pad.b;
+  const vals = rows.map(r => parseFloat(r[yKey]));
+  const yMax = Math.max(...vals) * 1.1;
+  const barW = cw / rows.length * 0.7;
+
+  ctx.strokeStyle = '#2d3250'; ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.t + ch * i / 4;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l + cw, y); ctx.stroke();
+    ctx.fillStyle = '#4a5568'; ctx.font = '10px Segoe UI'; ctx.textAlign = 'right';
+    ctx.fillText((yMax * (1 - i/4)).toFixed(1), pad.l - 4, y + 4);
+  }
+
+  rows.forEach((r, i) => {
+    const val = parseFloat(r[yKey]);
+    const x = pad.l + (i + 0.5) / rows.length * cw - barW / 2;
+    const bh = val / yMax * ch;
+    const y = pad.t + ch - bh;
+    ctx.fillStyle = color + '99';
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.roundRect(x, y, barW, bh, 3); ctx.fill(); ctx.stroke();
+    if (rows.length <= 15) {
+      ctx.fillStyle = '#718096'; ctx.font = '9px Segoe UI'; ctx.textAlign = 'center';
+      ctx.fillText(r[xKey], x + barW / 2, H - 6);
+    }
+  });
+  ctx.fillStyle = '#718096'; ctx.font = '10px Segoe UI'; ctx.textAlign = 'center';
+  ctx.fillText(yKey, W / 2, 16);
+}
+
+function drawPWMWave(ctx, W, H, ex) {
+  ctx.fillStyle = '#0f1117'; ctx.fillRect(0, 0, W, H);
+  const pad = { l: 50, r: 20, t: 30, b: 36 };
+  const cw = W - pad.l - pad.r, ch = H - pad.t - pad.b;
+  const cycles = 4;
+  const duty = ex.duty / 100;
+
+  ctx.strokeStyle = '#2d3250'; ctx.lineWidth = 1;
+  [0, 0.5, 1].forEach(f => {
+    const y = pad.t + ch * (1 - f);
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l + cw, y); ctx.stroke();
+    ctx.fillStyle = '#4a5568'; ctx.font = '10px Segoe UI'; ctx.textAlign = 'right';
+    ctx.fillText((ex.vcc * f).toFixed(1) + 'V', pad.l - 4, y + 4);
+  });
+
+  const high_y = pad.t;
+  const low_y = pad.t + ch;
+  const cyW = cw / cycles;
+
+  ctx.strokeStyle = '#63b3ed'; ctx.lineWidth = 2.5; ctx.lineJoin = 'round';
+  ctx.beginPath();
+  for (let c = 0; c < cycles; c++) {
+    const x0 = pad.l + c * cyW;
+    const xOn = x0 + cyW * duty;
+    if (c === 0) ctx.moveTo(x0, high_y);
+    ctx.lineTo(xOn, high_y);
+    ctx.lineTo(xOn, low_y);
+    ctx.lineTo(x0 + cyW, low_y);
+    if (c < cycles - 1) ctx.lineTo(x0 + cyW, high_y);
+  }
+  ctx.stroke();
+
+  // 평균선
+  const avg_y = pad.t + ch * (1 - duty);
+  ctx.setLineDash([5, 4]); ctx.strokeStyle = '#f6ad5540'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(pad.l, avg_y); ctx.lineTo(pad.l + cw, avg_y); ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.fillStyle = '#f6ad55'; ctx.font = '11px Segoe UI'; ctx.textAlign = 'right';
+  ctx.fillText(`평균 ${(ex.vcc * duty).toFixed(2)}V`, pad.l + cw, avg_y - 4);
+
+  ctx.fillStyle = '#718096'; ctx.font = '10px Segoe UI'; ctx.textAlign = 'center';
+  ctx.fillText(`듀티 ${ex.duty}% / 주기 ${ex.period.toFixed(2)}ms`, W / 2, H - 6);
+}
+
+// ── 추가 부품 관리 ──
+function updateExtraSelect() {
+  const sim = SIM_TYPES[simType];
+  const sel = document.getElementById('extra-part-select');
+  sel.innerHTML = '<option value="">-- 부품 선택 --</option>'
+    + (sim.availableExtra || []).map(p =>
+        `<option value="${p.id}">${p.label} (${p.unit})</option>`
+      ).join('');
+  document.getElementById('extra-val-label').textContent = '값';
+  document.getElementById('extra-part-unit').textContent = '';
+  document.getElementById('extra-part-tip').textContent = '';
+  document.getElementById('extra-part-value').value = '';
+}
+
+function onExtraSelectChange() {
+  const sel = document.getElementById('extra-part-select');
+  if (!sel.value) {
+    document.getElementById('extra-part-unit').textContent = '';
+    document.getElementById('extra-part-tip').textContent = '';
+    document.getElementById('extra-part-value').value = '';
+    return;
+  }
+  const sim = SIM_TYPES[simType];
+  const part = sim.availableExtra.find(p => p.id === sel.value);
+  if (!part) return;
+  const valInput = document.getElementById('extra-part-value');
+  valInput.value = part.def;
+  valInput.min = part.min;
+  valInput.max = part.max;
+  valInput.step = part.step || 'any';
+  document.getElementById('extra-part-unit').textContent = part.unit;
+  document.getElementById('extra-part-tip').textContent = '💡 ' + part.tip;
+}
+
+function addExtraPart() {
+  const sel = document.getElementById('extra-part-select');
+  if (!sel.value) { showToast('부품을 선택하세요'); return; }
+  const val = parseFloat(document.getElementById('extra-part-value').value);
+  if (isNaN(val)) { showToast('값을 입력하세요'); return; }
+  const sim = SIM_TYPES[simType];
+  const part = sim.availableExtra.find(p => p.id === sel.value);
+  if (!part) return;
+  // 같은 부품은 덮어쓰기
+  simExtraParts = simExtraParts.filter(p => p.id !== part.id);
+  simExtraParts.push({ id: part.id, label: part.label, unit: part.unit, value: val });
+  renderExtraParts();
+  showToast(`${part.label} 추가됨 (${val} ${part.unit})`);
+}
+
+function removeExtraPart(id) {
+  simExtraParts = simExtraParts.filter(p => p.id !== id);
+  renderExtraParts();
+}
+
+function renderExtraParts() {
+  const el = document.getElementById('sim-extra-list');
+  if (!el) return;
+  if (simExtraParts.length === 0) {
+    el.innerHTML = '<div class="extra-empty">추가된 부품이 없습니다</div>';
+    return;
+  }
+  el.innerHTML = simExtraParts.map(p => `
+    <span class="extra-part-tag">
+      ${p.label}
+      <span class="ep-val">${p.value} ${p.unit}</span>
+      <button class="btn-icon danger" onclick="removeExtraPart('${p.id}')"
+        style="width:20px;height:20px;font-size:0.7rem;margin-left:2px">✕</button>
+    </span>
+  `).join('');
+}
+
+function getExtraParamsObj() {
+  const ex = {};
+  simExtraParts.forEach(p => { ex[p.id] = p.value; });
+  return ex;
+}
+
+// CSV 내보내기
+function exportCSV() {
+  if (!simResult || !simResult.rows.length) return;
+  const keys = Object.keys(simResult.rows[0]);
+  const csv = [keys.join(','), ...simResult.rows.map(r => keys.map(k => r[k]).join(','))].join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `circuitmind_sim_${SIM_TYPES[simType].id}_${Date.now()}.csv`;
+  a.click();
+  showToast('CSV 파일이 저장되었습니다');
+}
+
+// 시뮬레이션 탭 진입 시 초기화
+const origShowView = showView;
+window.showView = function(name) {
+  origShowView(name);
+  if (name === 'sim' && !document.getElementById('sim-type-tabs').children.length) {
+    initSim();
+  }
+};
+
+/* ══════════════════════════════════════════════════
+   실시간 연결 시스템 (Web Serial API)
+══════════════════════════════════════════════════ */
+
+const ARDUINO_CODES = {
+  dht11:
+`#include <DHT.h>
+#define DHTPIN 2
+#define DHTTYPE DHT11
+DHT dht(DHTPIN, DHTTYPE);
+
+void setup() {
+  Serial.begin(115200);
+  dht.begin();
+}
+
+void loop() {
+  float t = dht.readTemperature();
+  float h = dht.readHumidity();
+  if (!isnan(t) && !isnan(h)) {
+    Serial.print("temp:"); Serial.print(t, 1);
+    Serial.print(",hum:");  Serial.println(h, 1);
+  }
+  delay(2000);
+}`,
+
+  ultrasonic:
+`#define TRIG 9
+#define ECHO 10
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(TRIG, OUTPUT);
+  pinMode(ECHO, INPUT);
+}
+
+void loop() {
+  digitalWrite(TRIG, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG, LOW);
+  long dur = pulseIn(ECHO, HIGH);
+  float dist = dur * 0.034 / 2.0;
+  Serial.print("dist:"); Serial.println(dist, 1);
+  delay(200);
+}`,
+
+  ldr:
+`#define LDR_PIN A0
+
+void setup() { Serial.begin(115200); }
+
+void loop() {
+  int raw = analogRead(LDR_PIN);
+  float lux = map(raw, 0, 1023, 0, 1000);
+  Serial.print("light:"); Serial.println(lux);
+  delay(500);
+}`,
+
+  pot:
+`#define POT_PIN A0
+
+void setup() { Serial.begin(115200); }
+
+void loop() {
+  int raw = analogRead(POT_PIN);
+  float volt = raw * (5.0 / 1023.0);
+  Serial.print("raw:");  Serial.print(raw);
+  Serial.print(",volt:"); Serial.println(volt, 2);
+  delay(100);
+}`,
+
+  multi:
+`#include <DHT.h>
+#define DHTPIN 2
+#define DHTTYPE DHT11
+DHT dht(DHTPIN, DHTTYPE);
+#define LDR_PIN A0
+#define TRIG 9
+#define ECHO 10
+
+void setup() {
+  Serial.begin(115200);
+  dht.begin();
+  pinMode(TRIG, OUTPUT);
+  pinMode(ECHO, INPUT);
+}
+
+void loop() {
+  float t = dht.readTemperature();
+  float h = dht.readHumidity();
+  int light = analogRead(LDR_PIN);
+  digitalWrite(TRIG, LOW); delayMicroseconds(2);
+  digitalWrite(TRIG, HIGH); delayMicroseconds(10);
+  digitalWrite(TRIG, LOW);
+  float dist = pulseIn(ECHO, HIGH) * 0.034 / 2.0;
+
+  Serial.print("{");
+  Serial.print("\\"temp\\":"); Serial.print(t, 1);  Serial.print(",");
+  Serial.print("\\"hum\\":");  Serial.print(h, 1);  Serial.print(",");
+  Serial.print("\\"light\\":"); Serial.print(light); Serial.print(",");
+  Serial.print("\\"dist\\":"); Serial.print(dist, 1);
+  Serial.println("}");
+  delay(1000);
+}`
+};
+
+// ── 상태 ──
+let rtPort = null;
+let rtReader = null;
+let rtConnected = false;
+let rtLog = [];        // [{time, ts, raw, parsed}]
+let rtKeys = [];
+let rtChartTimer = null;
+let rtBuffer = '';
+let rtInitialized = false;
+
+function initRealtime() {
+  if (rtInitialized) return;
+  rtInitialized = true;
+  if (!navigator.serial) {
+    document.getElementById('rt-no-serial').style.display = 'block';
+    document.getElementById('rt-main').style.display = 'none';
+    return;
+  }
+  showArduinoCode();
+}
+
+function showArduinoCode() {
+  const key = document.getElementById('rt-code-select').value;
+  document.getElementById('rt-code-display').textContent = ARDUINO_CODES[key] || '';
+}
+
+function copyArduinoCode() {
+  const code = document.getElementById('rt-code-display').textContent;
+  navigator.clipboard.writeText(code).then(() => showToast('코드가 복사되었습니다'));
+}
+
+function onRtFormatChange() {
+  const fmt = document.getElementById('rt-format-select').value;
+  document.getElementById('rt-csv-group').style.display = fmt === 'csv' ? 'block' : 'none';
+}
+
+async function toggleSerialConnect() {
+  if (rtConnected) await disconnectSerial();
+  else await connectSerial();
+}
+
+async function connectSerial() {
+  try {
+    const baud = parseInt(document.getElementById('baud-select').value);
+    rtPort = await navigator.serial.requestPort();
+    await rtPort.open({ baudRate: baud });
+    rtConnected = true;
+    updateRtUI(true);
+    startReading();
+    rtChartTimer = setInterval(drawRtChart, 1000);
+    showToast('연결되었습니다 ✓');
+  } catch (err) {
+    if (err.name !== 'NotFoundError') showToast('연결 실패: ' + err.message);
+  }
+}
+
+async function disconnectSerial() {
+  rtConnected = false;
+  if (rtReader) { try { await rtReader.cancel(); } catch {} rtReader = null; }
+  if (rtPort)   { try { await rtPort.close();   } catch {} rtPort = null; }
+  clearInterval(rtChartTimer);
+  updateRtUI(false);
+  showToast('연결이 해제되었습니다');
+}
+
+function updateRtUI(on) {
+  document.getElementById('rt-status-dot').className = 'status-dot ' + (on ? 'connected' : 'disconnected');
+  document.getElementById('rt-status-text').textContent = on ? '연결됨' : '연결 안됨';
+  document.getElementById('rt-connect-btn').textContent = on ? '🔌 해제' : '🔌 연결';
+}
+
+async function startReading() {
+  try {
+    const decoder = new TextDecoderStream();
+    rtPort.readable.pipeTo(decoder.writable);
+    rtReader = decoder.readable.getReader();
+    while (rtConnected) {
+      const { value, done } = await rtReader.read();
+      if (done) break;
+      rtBuffer += value;
+      const lines = rtBuffer.split('\n');
+      rtBuffer = lines.pop();
+      lines.forEach(l => { const t = l.trim(); if (t) processRtLine(t); });
+    }
+  } catch (err) {
+    if (rtConnected) { showToast('연결 끊김: ' + err.message); disconnectSerial(); }
+  }
+}
+
+function parseRtLine(line) {
+  const fmt = document.getElementById('rt-format-select').value;
+  // JSON
+  if (fmt === 'auto' || fmt === 'json') {
+    try { const o = JSON.parse(line); if (typeof o === 'object' && !Array.isArray(o)) return o; } catch {}
+  }
+  // key:value
+  if (fmt === 'auto' || fmt === 'kv') {
+    if (line.includes(':') && !line.startsWith('{')) {
+      const obj = {}; let ok = false;
+      line.split(',').forEach(pair => {
+        const i = pair.indexOf(':');
+        if (i > 0) {
+          const k = pair.slice(0, i).trim();
+          const v = parseFloat(pair.slice(i + 1).trim());
+          if (k && !isNaN(v)) { obj[k] = v; ok = true; }
+        }
+      });
+      if (ok) return obj;
+    }
+  }
+  // CSV
+  if (fmt === 'auto' || fmt === 'csv') {
+    const parts = line.split(',');
+    const nums = parts.map(p => parseFloat(p.trim()));
+    if (nums.length && nums.every(n => !isNaN(n))) {
+      const labels = (document.getElementById('rt-csv-labels').value || '').split(',').map(l => l.trim());
+      const obj = {};
+      nums.forEach((n, i) => { obj[labels[i] || `채널${i + 1}`] = n; });
+      return obj;
+    }
+  }
+  // 단일 숫자
+  const n = parseFloat(line);
+  if (!isNaN(n)) return { 값: n };
+  return null;
+}
+
+function processRtLine(line) {
+  const parsed = parseRtLine(line);
+  const entry = { time: new Date().toLocaleTimeString('ko-KR'), ts: Date.now(), raw: line, parsed };
+  rtLog.push(entry);
+  if (rtLog.length > 600) rtLog.shift();
+  if (!parsed) return;
+
+  Object.keys(parsed).forEach(k => { if (!rtKeys.includes(k)) rtKeys.push(k); });
+  updateRtTable(entry);
+  updateRtValues(parsed);
+}
+
+function updateRtValues(parsed) {
+  const colors = ['#63b3ed','#68d391','#f6ad55','#fc8181','#9f7aea','#76e4f7'];
+  document.getElementById('rt-values').innerHTML =
+    Object.entries(parsed).map(([k, v], i) => `
+      <div class="rt-value-box">
+        <div class="rt-value-num" style="color:${colors[i % colors.length]}">
+          ${typeof v === 'number' ? v.toFixed(2) : escHtml(String(v))}
+        </div>
+        <div class="rt-value-label">${escHtml(k)}</div>
+      </div>`).join('');
+}
+
+function updateRtTable(entry) {
+  if (!entry.parsed) return;
+  const keys = Object.keys(entry.parsed);
+  const thead = document.getElementById('rt-thead');
+  const tbody = document.getElementById('rt-tbody');
+  document.getElementById('rt-empty').style.display = 'none';
+  if (!thead.children.length)
+    thead.innerHTML = `<tr><th>시각</th>${keys.map(k => `<th>${escHtml(k)}</th>`).join('')}</tr>`;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td>${entry.time}</td>` +
+    keys.map(k => `<td>${entry.parsed[k] !== undefined ? (typeof entry.parsed[k] === 'number' ? entry.parsed[k].toFixed(2) : entry.parsed[k]) : '-'}</td>`).join('');
+  tbody.insertBefore(tr, tbody.firstChild);
+  while (tbody.children.length > 60) tbody.removeChild(tbody.lastChild);
+}
+
+function drawRtChart() {
+  const canvas = document.getElementById('rt-canvas');
+  if (!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.parentElement.clientWidth;
+  const H = Math.min(200, W * 0.38);
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.fillStyle = '#0f1117'; ctx.fillRect(0, 0, W, H);
+
+  const data = rtLog.filter(e => e.parsed).slice(-80);
+  if (data.length < 2) {
+    ctx.fillStyle = '#4a5568'; ctx.font = '13px Segoe UI'; ctx.textAlign = 'center';
+    ctx.fillText(rtConnected ? '데이터 수신 대기 중...' : '장치를 연결하세요', W / 2, H / 2);
+    return;
+  }
+
+  const colors = ['#63b3ed','#68d391','#f6ad55','#fc8181','#9f7aea'];
+  const keys = rtKeys.slice(0, 5);
+  const pad = { l: 46, r: 16, t: 22, b: 28 };
+  const cw = W - pad.l - pad.r, ch = H - pad.t - pad.b;
+
+  let yMin = Infinity, yMax = -Infinity;
+  data.forEach(e => keys.forEach(k => {
+    const v = e.parsed?.[k];
+    if (typeof v === 'number') { yMin = Math.min(yMin, v); yMax = Math.max(yMax, v); }
+  }));
+  if (!isFinite(yMin)) { yMin = 0; yMax = 1; }
+  if (yMin === yMax) { yMin -= 1; yMax += 1; }
+  const yp = (yMax - yMin) * 0.08;
+  yMin -= yp; yMax += yp;
+
+  const px = i => pad.l + (i / (data.length - 1)) * cw;
+  const py = v => pad.t + ch - ((v - yMin) / (yMax - yMin)) * ch;
+
+  ctx.strokeStyle = '#2d3250'; ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.t + ch * i / 4;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l + cw, y); ctx.stroke();
+    ctx.fillStyle = '#4a5568'; ctx.font = '10px Segoe UI'; ctx.textAlign = 'right';
+    ctx.fillText((yMax - (yMax - yMin) * i / 4).toFixed(1), pad.l - 4, y + 4);
+  }
+
+  keys.forEach((k, ki) => {
+    const color = colors[ki % colors.length];
+    ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.lineJoin = 'round';
+    ctx.beginPath();
+    let first = true;
+    data.forEach((e, i) => {
+      const v = e.parsed?.[k];
+      if (typeof v !== 'number') return;
+      if (first) { ctx.moveTo(px(i), py(v)); first = false; }
+      else ctx.lineTo(px(i), py(v));
+    });
+    ctx.stroke();
+    // 범례
+    ctx.fillStyle = color;
+    ctx.fillRect(pad.l + ki * 76, 4, 10, 8);
+    ctx.fillStyle = '#a0aec0'; ctx.font = '10px Segoe UI'; ctx.textAlign = 'left';
+    ctx.fillText(k, pad.l + ki * 76 + 14, 12);
+  });
+
+  // 수신 속도
+  const recent = rtLog.filter(e => e.parsed && e.ts > Date.now() - 10000).length;
+  document.getElementById('rt-rate').textContent = `${(recent / 10).toFixed(1)} samples/s`;
+}
+
+function clearRtData() {
+  rtLog = []; rtKeys = [];
+  document.getElementById('rt-thead').innerHTML = '';
+  document.getElementById('rt-tbody').innerHTML = '';
+  document.getElementById('rt-empty').style.display = 'block';
+  document.getElementById('rt-values').innerHTML = '';
+  document.getElementById('rt-rate').textContent = '';
+  document.getElementById('rt-analysis-result').style.display = 'none';
+  drawRtChart();
+}
+
+async function analyzeRtData() {
+  const apiKey = getApiKey();
+  if (!apiKey) { openSettings(); return; }
+  const parsed = rtLog.filter(e => e.parsed);
+  if (parsed.length < 5) { showToast('최소 5개 이상 데이터가 필요합니다'); return; }
+
+  const btn = document.getElementById('rt-analyze-btn');
+  btn.disabled = true; btn.textContent = '분석 중...';
+
+  const recent = parsed.slice(-40);
+  const summary = recent.map(e =>
+    e.time + ': ' + Object.entries(e.parsed).map(([k, v]) => `${k}=${v}`).join(', ')
+  ).join('\n');
+
+  // 통계 계산
+  const stats = {};
+  rtKeys.forEach(k => {
+    const vals = recent.map(e => e.parsed?.[k]).filter(v => typeof v === 'number');
+    if (!vals.length) return;
+    const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+    const mn = Math.min(...vals), mx = Math.max(...vals);
+    stats[k] = { avg: avg.toFixed(2), min: mn.toFixed(2), max: mx.toFixed(2) };
+  });
+  const statsStr = Object.entries(stats).map(([k, s]) =>
+    `${k}: 평균=${s.avg}, 최소=${s.min}, 최대=${s.max}`).join('\n');
+
+  const prompt = `아두이노 센서에서 실시간으로 수집된 데이터를 분석해 주세요.
+
+[통계 요약]
+${statsStr}
+
+[최근 수신 데이터 (시계열)]
+${summary}
+
+다음 내용을 포함해 분석해 주세요:
+1. 각 채널 데이터의 정상/이상 여부 판단
+2. 시간에 따른 패턴이나 경향
+3. 이상값(너무 높거나 낮은 값)이 있다면 원인과 해결책
+4. 센서 동작 상태 평가
+5. 실험 개선 권고사항
+
+중학생도 이해할 수 있도록 쉽게 설명해 주세요.`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({ model: 'claude-opus-4-6', max_tokens: 1200,
+        messages: [{ role: 'user', content: prompt }] })
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error?.message || 'API 오류');
+    const el = document.getElementById('rt-analysis-result');
+    el.style.display = 'block';
+    el.innerHTML = data.content[0].text.replace(/\n/g, '<br>');
+  } catch (err) {
+    if (err.message.includes('invalid x-api-key') || err.message.includes('401')) {
+      showToast('API 키 오류'); localStorage.removeItem('cm_api_key');
+      checkApiKey(); setTimeout(() => openSettings(), 400);
+    } else showToast('분석 실패: ' + err.message);
+  } finally {
+    btn.disabled = false; btn.textContent = '⚡ 현재 데이터 AI 분석';
+  }
+}
+
+function exportRtCSV() {
+  const data = rtLog.filter(e => e.parsed);
+  if (!data.length) { showToast('내보낼 데이터가 없습니다'); return; }
+  const csv = ['시각,' + rtKeys.join(','),
+    ...data.map(e => e.time + ',' + rtKeys.map(k => e.parsed?.[k] ?? '').join(','))
+  ].join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `realtime_${Date.now()}.csv`; a.click();
+  showToast('CSV 파일이 저장되었습니다');
+}
+</script>
+</body>
+</html>
