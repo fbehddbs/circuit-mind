@@ -1029,6 +1029,30 @@
       color: #a8d8ff !important;
     }
 
+    /* ── 도움말 모달 ── */
+    .help-section { margin-bottom: 28px; }
+    .help-section:last-child { margin-bottom: 0; }
+    .help-section-title {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 0.97rem; font-weight: 700; color: var(--text-primary);
+      margin-bottom: 12px; padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .help-section-icon {
+      width: 32px; height: 32px; border-radius: var(--r-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; flex-shrink: 0;
+    }
+    .help-item { display: flex; gap: 10px; margin-bottom: 9px; align-items: flex-start; }
+    .help-item-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--blue); margin-top: 7px; flex-shrink: 0; }
+    .help-item-text { font-size: 0.84rem; color: var(--text-secondary); line-height: 1.65; }
+    .help-item-text b { color: var(--text-primary); font-weight: 600; }
+    .help-badge {
+      display: inline-block; font-size: 0.7rem; font-weight: 700; padding: 2px 7px;
+      border-radius: 20px; margin-left: 6px; vertical-align: middle;
+    }
+    .help-badge-login { background: rgba(91,164,224,0.15); color: var(--blue); border: 1px solid rgba(91,164,224,0.25); }
+
     @media (max-width: 600px) {
       .view { padding: 24px 16px 50px; }
       .resistor-box { grid-template-columns: 1fr; }
@@ -1057,7 +1081,10 @@
     <button class="nav-tab" onclick="showView('history')">기록</button>
     <button class="nav-tab" onclick="showView('tools')">도구</button>
   </div>
-  <button class="nav-user-btn" id="nav-user-btn" onclick="openUserMenu()">👤 로그인</button>
+  <div style="display:flex;gap:8px;align-items:center">
+    <button class="nav-user-btn" style="width:32px;height:32px;padding:0;border-radius:50%;font-size:0.9rem;font-weight:700;flex-shrink:0" onclick="openHelp()" title="도움말">?</button>
+    <button class="nav-user-btn" id="nav-user-btn" onclick="openUserMenu()">👤 로그인</button>
+  </div>
 </nav>
 
 <!-- ── 홈 뷰 ── -->
@@ -1549,6 +1576,101 @@
 <div class="loading-overlay" id="loading" style="display:none">
   <div class="spinner"></div>
   <div class="loading-text">AI가 회로를 분석하고 있습니다...</div>
+</div>
+
+<!-- ── 도움말 모달 ── -->
+<div class="modal-overlay" id="help-modal" style="display:none" onclick="if(event.target===this)closeHelp()">
+  <div class="modal" style="max-width:560px;max-height:82vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+      <div class="modal-title" style="margin-bottom:0">CircuitMind 기능 안내</div>
+      <button onclick="closeHelp()" style="background:none;border:none;color:var(--text-muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
+    </div>
+
+    <!-- 홈 -->
+    <div class="help-section">
+      <div class="help-section-title">
+        <div class="help-section-icon" style="background:rgba(91,164,224,0.12);color:var(--blue)">🏠</div>
+        홈 — 부품 추천 &amp; AI 분석
+      </div>
+      <div class="help-item"><div class="help-item-dot"></div><div class="help-item-text"><b>실험별 부품 추천</b> — 자주 쓰이는 12가지 실험 프리셋을 클릭하면 필요한 부품이 자동으로 입력됩니다.</div></div>
+      <div class="help-item"><div class="help-item-dot"></div><div class="help-item-text"><b>부품 직접 입력</b> — 부품 이름을 입력하면 자동완성 목록이 뜨고, + 버튼으로 여러 부품을 추가할 수 있습니다.</div></div>
+      <div class="help-item"><div class="help-item-dot"></div><div class="help-item-text"><b>AI 회로 분석</b> — 부품 목록과 실험 목적을 입력 후 <b>분석 시작</b>을 누르면 Claude AI가 연결 방법·핀맵·주의사항·예상 결과·아두이노 코드를 생성합니다. Claude API 키 필요.</div></div>
+      <div class="help-item"><div class="help-item-dot"></div><div class="help-item-text"><b>사전 검사</b> — 분석 전에 LED 저항 누락, 모터 드라이버 누락 등 위험한 결선을 자동으로 경고합니다.</div></div>
+      <div class="help-item"><div class="help-item-dot"></div><div class="help-item-text"><b>기록 저장</b> — 분석 결과를 저장해 나중에 기록 탭에서 다시 볼 수 있습니다. <span class="help-badge help-badge-login">로그인 필요</span></div></div>
+    </div>
+
+    <!-- 모의실험 -->
+    <div class="help-section">
+      <div class="help-section-title">
+        <div class="help-section-icon" style="background:rgba(145,113,232,0.12);color:var(--purple)">🔬</div>
+        모의실험 — 가상 회로 시뮬레이션
+      </div>
+      <div class="help-item"><div class="help-item-dot"></div><div class="help-item-text"><b>6가지 시뮬레이션</b> — LED·저항·DHT11(온습도)·초음파 센서·PWM·DC모터를 브라우저에서 가상으로 실험합니다.</div></div>
+      <div class="help-item"><div class="help-item-dot"></div><div class="help-item-text"><b>파라미터 조절</b> — 전압·저항·주파수 등 값을 바꾸면 회로도와 결과가 실시간으로 업데이트됩니다.</div></div>
+      <div class="help-item"><div class="help-item-dot"></div><div class="help-item-text"><b>회로도</b> — 설정한 부품을 Canvas로 그린 배선 다이어그램을 실시간으로 표시합니다.</div></div>
+      <div class="help-item"><div class="help-item-dot"></div><div class="help-item-text"><b>실험 저장·공유</b> — 실행한 실험을 기록에 저장하거나 커뮤니티에 바로 공유할 수 있습니다. <span class="help-badge help-badge-login">로그인 필요</span></div></div>
+    </div>
+
+    <!-- 실시간 -->
+    <div class="help-section">
+      <div class="help-section-title">
+        <div class="help-section-icon" style="background:rgba(78,206,138,0.12);color:var(--green)">📡</div>
+        실시간 — 아두이노 연결
+      </div>
+      <div class="help-item"><div class="help-item-dot"></div><div class="help-item-text"><b>Web Serial API</b> — Chrome·Edge에서 아두이노를 USB로 연결하면 시리얼 데이터를 실시간으로 수집합니다.</div></div>
+      <div class="help-item"><div class="help-item-dot"></div><div class="help-item-text"><b>실시간 그래프</b> — 수신된 숫자 데이터를 자동으로 그래프로 시각화합니다.</div></div>
+      <div class="help-item"><div class="help-item-dot"></div><div class="help-item-text"><b>예제 코드</b> — 탭 안에 바로 복사해서 아두이노에 업로드할 수 있는 예제 코드가 있습니다.</div></div>
+      <div class="help-item"><div class="help-item-dot"></div><div class="help-item-text"><b>AI 데이터 분석</b> — 5개 이상 데이터 수신 후 AI 분석 버튼으로 이상값·패턴을 분석할 수 있습니다. Claude API 키 필요.</div></div>
+    </div>
+
+    <!-- 커뮤니티 -->
+    <div class="help-section">
+      <div class="help-section-title">
+        <div class="help-section-icon" style="background:rgba(245,158,54,0.12);color:var(--orange)">🌐</div>
+        커뮤니티 — 실험 공유
+      </div>
+      <div class="help-item"><div class="help-item-dot"></div><div class="help-item-text"><b>실험 공유</b> — 내가 한 실험을 제목·설명과 함께 올리면 다른 사람이 볼 수 있습니다. GitHub PAT(토큰) 필요. <span class="help-badge help-badge-login">로그인 필요</span></div></div>
+      <div class="help-item"><div class="help-item-dot"></div><div class="help-item-text"><b>이 세팅으로 실험하기</b> — 다른 사람의 게시물에서 버튼을 누르면 그 사람의 부품과 설정이 모의실험에 바로 적용됩니다.</div></div>
+      <div class="help-item"><div class="help-item-dot"></div><div class="help-item-text"><b>댓글·좋아요</b> — 게시물에 댓글을 달거나 좋아요를 누를 수 있습니다. GitHub PAT 필요. <span class="help-badge help-badge-login">로그인 필요</span></div></div>
+      <div class="help-item"><div class="help-item-dot"></div><div class="help-item-text"><b>북마크</b> — 마음에 드는 실험을 저장해두고 <b>⭐ 북마크</b> 탭에서 모아볼 수 있습니다. <span class="help-badge help-badge-login">로그인 필요</span></div></div>
+      <div class="help-item"><div class="help-item-dot"></div><div class="help-item-text"><b>GitHub PAT 발급</b> — github.com → Settings → Developer settings → Personal access tokens에서 <b>public_repo</b> 권한으로 발급합니다.</div></div>
+    </div>
+
+    <!-- 기록 -->
+    <div class="help-section">
+      <div class="help-section-title">
+        <div class="help-section-icon" style="background:rgba(56,200,200,0.12);color:var(--teal)">📋</div>
+        기록 — 내 실험 기록
+      </div>
+      <div class="help-item"><div class="help-item-dot"></div><div class="help-item-text"><b>AI 분석 기록</b> — 저장한 AI 분석 결과를 목록으로 확인하고 다시 불러올 수 있습니다.</div></div>
+      <div class="help-item"><div class="help-item-dot"></div><div class="help-item-text"><b>모의실험 기록</b> — 저장한 모의실험 파라미터를 불러와 실험을 이어서 진행할 수 있습니다.</div></div>
+      <div class="help-item"><div class="help-item-dot"></div><div class="help-item-text">기록은 <b>계정별로 분리</b>되어 저장됩니다. 다른 계정에서는 보이지 않습니다. <span class="help-badge help-badge-login">로그인 필요</span></div></div>
+    </div>
+
+    <!-- 도구 -->
+    <div class="help-section">
+      <div class="help-section-title">
+        <div class="help-section-icon" style="background:rgba(245,101,101,0.12);color:var(--red)">🔧</div>
+        도구 — 계산기 모음
+      </div>
+      <div class="help-item"><div class="help-item-dot"></div><div class="help-item-text"><b>저항 색띠 계산기</b> — 저항의 색띠를 선택하면 저항값(Ω)과 허용 오차를 자동으로 계산합니다.</div></div>
+      <div class="help-item"><div class="help-item-dot"></div><div class="help-item-text"><b>옴의 법칙 계산기</b> — 전압(V)·전류(A)·저항(Ω) 중 두 값을 입력하면 나머지 값을 계산합니다.</div></div>
+      <div class="help-item"><div class="help-item-dot"></div><div class="help-item-text"><b>핀맵 조회</b> — 아두이노 우노·나노·ESP32·ESP8266의 핀 번호와 기능을 표로 확인할 수 있습니다.</div></div>
+    </div>
+
+    <!-- 계정 -->
+    <div class="help-section">
+      <div class="help-section-title">
+        <div class="help-section-icon" style="background:rgba(91,164,224,0.12);color:var(--blue)">👤</div>
+        계정 — 로그인 &amp; 설정
+      </div>
+      <div class="help-item"><div class="help-item-dot"></div><div class="help-item-text"><b>회원가입·로그인</b> — 우측 상단 <b>👤 로그인</b>을 눌러 아이디와 비밀번호로 계정을 만들 수 있습니다. 이 기기 브라우저에 저장됩니다.</div></div>
+      <div class="help-item"><div class="help-item-dot"></div><div class="help-item-text"><b>API 키 관리</b> — 계정 설정에서 Claude API 키를 저장하면 로그인할 때마다 자동으로 불러옵니다.</div></div>
+      <div class="help-item"><div class="help-item-dot"></div><div class="help-item-text"><b>데이터 격리</b> — 기록·북마크·GitHub 토큰이 계정별로 분리되어 같은 기기에서도 계정마다 독립적으로 관리됩니다.</div></div>
+    </div>
+
+    <button class="btn-primary" onclick="closeHelp()" style="width:100%;margin-top:4px">확인</button>
+  </div>
 </div>
 
 <!-- ── 로그인 / 회원가입 모달 ── -->
@@ -2400,6 +2522,9 @@ function updateNavUser() {
     btn.classList.remove('logged-in');
   }
 }
+
+function openHelp() { document.getElementById('help-modal').style.display = 'flex'; }
+function closeHelp() { document.getElementById('help-modal').style.display = 'none'; }
 
 function openUserMenu() {
   if (currentUser) openAccountModal();
