@@ -2277,6 +2277,226 @@ const SIM_TYPES = [
       };
     }
   },
+  // ─────────────────────────────────────────────────
+  {
+    id: 'button_led',
+    name: '🔘 버튼 LED 제어',
+    params: [
+      { id: 'vcc',     label: '공급 전압 (Vcc)',    unit: 'V',  min: 3,   max: 12,   step: 0.5, def: 5   },
+      { id: 'r_led',   label: 'LED 저항 (R)',       unit: 'Ω',  min: 10,  max: 2000, step: 10,  def: 220 },
+      { id: 'vf',      label: 'LED 순방향 전압 (Vf)',unit: 'V', min: 1.5, max: 3.5,  step: 0.1, def: 2.0 },
+      { id: 'r_pull',  label: '풀업 저항',           unit: 'kΩ', min: 1,  max: 100,  step: 1,   def: 10  },
+    ],
+    availableExtra: [
+      { id:'debounce_cap', label:'디바운싱 커패시터', unit:'nF', min:10, max:1000, def:100, step:10, tip:'버튼 채터링 방지용 커패시터 (10~1000nF 범위).' },
+    ],
+    run(p, ex = {}) {
+      const I_led = Math.max(0, (p.vcc - p.vf) / p.r_led * 1000);
+      const brightness = Math.min(1, I_led / 20);
+      const V_pullup_on  = p.vcc;                         // 버튼 미누름 → D2=HIGH
+      const V_pullup_off = p.r_pull / (p.r_pull + 0.001); // 버튼 누름   → D2=LOW (≈0V)
+      const analog_d2_on  = Math.round(V_pullup_on  / p.vcc * 1023);
+      const analog_d2_off = 0;
+      const rows = [
+        { '상태': '버튼 미누름', 'D2 전압(V)': p.vcc.toFixed(1), 'D2 논리': 'HIGH', 'LED': '꺼짐', '전류(mA)': '0' },
+        { '상태': '버튼 누름',   'D2 전압(V)': '0.0',            'D2 논리': 'LOW',  'LED': I_led>1?'켜짐':'약함', '전류(mA)': I_led.toFixed(2) },
+      ];
+      return {
+        values: [
+          { num: I_led.toFixed(2),       unit: 'mA', label: 'LED 전류 (누름 시)', color: '#68d391' },
+          { num: (brightness*100).toFixed(0), unit: '%', label: 'LED 밝기', color: '#f6ad55' },
+          { num: p.vcc.toFixed(1),       unit: 'V',  label: 'D2 미누름 전압',   color: '#63b3ed' },
+          { num: p.r_pull.toFixed(0),    unit: 'kΩ', label: '풀업 저항',        color: '#9f7aea' },
+        ],
+        rows,
+        extra: { brightness, I_led, p },
+        type: 'button_led',
+        interpretation: `버튼 풀업 방식: 미누름 시 D2=HIGH(${p.vcc}V), 누름 시 D2=LOW(0V).<br>
+LED 전류: I = (${p.vcc}V - ${p.vf}V) ÷ ${p.r_led}Ω = ${I_led.toFixed(2)}mA.${I_led<1?'<br>⚠️ 전류가 너무 낮습니다. 저항을 줄이세요.':I_led>30?'<br>⚠️ 전류 과다! 저항을 높이세요.':'<br>✓ 권장 범위(5~20mA) 내에서 안전하게 동작합니다.'}<br>
+풀업 저항 ${p.r_pull}kΩ: 플로팅 방지 역할. 1~10kΩ 권장.`,
+      };
+    }
+  },
+  {
+    id: 'rgb_led',
+    name: '🌈 RGB LED',
+    params: [
+      { id: 'r_duty', label: '빨강 (R) 듀티', unit: '%', min: 0, max: 100, step: 1, def: 80 },
+      { id: 'g_duty', label: '초록 (G) 듀티', unit: '%', min: 0, max: 100, step: 1, def: 50 },
+      { id: 'b_duty', label: '파랑 (B) 듀티', unit: '%', min: 0, max: 100, step: 1, def: 30 },
+      { id: 'vcc',    label: '공급 전압',      unit: 'V', min: 3,   max: 12,  step: 0.5, def: 5  },
+      { id: 'r_res',  label: '채널당 저항 (R)', unit: 'Ω', min: 10,  max: 2000, step: 10,  def: 220 },
+    ],
+    availableExtra: [],
+    run(p, ex = {}) {
+      const vf_rgb = { r: 2.0, g: 2.1, b: 3.2 };
+      const calc = (duty, vf) => ({
+        I: Math.max(0, (p.vcc * duty/100 - vf) / p.r_res * 1000),
+        vavg: p.vcc * duty / 100,
+      });
+      const R = calc(p.r_duty, vf_rgb.r);
+      const G = calc(p.g_duty, vf_rgb.g);
+      const B = calc(p.b_duty, vf_rgb.b);
+      const totalP = (R.I + G.I + B.I) / 1000 * p.vcc * 1000;
+      const rows = [
+        { '채널': '빨강 (R)', '듀티(%)': p.r_duty, '평균전압(V)': R.vavg.toFixed(2), '전류(mA)': R.I.toFixed(2), 'Vf(V)': vf_rgb.r },
+        { '채널': '초록 (G)', '듀티(%)': p.g_duty, '평균전압(V)': G.vavg.toFixed(2), '전류(mA)': G.I.toFixed(2), 'Vf(V)': vf_rgb.g },
+        { '채널': '파랑 (B)', '듀티(%)': p.b_duty, '평균전압(V)': B.vavg.toFixed(2), '전류(mA)': B.I.toFixed(2), 'Vf(V)': vf_rgb.b },
+      ];
+      const rV = Math.round(p.r_duty * 2.55), gV = Math.round(p.g_duty * 2.55), bV = Math.round(p.b_duty * 2.55);
+      return {
+        values: [
+          { num: R.I.toFixed(2), unit: 'mA', label: 'R 채널 전류', color: '#fc8181' },
+          { num: G.I.toFixed(2), unit: 'mA', label: 'G 채널 전류', color: '#68d391' },
+          { num: B.I.toFixed(2), unit: 'mA', label: 'B 채널 전류', color: '#63b3ed' },
+          { num: totalP.toFixed(1), unit: 'mW', label: '전체 소비전력', color: '#f6ad55' },
+        ],
+        rows,
+        extra: { r: p.r_duty, g: p.g_duty, b: p.b_duty, rI: R.I, gI: G.I, bI: B.I },
+        type: 'rgb_led',
+        interpretation: `RGB LED (공통 캐소드) PWM 제어.<br>
+R채널: D3 → ${p.r_res}Ω → 빨강 LED(Vf≈2.0V) → GND, 전류 ${R.I.toFixed(2)}mA.<br>
+G채널: D5 → ${p.r_res}Ω → 초록 LED(Vf≈2.1V) → GND, 전류 ${G.I.toFixed(2)}mA.<br>
+B채널: D6 → ${p.r_res}Ω → 파랑 LED(Vf≈3.2V) → GND, 전류 ${B.I.toFixed(2)}mA.<br>
+💡 혼합 색상 RGB(${rV}, ${gV}, ${bV}) — PWM 듀티사이클로 밝기를 조절합니다.`,
+      };
+    }
+  },
+  {
+    id: 'ldr',
+    name: '☀️ 조도 감지',
+    params: [
+      { id: 'vcc',    label: '공급 전압 (Vcc)',  unit: 'V',  min: 3,   max: 12,  step: 0.5, def: 5   },
+      { id: 'r_fix',  label: '고정 저항 (R)',    unit: 'kΩ', min: 1,   max: 100, step: 1,   def: 10  },
+      { id: 'light',  label: '조도 (0=어두움)',  unit: '%',  min: 0,   max: 100, step: 1,   def: 50  },
+      { id: 'r_led',  label: 'LED 저항',         unit: 'Ω',  min: 10,  max: 2000, step: 10, def: 220 },
+    ],
+    availableExtra: [],
+    run(p, ex = {}) {
+      // LDR: 어두울수록 저항 높음 (100kΩ↔1kΩ)
+      const r_ldr = 1 + (100 - p.light) / 100 * 99; // kΩ
+      const r_fix_k = p.r_fix; // kΩ
+      const vout = p.vcc * r_fix_k / (r_ldr + r_fix_k);
+      const adc_val = Math.round(vout / p.vcc * 1023);
+      const led_on = vout < p.vcc * 0.5; // 어두우면 LED 켬
+      const I_led = led_on ? Math.max(0, (p.vcc - 2.0) / p.r_led * 1000) : 0;
+      const rows = [];
+      for (let l = 0; l <= 100; l += 10) {
+        const r = 1 + (100 - l) / 100 * 99;
+        const v = p.vcc * r_fix_k / (r + r_fix_k);
+        rows.push({ '조도(%)': l, 'LDR저항(kΩ)': r.toFixed(1), '출력전압(V)': v.toFixed(2), 'ADC(0-1023)': Math.round(v/p.vcc*1023), 'LED': v < p.vcc*.5 ? '켜짐' : '꺼짐' });
+      }
+      return {
+        values: [
+          { num: r_ldr.toFixed(1),   unit: 'kΩ', label: 'LDR 저항',    color: '#f6ad55' },
+          { num: vout.toFixed(2),    unit: 'V',  label: 'A0 출력전압', color: '#63b3ed' },
+          { num: adc_val.toString(), unit: '/1023', label: 'ADC 값',   color: '#9f7aea' },
+          { num: led_on ? I_led.toFixed(2) : '0.00', unit: 'mA', label: `LED (${led_on?'켜짐':'꺼짐'})`, color: led_on ? '#68d391' : '#4a5568' },
+        ],
+        rows,
+        extra: { vout, adc_val, led_on, light: p.light, vcc: p.vcc, r_ldr },
+        type: 'ldr',
+        interpretation: `조도 ${p.light}% → LDR 저항 약 ${r_ldr.toFixed(1)}kΩ.<br>
+분압 출력: Vout = ${p.vcc}V × ${r_fix_k}kΩ ÷ (${r_ldr.toFixed(1)} + ${r_fix_k})kΩ = ${vout.toFixed(2)}V.<br>
+아두이노 ADC(10-bit): ${adc_val}/1023 (analogRead 반환값).<br>
+${led_on ? `💡 조도 낮음 → Vout < ${(p.vcc*.5).toFixed(1)}V → LED 자동 점등 (${I_led.toFixed(1)}mA).` : `🌞 조도 충분 → Vout ≥ ${(p.vcc*.5).toFixed(1)}V → LED 꺼짐.`}`,
+      };
+    }
+  },
+  {
+    id: 'buzzer',
+    name: '🔊 부저 알람',
+    params: [
+      { id: 'freq',  label: '주파수',      unit: 'Hz', min: 100,  max: 5000, step: 50,  def: 440 },
+      { id: 'vcc',   label: '공급 전압',   unit: 'V',  min: 3,    max: 12,   step: 0.5, def: 5   },
+      { id: 'r',     label: '보호 저항',   unit: 'Ω',  min: 10,   max: 1000, step: 10,  def: 100 },
+      { id: 'duty',  label: '듀티 사이클', unit: '%',  min: 10,   max: 90,   step: 5,   def: 50  },
+    ],
+    availableExtra: [
+      { id:'r_nmosfet', label:'MOSFET 드라이버 추가', unit:'Ω', min:10, max:1000, def:100, step:10, tip:'NPN MOSFET(2N2222 등)으로 전류 증폭. 고출력 부저에 필요.' },
+    ],
+    run(p, ex = {}) {
+      const period_ms = 1000 / p.freq;
+      const ton_ms    = period_ms * p.duty / 100;
+      const I_avg     = p.vcc * p.duty / 100 / p.r * 1000;
+      const power_mw  = I_avg * p.vcc * p.duty / 100;
+      // 음계 판별
+      const noteFreqs = [261,277,294,311,330,349,370,392,415,440,466,494,523];
+      const noteNames = ['C4','C#4','D4','D#4','E4','F4','F#4','G4','G#4','A4','A#4','B4','C5'];
+      let noteName = '—';
+      let minDiff = Infinity;
+      noteFreqs.forEach((f, i) => { const d = Math.abs(f - p.freq); if(d < minDiff){minDiff=d; noteName=noteNames[i];} });
+      if (minDiff > 30) noteName = '—';
+      const rows = [];
+      for (let f = 100; f <= 5000; f += 200) {
+        const pm = 1000/f, tm = pm*p.duty/100;
+        rows.push({ '주파수(Hz)': f, '주기(ms)': pm.toFixed(3), 'ON시간(ms)': tm.toFixed(3), '전류(mA)': (p.vcc*p.duty/100/p.r*1000).toFixed(2) });
+      }
+      const extraVals = [];
+      if (ex.r_nmosfet) extraVals.push({ num: (p.vcc/ex.r_nmosfet*1000).toFixed(1), unit: 'mA', label: 'MOSFET 게이트 전류', color: '#9f7aea' });
+      return {
+        values: [
+          { num: p.freq.toString(),    unit: 'Hz',  label: '주파수',      color: '#63b3ed' },
+          { num: period_ms.toFixed(3), unit: 'ms',  label: '주기',        color: '#9f7aea' },
+          { num: ton_ms.toFixed(3),    unit: 'ms',  label: 'ON 시간',     color: '#68d391' },
+          { num: I_avg.toFixed(2),     unit: 'mA',  label: '평균 전류',   color: '#f6ad55' },
+          { num: noteName,             unit: '',    label: '음계 (근사)', color: '#fc8181' },
+          ...extraVals,
+        ],
+        rows,
+        extra: { freq: p.freq, duty: p.duty, vcc: p.vcc },
+        type: 'buzzer',
+        interpretation: `주파수 ${p.freq}Hz → 주기 ${period_ms.toFixed(3)}ms, ON시간 ${ton_ms.toFixed(3)}ms.<br>
+평균 전류: I = ${p.vcc}V × ${p.duty}% ÷ ${p.r}Ω = ${I_avg.toFixed(2)}mA.<br>
+${noteName !== '—' ? `🎵 음계: 약 <b>${noteName}</b>에 해당합니다.` : '음계 범위(261~523Hz) 외 주파수입니다.'}<br>
+Arduino tone() 함수로 제어: <code>tone(8, ${p.freq});</code>`,
+      };
+    }
+  },
+  {
+    id: 'servo',
+    name: '🔁 서보모터',
+    params: [
+      { id: 'angle', label: '목표 각도',   unit: '°', min: 0,   max: 180, step: 1,   def: 90  },
+      { id: 'vcc',   label: '공급 전압',   unit: 'V', min: 4.5, max: 7.4, step: 0.1, def: 5.0 },
+      { id: 'load',  label: '부하율',      unit: '%', min: 0,   max: 100, step: 5,   def: 20  },
+    ],
+    availableExtra: [
+      { id:'cap_power', label:'전원 커패시터', unit:'μF', min:10, max:1000, def:100, step:10, tip:'서보 기동 시 전압강하 방지. 100~470μF 권장.' },
+    ],
+    run(p, ex = {}) {
+      const pulse_us = 1000 + (p.angle / 180) * 1000;
+      const period_ms = 20; // 50Hz
+      const duty_pct  = pulse_us / 1000 / period_ms * 100;
+      const I_stall   = p.vcc < 5 ? 0.5 : 0.7;
+      const I         = 0.05 + (p.load / 100) * I_stall;
+      const power_mw  = I * p.vcc * 1000;
+      const speed_dps = 600 * (1 - p.load / 100 * 0.6); // °/s
+      const rows = [];
+      for (let a = 0; a <= 180; a += 15) {
+        const us = 1000 + (a/180)*1000;
+        rows.push({ '각도(°)': a, '펄스폭(μs)': us.toFixed(0), '듀티(%)': (us/1000/20*100).toFixed(2), '대략속도(°/s)': speed_dps.toFixed(0) });
+      }
+      const extraVals = ex.cap_power ? [{ num: ex.cap_power, unit: 'μF', label: '전원 안정 커패시터', color: '#9f7aea' }] : [];
+      return {
+        values: [
+          { num: p.angle.toString(),    unit: '°',  label: '목표 각도',  color: '#63b3ed' },
+          { num: pulse_us.toFixed(0),   unit: 'μs', label: '펄스폭',     color: '#9f7aea' },
+          { num: duty_pct.toFixed(2),   unit: '%',  label: '듀티 사이클', color: '#f6ad55' },
+          { num: I.toFixed(2),          unit: 'A',  label: '소모 전류',  color: '#fc8181' },
+          { num: speed_dps.toFixed(0),  unit: '°/s', label: '회전 속도', color: '#68d391' },
+          ...extraVals,
+        ],
+        rows,
+        extra: { angle: p.angle, vcc: p.vcc, pulse_us },
+        type: 'servo',
+        interpretation: `SG90 서보모터 — 50Hz PWM 신호로 각도 제어.<br>
+목표 각도 ${p.angle}° → 펄스폭 ${pulse_us.toFixed(0)}μs (1000~2000μs 범위).<br>
+Arduino 코드: <code>myServo.write(${p.angle});</code><br>
+소모 전류 약 ${I.toFixed(2)}A, 아두이노 5V 핀 직결 시 전류 부족 가능 → 외부 전원 권장.`,
+      };
+    }
+  },
 ];
 
 // 해석 함수들
@@ -2459,6 +2679,11 @@ function drawSimCanvas(r) {
   else if (r.type === 'ultrasonic') drawBarChart(ctx, W, H, r.rows, '측정#', '거리(cm)', '#63b3ed');
   else if (r.type === 'pwm') drawPWMWave(ctx, W, H, r.extra);
   else if (r.type === 'motor') drawLineChart(ctx, W, H, r.rows, '전압(V)', 'RPM', '#63b3ed', '전류(A)', '#fc8181');
+  else if (r.type === 'button_led') drawButtonLEDViz(ctx, W, H, r.extra);
+  else if (r.type === 'rgb_led')    drawRGBViz(ctx, W, H, r.extra);
+  else if (r.type === 'ldr')        drawLDRViz(ctx, W, H, r.extra);
+  else if (r.type === 'buzzer')     drawBuzzerViz(ctx, W, H, r.extra);
+  else if (r.type === 'servo')      drawServoViz(ctx, W, H, r.extra);
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -2494,6 +2719,11 @@ function drawCircuit(typeId, p, ex, result) {
   else if (typeId === 'ultrasonic') drawUltrasonicWiring(ctx, W, H, p, ex, result);
   else if (typeId === 'pwm')        drawPWMSchematic(ctx, W, H, p, ex, result);
   else if (typeId === 'motor')      drawMotorSchematic(ctx, W, H, p, ex, result);
+  else if (typeId === 'button_led') drawButtonLEDSchematic(ctx, W, H, p, ex, result);
+  else if (typeId === 'rgb_led')    drawRGBLEDSchematic(ctx, W, H, p, ex, result);
+  else if (typeId === 'ldr')        drawLDRSchematic(ctx, W, H, p, ex, result);
+  else if (typeId === 'buzzer')     drawBuzzerSchematic(ctx, W, H, p, ex, result);
+  else if (typeId === 'servo')      drawServoWiring(ctx, W, H, p, ex, result);
 }
 
 // ── 공통 드로잉 헬퍼 ──
@@ -2907,6 +3137,303 @@ function drawMotorSchematic(ctx, W, H, p, ex, result) {
   cTxt(ctx,8,H-6,'⚙️ DC 모터 회로 도식','#2d3a50',11,'left');
 }
 
+// ── 버튼 LED 제어 도식 ──
+function drawButtonLEDSchematic(ctx, W, H, p, ex, result) {
+  const vcc=p?.vcc??5, r_led=p?.r_led??220, vf=p?.vf??2.0, r_pull=p?.r_pull??10;
+  const pressed = false; // 기본 표시
+  const brightness = result?.extra?.brightness ?? 0.5;
+  const I_led = result ? parseFloat(result.values[0]?.num) : 0;
+
+  // ── 상단 회로: 입력 (풀업 + 버튼) ──
+  const topY=H*.28, midY=H*.62, btmY=H*.88;
+  const x0=38, xGND=W-38;
+
+  // 풀업 회로
+  const pullX1=W*.28, pullX2=W*.45, btnCX=W*.6;
+  const pinX = W*.19;
+  cVCC(ctx,pinX,topY,`${vcc}V`,'#fc8181');
+  cW(ctx,pinX,topY,pullX1,topY,'#fc8181');
+  cRes(ctx,pullX1,pullX2,topY,'#a0aec0');
+  cW(ctx,pullX2,topY,btnCX-12,topY,'#63b3ed');
+  // 버튼 기호
+  ctx.strokeStyle='#63b3ed'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(btnCX-12,topY); ctx.lineTo(btnCX-4,topY); ctx.stroke();
+  ctx.beginPath(); ctx.arc(btnCX,topY,4,0,Math.PI*2); ctx.strokeStyle='#63b3ed'; ctx.stroke(); // 버튼 원
+  ctx.beginPath(); ctx.moveTo(btnCX+4,topY); ctx.lineTo(btnCX+14,topY); ctx.stroke();
+  cW(ctx,btnCX+14,topY,xGND,topY,'#63b3ed');
+  // D2 탭
+  const tapX=pullX2+12;
+  cW(ctx,tapX,topY,tapX,topY+30,'#63b3ed',1.5);
+  cDot(ctx,tapX,topY,'#63b3ed',3);
+  cTxt(ctx,tapX+4,topY+44,'D2','#63b3ed',10,'left',true);
+  cGND(ctx,xGND,topY,'#718096');
+
+  // 풀업 저항 라벨
+  cTxt(ctx,(pullX1+pullX2)/2,topY-16,`풀업 ${r_pull}kΩ`,'#a0aec0',10);
+  cTxt(ctx,btnCX,topY-16,'BUTTON','#63b3ed',10);
+
+  // ── 하단 회로: 출력 (LED) ──
+  const rX1=W*.27, rX2=W*.47, ledCX=W*.64;
+  const lX1=ledCX-16, lX2=ledCX+14;
+  const lPin=W*.16;
+  const glow = brightness;
+
+  cVCC(ctx,lPin,midY,`${vcc}V`,'#fc8181');
+  cW(ctx,lPin,midY,rX1,midY,'#fc8181');
+  cRes(ctx,rX1,rX2,midY);
+  cW(ctx,rX2,midY,lX1,midY,'#4a9eff');
+  cLEDsym(ctx,ledCX,midY,18,glow>.1?`hsl(10,100%,${40+glow*25}%)`:'#555',glow);
+  cW(ctx,lX2,midY,xGND,midY,'#4a9eff');
+  cW(ctx,lPin,midY,lPin,btmY,'#fc8181');
+  cW(ctx,lPin,btmY,xGND,btmY,'#718096');
+  cW(ctx,xGND,topY,xGND,btmY,'#718096');
+  cGND(ctx,xGND,midY,'#718096');
+  cTxt(ctx,(rX1+rX2)/2,midY+22,`${r_led}Ω`,'#f6ad55',10);
+  cTxt(ctx,ledCX,midY+22,`Vf ${vf}V`,glow>.1?'#ff8888':'#718096',10);
+  // D13 탭
+  cW(ctx,rX1,midY,rX1,midY-28,'#9f7aea',1.5);
+  cTxt(ctx,rX1-4,midY-34,'D13','#9f7aea',10,'right',true);
+
+  if(I_led>0) cTxt(ctx,W/2,btmY+14,`LED 전류 ${I_led.toFixed(2)} mA (버튼 누름 시)`,'#68d391',12,'center',true);
+  cTxt(ctx,8,H-4,'🔘 버튼 LED 도식','#2d3a50',11,'left');
+}
+
+// ── RGB LED 도식 ──
+function drawRGBLEDSchematic(ctx, W, H, p, ex, result) {
+  const r=p?.r_duty??80, g=p?.g_duty??50, b=p?.b_duty??30;
+  const vcc=p?.vcc??5, res=p?.r_res??220;
+  const rI=result?parseFloat(result.values[0]?.num):0;
+  const gI=result?parseFloat(result.values[1]?.num):0;
+  const bI=result?parseFloat(result.values[2]?.num):0;
+
+  // Arduino 블록
+  const aW=W*.2, aH=100, aX=30, aY=(H-aH)/2+5;
+  cChip(ctx,aX,aY,aW,aH,'Arduino','Uno','#63b3ed');
+  const pins=[
+    {label:'D3',y:aY+aH*.2,col:'#fc8181'},
+    {label:'D5',y:aY+aH*.5,col:'#68d391'},
+    {label:'D6',y:aY+aH*.8,col:'#63b3ed'},
+  ];
+  pins.forEach(pin=>cPin(ctx,aX+aW,pin.y,pin.label,'right',pin.col));
+
+  // RGB LED 박스
+  const lX=W*.73, lY=(H-90)/2+5, lW=W*.18, lH=90;
+  cRoundRect(ctx,lX,lY,lW,lH,8,'#0e1525','#e2e8f0',1.5);
+  cTxt(ctx,lX+lW/2,lY+16,'RGB LED','#e2e8f0',12,'center',true);
+  cTxt(ctx,lX+lW/2,lH+lY-8,'공통 캐소드','#4a5568',9,'center');
+
+  // 각 채널 연결
+  const chans=[
+    {pY:pins[0].y, lY:lY+lH*.25, col:'#fc8181', rGlow:r/100, gGlow:0, bGlow:0, duty:r, I:rI, ledCol:'#ff4444', label:'R', pinL:'R'},
+    {pY:pins[1].y, lY:lY+lH*.5,  col:'#68d391', rGlow:0, gGlow:g/100, bGlow:0, duty:g, I:gI, ledCol:'#44ff44', label:'G', pinL:'G'},
+    {pY:pins[2].y, lY:lY+lH*.75, col:'#63b3ed', rGlow:0, gGlow:0, bGlow:b/100, duty:b, I:bI, ledCol:'#4444ff', label:'B', pinL:'B'},
+  ];
+  const midX=W*.5;
+  chans.forEach(ch=>{
+    const rX1=aX+aW+14, rX2=rX1+50;
+    cW(ctx,rX1,ch.pY,midX,ch.pY,ch.col,2);
+    cW(ctx,midX,ch.pY,midX,ch.lY,ch.col,1.5);
+    cRes(ctx,midX,midX+50,ch.lY,ch.col);
+    cW(ctx,midX+50,ch.lY,lX,ch.lY,ch.col,2);
+    cPin(ctx,lX,ch.lY,ch.pinL,'left',ch.col);
+    const glow=ch.duty/100;
+    cTxt(ctx,midX+25,ch.lY+15,`${res}Ω`,ch.col,9);
+    if(ch.I>0) cTxt(ctx,midX+25,ch.lY-9,`${ch.I.toFixed(1)}mA`,ch.col,9);
+  });
+
+  // 공통 GND
+  const gndY=lY+lH;
+  cW(ctx,lX+lW/2,gndY,lX+lW/2,gndY+12,'#718096',2);
+  cGND(ctx,lX+lW/2,gndY,'#718096');
+
+  // 색상 미리보기
+  const rv=Math.round(r*2.55), gv=Math.round(g*2.55), bv=Math.round(b*2.55);
+  const previewX=W*.43, previewY=H-32;
+  ctx.fillStyle=`rgb(${rv},${gv},${bv})`;
+  ctx.beginPath(); ctx.arc(previewX,previewY,14,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='#2d3250'; ctx.lineWidth=1.5; ctx.stroke();
+  cTxt(ctx,previewX+22,previewY+4,`rgb(${rv},${gv},${bv})`,'#a0aec0',10,'left');
+  cTxt(ctx,8,H-4,'🌈 RGB LED 도식','#2d3a50',11,'left');
+}
+
+// ── 조도 감지(LDR) 도식 ──
+function drawLDRSchematic(ctx, W, H, p, ex, result) {
+  const vcc=p?.vcc??5, r_fix=p?.r_fix??10, light=p?.light??50, r_led=p?.r_led??220;
+  const r_ldr=result?parseFloat(result.values[0]?.num):(1+(100-light)/100*99);
+  const vout=result?parseFloat(result.values[1]?.num):(vcc*r_fix/(r_ldr+r_fix));
+  const led_on=result?(result.values[3]?.num!=='0.00'):(vout<vcc*.5);
+  const adc=result?parseInt(result.values[2]?.num):Math.round(vout/vcc*1023);
+
+  const topY=H*.3, btmY=H*.82;
+  const x0=42, xGND=W-42;
+
+  // 분압 회로
+  const ldrCX=W*.3, fixX1=W*.42, fixX2=W*.58;
+  cVCC(ctx,x0,topY,`${vcc}V`,'#fc8181');
+  cW(ctx,x0,topY,ldrCX-16,topY,'#fc8181');
+
+  // LDR 기호 (저항+빛 화살표)
+  cRes(ctx,ldrCX-16,ldrCX+16,topY,'#f6ad55');
+  // LDR 빛 화살표들
+  ctx.strokeStyle='#f6ad55'; ctx.lineWidth=1.2;
+  [[0,-1.2],[0.6,-1],[1.0,-0.5]].forEach(([dx,dy])=>{
+    const bx=ldrCX+dx*10+2, by=topY+dy*16;
+    ctx.beginPath(); ctx.moveTo(bx-4,by-4); ctx.lineTo(bx+2,by+2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(bx+2,by+2); ctx.lineTo(bx-1,by+2); ctx.moveTo(bx+2,by+2); ctx.lineTo(bx+2,by-1); ctx.stroke();
+  });
+
+  cW(ctx,ldrCX+16,topY,fixX1,topY,'#f6ad55');
+  cRes(ctx,fixX1,fixX2,topY);
+  cW(ctx,fixX2,topY,xGND,topY,'#4a9eff');
+  cW(ctx,x0,topY,x0,btmY,'#fc8181');
+  cW(ctx,x0,btmY,xGND,btmY,'#718096');
+  cW(ctx,xGND,topY,xGND,btmY,'#718096');
+  cGND(ctx,xGND,topY,'#718096');
+
+  // Vout 탭
+  const tapX=fixX1+4;
+  cDot(ctx,tapX,topY,'#68d391',3.5);
+  cW(ctx,tapX,topY,tapX,topY+36,'#68d391',1.5);
+  cTxt(ctx,tapX+4,topY+50,`A0: ${vout.toFixed(2)}V\nADC: ${adc}`,'#68d391',10,'left');
+  cTxt(ctx,tapX+4,topY+62,`ADC: ${adc}`,'#68d391',10,'left');
+
+  // LED 출력 회로 (아래)
+  const lMidY=(topY+btmY)/2+18;
+  const lrX1=W*.35, lrX2=W*.52, lCX=W*.65;
+  const lX1=lCX-14, lX2=lCX+12;
+  const glow=led_on?0.7:0;
+  cVCC(ctx,x0,lMidY,`${vcc}V`,'#fc8181');
+  cW(ctx,x0,lMidY,lrX1,lMidY,'#fc8181');
+  cRes(ctx,lrX1,lrX2,lMidY);
+  cW(ctx,lrX2,lMidY,lX1,lMidY,'#4a9eff');
+  cLEDsym(ctx,lCX,lMidY,16,led_on?'#ff5555':'#555',glow);
+  cW(ctx,lX2,lMidY,xGND-2,lMidY,'#4a9eff');
+  cTxt(ctx,(lrX1+lrX2)/2,lMidY+18,`${r_led}Ω`,'#f6ad55',10);
+  // 아두이노 D13 연결 표시
+  cW(ctx,lrX1,lMidY,lrX1,lMidY-24,'#9f7aea',1.5);
+  cTxt(ctx,lrX1,lMidY-30,'D13','#9f7aea',10,'center',true);
+
+  // 라벨
+  cTxt(ctx,ldrCX,topY-16,`LDR ~${r_ldr.toFixed(0)}kΩ`,'#f6ad55',10);
+  cTxt(ctx,(fixX1+fixX2)/2,topY-16,`R ${r_fix}kΩ`,'#e2e8f0',10);
+  cTxt(ctx,W*.68,lMidY+18,led_on?'켜짐 💡':'꺼짐',led_on?'#68d391':'#4a5568',10);
+
+  if(result) cTxt(ctx,W/2,btmY+14,`Vout ${vout.toFixed(2)}V  ADC ${adc}  LED ${led_on?'ON':'OFF'}`,'#68d391',12,'center',true);
+  cTxt(ctx,8,H-4,'☀️ 조도감지 도식','#2d3a50',11,'left');
+}
+
+// ── 부저 도식 ──
+function drawBuzzerSchematic(ctx, W, H, p, ex, result) {
+  const freq=p?.freq??440, vcc=p?.vcc??5, r=p?.r??100, duty=p?.duty??50;
+  const I=result?parseFloat(result.values[3]?.num):(vcc*duty/100/r*1000);
+  const period=1000/freq;
+
+  const topY=H*.35, btmY=H*.82;
+  const x0=38, xGND=W-38;
+
+  // 아두이노 블록
+  const aW=W*.2, aH=60, aX=x0-5, aY=topY-30;
+  cChip(ctx,aX,aY,aW,aH,'Arduino','','#63b3ed');
+  cPin(ctx,aX+aW,aY+aH*.4,'D8','right','#63b3ed');
+  cPin(ctx,aX+aW,aY+aH*.75,'GND','right','#718096');
+
+  // 전선
+  const pwX=aX+aW+14;
+  const rX1=W*.38, rX2=rX1+50;
+  const bzCX=W*.72;
+  cW(ctx,pwX,aY+aH*.4,rX1,topY,'#63b3ed',2);
+  cRes(ctx,rX1,rX2,topY);
+  cW(ctx,rX2,topY,bzCX-22,topY,'#63b3ed');
+  cW(ctx,bzCX+22,topY,xGND,topY,'#4a9eff');
+  cW(ctx,pwX,aY+aH*.75,pwX,btmY,'#718096');
+  cW(ctx,pwX,btmY,xGND,btmY,'#718096');
+  cW(ctx,xGND,btmY,xGND,topY,'#718096');
+  cGND(ctx,xGND,topY,'#718096');
+
+  // 부저 기호 (원형)
+  ctx.strokeStyle='#9f7aea'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(bzCX,topY,22,0,Math.PI*2); ctx.stroke();
+  // 음파 기호 (물결선)
+  ctx.strokeStyle='#9f7aea'; ctx.lineWidth=1.5;
+  for(let i=0;i<3;i++){
+    const amp=4+i*3, bx=bzCX-amp-2;
+    ctx.beginPath(); ctx.moveTo(bzCX-amp,topY-8+i*6);
+    for(let t=0;t<Math.PI*2;t+=0.1) ctx.lineTo(bzCX-amp+t*2.5,topY-8+i*6+Math.sin(t)*3);
+    ctx.stroke();
+  }
+  cTxt(ctx,bzCX,topY+32,`~`,'#9f7aea',18,'center');
+  cTxt(ctx,bzCX,topY-30,`${freq}Hz`,'#9f7aea',11,'center',true);
+  cTxt(ctx,(rX1+rX2)/2,topY+18,`${r}Ω`,'#f6ad55',10);
+
+  // MOSFET 드라이버 (있으면)
+  if(ex?.r_nmosfet){
+    cTxt(ctx,rX2+20,topY-22,'MOSFET','#9f7aea',9,'center');
+    ctx.strokeStyle='#9f7aea'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(rX2+12,topY-14); ctx.lineTo(rX2+12,topY+14); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(rX2+12,topY); ctx.lineTo(rX2+25,topY); ctx.stroke();
+  }
+
+  if(result) cTxt(ctx,W/2,btmY+14,`${freq}Hz  주기 ${period.toFixed(2)}ms  전류 ${I.toFixed(2)}mA`,'#68d391',12,'center',true);
+  cTxt(ctx,8,H-4,'🔊 부저 회로 도식','#2d3a50',11,'left');
+}
+
+// ── 서보모터 배선도 ──
+function drawServoWiring(ctx, W, H, p, ex, result) {
+  const angle=p?.angle??90, vcc=p?.vcc??5;
+  const pulse_us=1000+(angle/180)*1000;
+  const duty=pulse_us/1000/20*100;
+
+  const aW=W*.22, aH=90, aX=W*.06, aY=(H-aH)/2;
+  const sW=W*.24, sH=80, sX=W*.68, sY=(H-sH)/2;
+
+  cChip(ctx,aX,aY,aW,aH,'Arduino','Uno','#63b3ed');
+  cChip(ctx,sX,sY,sW,sH,'Servo','SG90','#f6ad55');
+
+  const aPins=[
+    {label:'D9 PWM', y:aY+aH*.25, col:'#f6ad55'},
+    {label:'5V',     y:aY+aH*.55, col:'#fc8181'},
+    {label:'GND',    y:aY+aH*.82, col:'#718096'},
+  ];
+  const sCols=['#f6ad55','#fc8181','#718096'];
+  const sLbls=['Signal','VCC','GND'];
+  const sYs=[sY+sH*.25, sY+sH*.55, sY+sH*.82];
+
+  aPins.forEach((ap,i)=>{
+    cPin(ctx,aX+aW,ap.y,ap.label,'right',ap.col);
+    const sx2=sX-14;
+    cW(ctx,aX+aW+14,ap.y,sx2,ap.y,ap.col,2);
+    cPin(ctx,sX,sYs[i],sLbls[i],'left',sCols[i]);
+    if(ap.y!==sYs[i]){
+      cW(ctx,sx2,ap.y,sx2,sYs[i],ap.col,1.5);
+      cW(ctx,sx2,sYs[i],sX-14,sYs[i],ap.col,1.5);
+    }
+  });
+
+  // 서보 각도 시각화
+  const svCX=sX+sW+40, svCY=H/2;
+  const svR=32;
+  ctx.strokeStyle='#2d3250'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.arc(svCX,svCY,svR,Math.PI,Math.PI*2); ctx.stroke();
+  // 각도 호
+  const startA=Math.PI, endA=Math.PI+(angle/180)*Math.PI;
+  ctx.strokeStyle='#f6ad55'; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.arc(svCX,svCY,svR,startA,endA); ctx.stroke();
+  // 포인터
+  const pA=startA+Math.PI*(angle/180);
+  ctx.strokeStyle='#e2e8f0'; ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.moveTo(svCX,svCY);
+  ctx.lineTo(svCX+Math.cos(pA)*svR,svCY+Math.sin(pA)*svR);
+  ctx.stroke();
+  cDot(ctx,svCX,svCY,'#f6ad55',4);
+  cTxt(ctx,svCX,svCY+svR+16,`${angle}°`,'#f6ad55',13,'center',true);
+  cTxt(ctx,svCX,svCY+svR+30,`${pulse_us.toFixed(0)}μs`,'#a0aec0',10,'center');
+
+  if(result) cTxt(ctx,W*.43,H-14,`${angle}° → ${pulse_us.toFixed(0)}μs  duty ${duty.toFixed(2)}%`,'#68d391',11,'center',true);
+  cTxt(ctx,8,H-4,'🔁 서보모터 배선도','#2d3a50',11,'left');
+}
+
+
 function drawLEDViz(ctx, W, H, ex) {
   // 배경
   ctx.fillStyle = '#0f1117';
@@ -2969,6 +3496,132 @@ function drawResistorViz(ctx, W, H, ex) {
   const Ip = ex.p.vcc / ex.rp * 1000;
   ctx.fillText(`I = ${Ip.toFixed(2)} mA`, x2 + bw/2, y1 + 72);
   ctx.fillText(`(직렬의 ${(ex.rp/ex.rs*100).toFixed(0)}%)`, x2 + bw/2, y1 + 94);
+}
+
+// ── 새 타입 결과 시각화 ──
+function drawButtonLEDViz(ctx, W, H, ex) {
+  ctx.fillStyle='#0f1117'; ctx.fillRect(0,0,W,H);
+  const b=ex?.brightness??0.5, I=ex?.I_led??0;
+  const cx=W/2, cy=H/2-10, r=Math.min(H,W)*0.22;
+  // 빛 퍼짐
+  if(b>0.05){ const gr=ctx.createRadialGradient(cx,cy,r*.5,cx,cy,r*3.5);
+    gr.addColorStop(0,`rgba(255,68,68,${b*.5})`); gr.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(cx,cy,r*3.5,0,Math.PI*2); ctx.fill(); }
+  // LED 몸체
+  ctx.fillStyle=`rgba(255,68,68,${0.2+b*.8})`; ctx.strokeStyle=b>.1?'#ff4444':'#4a5568'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  // 버튼 상태
+  ctx.fillStyle='#a0aec0'; ctx.font='bold 13px monospace'; ctx.textAlign='center';
+  ctx.fillText(`버튼 누름 시: ${I.toFixed(2)}mA`,cx,H-22);
+  ctx.fillText(`밝기 ${(b*100).toFixed(0)}%`,cx,H-6);
+}
+
+function drawRGBViz(ctx, W, H, ex) {
+  ctx.fillStyle='#0f1117'; ctx.fillRect(0,0,W,H);
+  const r=ex?.r??80, g=ex?.g??50, b=ex?.b??30;
+  const rv=Math.round(r*2.55), gv=Math.round(g*2.55), bv=Math.round(b*2.55);
+  const cx=W/2, cy=H/2-15, radius=Math.min(W,H)*.25;
+  // 색상 원
+  const gr=ctx.createRadialGradient(cx,cy,0,cx,cy,radius*1.5);
+  gr.addColorStop(0,`rgba(${rv},${gv},${bv},0.9)`);
+  gr.addColorStop(1,`rgba(${rv},${gv},${bv},0.1)`);
+  ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(cx,cy,radius*1.5,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle=`rgb(${rv},${gv},${bv})`; ctx.strokeStyle='#2d3250'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(cx,cy,radius,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  // 채널 바
+  const bW=W*.2, bH=12, bY=H-38, gap=12;
+  [[rv,'#ff4444',`R ${r}%`],[gv,'#44ff44',`G ${g}%`],[bv,'#4488ff',`B ${b}%`]].forEach(([v,c,lbl],i)=>{
+    const bx=(W-(bW*3+gap*2))/2+i*(bW+gap);
+    ctx.fillStyle='#1a1d2e'; ctx.fillRect(bx,bY,bW,bH);
+    ctx.fillStyle=c; ctx.fillRect(bx,bY,bW*v/255,bH);
+    ctx.fillStyle='#a0aec0'; ctx.font='10px monospace'; ctx.textAlign='center';
+    ctx.fillText(lbl,bx+bW/2,bY+bH+14);
+  });
+}
+
+function drawLDRViz(ctx, W, H, ex) {
+  ctx.fillStyle='#0f1117'; ctx.fillRect(0,0,W,H);
+  const light=ex?.light??50, vout=ex?.vout??2.5, adc=ex?.adc_val??512, led_on=ex?.led_on??false;
+  // 조도 게이지
+  const gx=W*.1, gy=H*.15, gw=W*.8, gh=24;
+  ctx.fillStyle='#1a1d2e'; ctx.beginPath();
+  ctx.roundRect?ctx.roundRect(gx,gy,gw,gh,6):ctx.rect(gx,gy,gw,gh); ctx.fill();
+  const lightGrad=ctx.createLinearGradient(gx,0,gx+gw,0);
+  lightGrad.addColorStop(0,'#1a1d2e'); lightGrad.addColorStop(1,'#ffd700');
+  ctx.fillStyle=lightGrad; ctx.beginPath();
+  ctx.roundRect?ctx.roundRect(gx,gy,gw*light/100,gh,6):ctx.rect(gx,gy,gw*light/100,gh); ctx.fill();
+  ctx.fillStyle='#a0aec0'; ctx.font='11px monospace'; ctx.textAlign='left';
+  ctx.fillText(`☀️ 조도 ${light}%`,gx,gy-6);
+  // Vout 게이지
+  const vx=W*.1, vy=H*.5, vw=W*.8, vh=24, vcc=ex?.vcc??5;
+  ctx.fillStyle='#1a1d2e'; ctx.beginPath();
+  ctx.roundRect?ctx.roundRect(vx,vy,vw,vh,6):ctx.rect(vx,vy,vw,vh); ctx.fill();
+  ctx.fillStyle='#63b3ed'; ctx.beginPath();
+  ctx.roundRect?ctx.roundRect(vx,vy,vw*vout/vcc,vh,6):ctx.rect(vx,vy,vw*vout/vcc,vh); ctx.fill();
+  ctx.fillStyle='#a0aec0'; ctx.font='11px monospace'; ctx.textAlign='left';
+  ctx.fillText(`⚡ Vout ${vout.toFixed(2)}V  ADC: ${adc}`,vx,vy-6);
+  ctx.fillStyle=led_on?'#68d391':'#4a5568'; ctx.font='bold 14px monospace'; ctx.textAlign='center';
+  ctx.fillText(`LED ${led_on?'💡 켜짐':'꺼짐'}`,W/2,H-12);
+}
+
+function drawBuzzerViz(ctx, W, H, ex) {
+  ctx.fillStyle='#0f1117'; ctx.fillRect(0,0,W,H);
+  const freq=ex?.freq??440, duty=ex?.duty??50;
+  const period=1000/freq, tonMs=period*duty/100;
+  // PWM 파형 그리기
+  const px=30, py=H*.3, pw=W-60, ph=H*.35;
+  ctx.strokeStyle='#9f7aea'; ctx.lineWidth=2;
+  ctx.beginPath();
+  const cycles=3, segW=pw/cycles;
+  ctx.moveTo(px,py+ph);
+  for(let c=0;c<cycles;c++){
+    const onW=segW*duty/100;
+    ctx.lineTo(px+c*segW,py+ph);
+    ctx.lineTo(px+c*segW,py);
+    ctx.lineTo(px+c*segW+onW,py);
+    ctx.lineTo(px+c*segW+onW,py+ph);
+  }
+  ctx.lineTo(px+pw,py+ph);
+  ctx.stroke();
+  // 음파 원
+  const wCX=W/2, wCY=H*.78;
+  [1,1.5,2].forEach(s=>{
+    ctx.strokeStyle=`rgba(159,119,234,${0.6/s})`; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.arc(wCX,wCY,20*s,-Math.PI*.7,Math.PI*.7); ctx.stroke();
+  });
+  ctx.fillStyle='#9f7aea'; ctx.font='bold 14px monospace'; ctx.textAlign='center';
+  ctx.fillText(`${freq}Hz`,W/2,H-8);
+}
+
+function drawServoViz(ctx, W, H, ex) {
+  ctx.fillStyle='#0f1117'; ctx.fillRect(0,0,W,H);
+  const angle=ex?.angle??90, pulse=ex?.pulse_us??1500;
+  const cx=W/2, cy=H*.55, r=Math.min(W,H)*.3;
+  // 반원 배경
+  ctx.strokeStyle='#2d3250'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(cx,cy,r,Math.PI,Math.PI*2); ctx.stroke();
+  // 눈금 (0~180°)
+  for(let a=0;a<=180;a+=30){
+    const rad=Math.PI+a/180*Math.PI;
+    const x1=cx+Math.cos(rad)*(r-8), y1=cy+Math.sin(rad)*(r-8);
+    const x2=cx+Math.cos(rad)*(r+4), y2=cy+Math.sin(rad)*(r+4);
+    ctx.strokeStyle='#4a5568'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    ctx.fillStyle='#4a5568'; ctx.font='9px monospace'; ctx.textAlign='center';
+    ctx.fillText(a+'°',cx+Math.cos(rad)*(r+18),cy+Math.sin(rad)*(r+18)+3);
+  }
+  // 각도 호
+  ctx.strokeStyle='#f6ad55'; ctx.lineWidth=4;
+  ctx.beginPath(); ctx.arc(cx,cy,r,Math.PI,Math.PI+angle/180*Math.PI); ctx.stroke();
+  // 포인터
+  const pRad=Math.PI+angle/180*Math.PI;
+  ctx.strokeStyle='#e2e8f0'; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+Math.cos(pRad)*r*.9,cy+Math.sin(pRad)*r*.9); ctx.stroke();
+  ctx.fillStyle='#f6ad55'; ctx.beginPath(); ctx.arc(cx,cy,7,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#f6ad55'; ctx.font='bold 16px monospace'; ctx.textAlign='center';
+  ctx.fillText(`${angle}°`,cx,cy+r*.3);
+  ctx.fillStyle='#a0aec0'; ctx.font='11px monospace';
+  ctx.fillText(`펄스 ${pulse.toFixed(0)}μs`,cx,H-8);
 }
 
 function drawLineChart(ctx, W, H, rows, xKey, y1Key, c1, y2Key, c2) {
