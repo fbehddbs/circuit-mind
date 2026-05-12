@@ -2447,6 +2447,7 @@ async function submitLogin() {
   closeAuthModal();
   updateNavUser();
   checkApiKey();
+  renderHistory();
   showToast('로그인되었습니다: ' + id);
 }
 
@@ -2506,9 +2507,11 @@ function saveAccountSettings() {
 function logout() {
   currentUser = null;
   clearSession();
+  localStorage.removeItem('cm_api_key');
   updateNavUser();
   closeAccountModal();
   checkApiKey();
+  renderHistory();
   showToast('로그아웃되었습니다');
 }
 
@@ -2845,13 +2848,18 @@ function copyArduinoGenCode() {
   navigator.clipboard.writeText(code).then(() => showToast('코드가 복사되었습니다 ✓'));
 }
 
+// ── 개인 스토리지 키 (계정별 분리) ──
+function userKey(base) {
+  return currentUser ? `${base}_${currentUser.username}` : base;
+}
+
 // ── 기록 ──
 function getHistory() {
-  try { return JSON.parse(localStorage.getItem('cm_history') || '[]'); } catch(e) { return []; }
+  try { return JSON.parse(localStorage.getItem(userKey('cm_history')) || '[]'); } catch(e) { return []; }
 }
 
 function saveHistory(history) {
-  localStorage.setItem('cm_history', JSON.stringify(history));
+  localStorage.setItem(userKey('cm_history'), JSON.stringify(history));
 }
 
 function saveToHistory() {
@@ -5459,11 +5467,11 @@ let ccInitialized = false;
 let ccPosts = [];
 
 // ── 토큰 관리 ──
-function getCcToken() { return localStorage.getItem('cm_cc_token') || ''; }
+function getCcToken() { return localStorage.getItem(userKey('cm_cc_token')) || ''; }
 function saveCcToken() {
   const t = document.getElementById('cc-token-input').value.trim();
   if (!t) { showToast('토큰을 입력하세요'); return; }
-  localStorage.setItem('cm_cc_token', t);
+  localStorage.setItem(userKey('cm_cc_token'), t);
   closeCommunitySettings();
   showToast('GitHub 토큰이 저장되었습니다 ✓');
 }
@@ -5637,10 +5645,10 @@ function setCcFilter(type) {
 
 // ── 북마크 ──
 function getBookmarks() {
-  try { return new Set(JSON.parse(localStorage.getItem('cm_bookmarks') || '[]')); } catch(e) { return new Set(); }
+  try { return new Set(JSON.parse(localStorage.getItem(userKey('cm_bookmarks')) || '[]')); } catch(e) { return new Set(); }
 }
 function saveBookmarks(set) {
-  localStorage.setItem('cm_bookmarks', JSON.stringify([...set]));
+  localStorage.setItem(userKey('cm_bookmarks'), JSON.stringify([...set]));
 }
 function toggleBookmark(issueNumber, btn) {
   const bm = getBookmarks();
