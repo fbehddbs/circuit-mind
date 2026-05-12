@@ -18,8 +18,8 @@
       --border-mid:    #283060;
       --border-active: #4a90d9;
       --text-primary:  #eef2f8;
-      --text-secondary:#8e9bb5;
-      --text-muted:    #434f6a;
+      --text-secondary:#a8b4cc;
+      --text-muted:    #6c7a98;
       --blue:   #5ba4e0;
       --purple: #9171e8;
       --green:  #4ece8a;
@@ -228,7 +228,7 @@
     .part-sug-item:hover, .part-sug-item.focused { background: #2d3250; color: #e2e8f0; }
     .part-sug-item .sug-icon { font-size: 1rem; flex-shrink: 0; }
     .part-sug-item .sug-name { font-weight: 600; }
-    .part-sug-item .sug-desc { font-size: 0.72rem; color: #718096; }
+    .part-sug-item .sug-desc { font-size: 0.72rem; color: #8a97b2; }
 
     .btn-icon {
       width: 36px; height: 36px;
@@ -356,7 +356,7 @@
       text-align: left;
       padding: 8px 12px;
       background: #0f1117;
-      color: #718096;
+      color: #8a97b2;
       font-weight: 600;
       font-size: 0.75rem;
       letter-spacing: 1px;
@@ -437,7 +437,7 @@
       padding: 8px 0;
       border-bottom: 1px solid #2d3250;
       font-size: 0.88rem;
-      color: #a0aec0;
+      color: #b4bfd4;
       display: flex;
       gap: 10px;
     }
@@ -491,7 +491,7 @@
       max-width: 90vw;
     }
     .modal-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
-    .modal-sub { font-size: 0.85rem; color: #718096; margin-bottom: 24px; line-height: 1.6; }
+    .modal-sub { font-size: 0.85rem; color: #8a97b2; margin-bottom: 24px; line-height: 1.6; }
 
     /* 기록 */
     .history-item {
@@ -590,7 +590,7 @@
       display: flex;
       justify-content: space-between;
       font-size: 0.85rem;
-      color: #a0aec0;
+      color: #b4bfd4;
       margin-bottom: 6px;
     }
     .sim-param-label .val {
@@ -618,8 +618,8 @@
       letter-spacing: 1px;
       margin-bottom: 4px;
     }
-    .sim-value-unit { font-size: 0.8rem; color: #718096; }
-    .sim-value-label { font-size: 0.72rem; color: #4a5568; margin-top: 4px; letter-spacing: 1px; text-transform: uppercase; }
+    .sim-value-unit { font-size: 0.8rem; color: #9caac4; }
+    .sim-value-label { font-size: 0.72rem; color: #8090aa; margin-top: 4px; letter-spacing: 1px; text-transform: uppercase; }
 
     /* 추가 부품 UI */
     .extra-add-row {
@@ -631,10 +631,10 @@
     }
     .extra-add-row .ea-group { display: flex; flex-direction: column; gap: 4px; }
     .extra-add-row .ea-group.wide { flex: 1; min-width: 160px; }
-    .extra-add-row label { font-size: 0.75rem; color: #718096; }
+    .extra-add-row label { font-size: 0.75rem; color: #8a97b2; }
     .extra-add-row input[type="number"] { width: 80px; }
-    .extra-unit-label { font-size: 0.82rem; color: #718096; padding-bottom: 10px; white-space: nowrap; }
-    .extra-tip { font-size: 0.77rem; color: #4a5568; min-height: 14px; margin-bottom: 10px; line-height: 1.4; }
+    .extra-unit-label { font-size: 0.82rem; color: #8a97b2; padding-bottom: 10px; white-space: nowrap; }
+    .extra-tip { font-size: 0.77rem; color: #6c7a98; min-height: 14px; margin-bottom: 10px; line-height: 1.4; }
     .extra-part-tag {
       display: inline-flex;
       align-items: center;
@@ -644,11 +644,11 @@
       border-radius: 20px;
       padding: 5px 6px 5px 12px;
       font-size: 0.82rem;
-      color: #a0aec0;
+      color: #b4bfd4;
       margin: 3px;
     }
     .extra-part-tag .ep-val { color: #63b3ed; font-weight: 700; }
-    .extra-empty { color: #4a5568; font-size: 0.82rem; text-align: center; padding: 12px 0; }
+    .extra-empty { color: #6c7a98; font-size: 0.82rem; text-align: center; padding: 12px 0; }
 
     /* 기록 카테고리 */
     .history-cat {
@@ -676,7 +676,7 @@
     }
     .tag-ai  { background: #1a2d3e; color: #63b3ed; border: 1px solid #2d4a6e; }
     .tag-sim { background: #1a3a2e; color: #68d391; border: 1px solid #2d5a3e; }
-    .history-empty-sub { color: #4a5568; font-size: 0.83rem; padding: 12px 0; }
+    .history-empty-sub { color: #6c7a98; font-size: 0.83rem; padding: 12px 0; }
 
     /* ── 실시간 연결 ── */
     .connect-row {
@@ -684,7 +684,7 @@
     }
     .connect-status {
       display: flex; align-items: center; gap: 8px;
-      font-size: 0.85rem; color: #718096;
+      font-size: 0.85rem; color: #8a97b2;
     }
     .status-dot {
       width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
@@ -721,7 +721,7 @@
       background: #0f1117; border-radius: 10px; padding: 12px; text-align: center;
     }
     .rt-value-num { font-size: 1.6rem; font-weight: 200; letter-spacing: 1px; margin-bottom: 4px; }
-    .rt-value-label { font-size: 0.7rem; color: #4a5568; text-transform: uppercase; letter-spacing: 1px; }
+    .rt-value-label { font-size: 0.7rem; color: #6c7a98; text-transform: uppercase; letter-spacing: 1px; }
     .rt-no-serial {
       text-align: center; padding: 40px 20px;
       color: #fc8181; font-size: 0.9rem; line-height: 1.8;
@@ -735,7 +735,7 @@
     .alert-info {
       background: #1a2d3e; border: 1px solid #2d4a6e;
       border-radius: 8px; padding: 10px 14px;
-      font-size: 0.82rem; color: #a0aec0; margin-top: 8px;
+      font-size: 0.82rem; color: #b4bfd4; margin-top: 8px;
     }
 
     /* ── 커뮤니티 ── */
@@ -781,7 +781,7 @@
       background: #1a1d2e; border-radius: 8px; padding: 8px 11px; font-size: 0.78rem; line-height: 1.55;
     }
     .cc-comment-author { font-weight: 700; color: #63b3ed; margin-right: 6px; }
-    .cc-comment-date { font-size: 0.68rem; color: #4a5568; }
+    .cc-comment-date { font-size: 0.68rem; color: #6c7a98; }
     .cc-comment-body { color: #c6cad8; margin-top: 3px; white-space: pre-wrap; word-break: break-all; }
     .cc-comment-input-row { display: flex; gap: 6px; margin-top: 4px; }
     .cc-comment-input-row textarea {
@@ -798,11 +798,11 @@
       background: transparent;
       border: 1px solid #2d3250;
       border-radius: 20px;
-      color: #718096; font-size: 0.78rem;
+      color: #8a97b2; font-size: 0.78rem;
       cursor: pointer; transition: all 0.2s;
     }
     .filter-tab.active { background: #2d3250; color: #e2e8f0; border-color: #63b3ed; }
-    .filter-tab:hover:not(.active) { color: #a0aec0; border-color: #4a5568; }
+    .filter-tab:hover:not(.active) { color: #b4bfd4; border-color: #6c7a98; }
 
     .share-modal-overlay {
       position: fixed; inset: 0;
@@ -818,7 +818,7 @@
       box-shadow: 0 24px 60px rgba(0,0,0,0.6);
     }
     .share-modal-title { font-size: 1rem; font-weight: 700; color: #e2e8f0; margin-bottom: 18px; }
-    .cc-load-spinner { text-align: center; padding: 40px; color: #4a5568; font-size: 0.88rem; }
+    .cc-load-spinner { text-align: center; padding: 40px; color: #6c7a98; font-size: 0.88rem; }
 
     /* 모의실험 선택 모달 */
     .sim-pick-modal {
@@ -848,7 +848,7 @@
     }
     .sim-pick-sub {
       font-size: 0.82rem;
-      color: #718096;
+      color: #8a97b2;
       margin-bottom: 18px;
       line-height: 1.5;
     }
@@ -863,7 +863,7 @@
       background: #0f1117;
       border: 1px solid #2d3250;
       border-radius: 10px;
-      color: #a0aec0;
+      color: #b4bfd4;
       font-size: 0.85rem;
       cursor: pointer;
       text-align: left;
@@ -905,7 +905,7 @@
     .tool-section { display: flex; flex-direction: column; gap: 10px; }
     .tool-bands { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
     .tool-band-sel {
-      display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.7rem; color: #718096;
+      display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.7rem; color: #8a97b2;
     }
     .tool-band-sel select {
       width: 90px; font-size: 0.75rem; padding: 5px 4px; background: #0f1117;
@@ -920,12 +920,12 @@
       padding: 14px 18px; display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
     }
     .tool-result-num { font-size: 1.6rem; font-weight: 800; color: #68d391; }
-    .tool-result-label { font-size: 0.78rem; color: #718096; margin-top: 2px; }
+    .tool-result-label { font-size: 0.78rem; color: #8a97b2; margin-top: 2px; }
     .ohm-grid {
       display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 8px 0;
     }
     .ohm-cell { display: flex; flex-direction: column; gap: 4px; }
-    .ohm-cell label { font-size: 0.75rem; color: #a0aec0; font-weight: 600; }
+    .ohm-cell label { font-size: 0.75rem; color: #b4bfd4; font-weight: 600; }
     .ohm-cell input {
       background: #0a0d14; border: 1px solid #2d3250; border-radius: 8px;
       color: #e2e8f0; padding: 8px 10px; font-size: 0.9rem; width: 100%; box-sizing: border-box;
@@ -935,17 +935,17 @@
     .ohm-btns { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
     .ohm-preset {
       font-size: 0.72rem; padding: 4px 10px; background: #1a1d2e; border: 1px solid #2d3250;
-      border-radius: 6px; color: #a0aec0; cursor: pointer; transition: all 0.15s;
+      border-radius: 6px; color: #b4bfd4; cursor: pointer; transition: all 0.15s;
     }
     .ohm-preset:hover { border-color: #63b3ed; color: #63b3ed; }
     .pinmap-tabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
     .pinmap-tab {
       padding: 5px 14px; background: #1a1d2e; border: 1px solid #2d3250; border-radius: 20px;
-      color: #718096; font-size: 0.8rem; cursor: pointer; transition: all 0.15s;
+      color: #8a97b2; font-size: 0.8rem; cursor: pointer; transition: all 0.15s;
     }
     .pinmap-tab.active { background: #1a3a2e; border-color: #2d5a3e; color: #68d391; }
     .pinmap-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-    .pinmap-table th { background: #1a1d2e; color: #718096; padding: 6px 10px; text-align: left; border-bottom: 1px solid #2d3250; }
+    .pinmap-table th { background: #1a1d2e; color: #8a97b2; padding: 6px 10px; text-align: left; border-bottom: 1px solid #2d3250; }
     .pinmap-table td { padding: 5px 10px; border-bottom: 1px solid #2d325030; color: #c6cad8; }
     .pinmap-table tr:hover td { background: #1a1d2e22; }
     .pin-badge {
@@ -953,7 +953,7 @@
       font-weight: 700; white-space: nowrap;
     }
     .pin-power  { background: #2d1515; color: #fc8181; }
-    .pin-gnd    { background: #1a1a1a; color: #718096; }
+    .pin-gnd    { background: #1a1a1a; color: #8a97b2; }
     .pin-pwm    { background: #1a253d; color: #63b3ed; }
     .pin-analog { background: #2d2515; color: #f6ad55; }
     .pin-digital{ background: #1a2d1a; color: #68d391; }
@@ -1092,7 +1092,7 @@
   <div class="card" id="sim-circuit-card">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
       <div class="card-title" id="sim-circuit-title" style="margin-bottom:0">🔌 회로 도식</div>
-      <span style="font-size:0.75rem;color:#4a5568">파라미터 변경 시 실시간 업데이트</span>
+      <span style="font-size:0.75rem;color:#6c7a98">파라미터 변경 시 실시간 업데이트</span>
     </div>
     <canvas id="sim-circuit-canvas" style="width:100%;border-radius:8px;display:block;background:#0a0d14"></canvas>
   </div>
@@ -1179,7 +1179,7 @@
       <div class="rt-no-serial">
         ⚠️ Web Serial API 미지원 브라우저입니다.<br>
         <strong>Chrome 또는 Edge</strong> 브라우저를 사용해 주세요.<br><br>
-        <span style="color:#718096;font-size:0.82rem">Safari, Firefox는 지원하지 않습니다.</span>
+        <span style="color:#8a97b2;font-size:0.82rem">Safari, Firefox는 지원하지 않습니다.</span>
       </div>
     </div>
   </div>
@@ -1213,7 +1213,7 @@
       <div class="card-title">📡 데이터 형식 &amp; 아두이노 코드</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
         <div>
-          <label style="font-size:0.78rem;color:#718096;display:block;margin-bottom:5px">수신 형식</label>
+          <label style="font-size:0.78rem;color:#8a97b2;display:block;margin-bottom:5px">수신 형식</label>
           <select id="rt-format-select" onchange="onRtFormatChange()">
             <option value="auto">자동 감지</option>
             <option value="kv">키:값 (temp:25.3,hum:60)</option>
@@ -1222,12 +1222,12 @@
           </select>
         </div>
         <div id="rt-csv-group" style="display:none">
-          <label style="font-size:0.78rem;color:#718096;display:block;margin-bottom:5px">CSV 컬럼명 (쉼표 구분)</label>
+          <label style="font-size:0.78rem;color:#8a97b2;display:block;margin-bottom:5px">CSV 컬럼명 (쉼표 구분)</label>
           <input type="text" id="rt-csv-labels" placeholder="예: 온도,습도" value="값1,값2">
         </div>
       </div>
       <div>
-        <label style="font-size:0.78rem;color:#718096;display:block;margin-bottom:6px">아두이노 예제 코드</label>
+        <label style="font-size:0.78rem;color:#8a97b2;display:block;margin-bottom:6px">아두이노 예제 코드</label>
         <select id="rt-code-select" onchange="showArduinoCode()" style="margin-bottom:10px">
           <option value="dht11">DHT11 온습도 센서</option>
           <option value="ultrasonic">HC-SR04 초음파 센서</option>
@@ -1245,7 +1245,7 @@
       <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
         <span>📈 실시간 데이터</span>
         <div style="display:flex;gap:8px;align-items:center">
-          <span id="rt-rate" style="font-size:0.75rem;color:#4a5568"></span>
+          <span id="rt-rate" style="font-size:0.75rem;color:#6c7a98"></span>
           <button class="btn-secondary" onclick="clearRtData()" style="font-size:0.75rem;padding:4px 10px">초기화</button>
         </div>
       </div>
@@ -1265,7 +1265,7 @@
           <tbody id="rt-tbody"></tbody>
         </table>
       </div>
-      <div id="rt-empty" style="text-align:center;color:#4a5568;font-size:0.85rem;padding:24px">
+      <div id="rt-empty" style="text-align:center;color:#6c7a98;font-size:0.85rem;padding:24px">
         연결 후 데이터를 수신하면 여기에 표시됩니다
       </div>
     </div>
@@ -1273,9 +1273,9 @@
     <!-- AI 분석 -->
     <div class="card">
       <div class="card-title">🤖 AI 실시간 분석</div>
-      <div style="font-size:0.85rem;color:#a0aec0;margin-bottom:14px;line-height:1.6">
+      <div style="font-size:0.85rem;color:#b4bfd4;margin-bottom:14px;line-height:1.6">
         수신된 최근 데이터를 Claude AI에게 보내 이상값·패턴·권고사항을 분석받습니다.<br>
-        <span style="color:#4a5568;font-size:0.78rem">API 키가 필요합니다. 최소 5개 이상 데이터 수신 후 사용 가능합니다.</span>
+        <span style="color:#6c7a98;font-size:0.78rem">API 키가 필요합니다. 최소 5개 이상 데이터 수신 후 사용 가능합니다.</span>
       </div>
       <button class="btn-primary" id="rt-analyze-btn" onclick="analyzeRtData()">⚡ 현재 데이터 AI 분석</button>
       <div id="rt-analysis-result" style="display:none" class="rt-analysis-box"></div>
@@ -1291,7 +1291,7 @@
   <div class="card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;padding:18px 24px">
     <div>
       <div style="font-weight:700;font-size:1rem;color:#e2e8f0">🌐 실험 커뮤니티</div>
-      <div style="font-size:0.78rem;color:#4a5568;margin-top:3px">다른 사람의 회로 실험을 보고, 내 실험을 공유해 보세요</div>
+      <div style="font-size:0.78rem;color:#6c7a98;margin-top:3px">다른 사람의 회로 실험을 보고, 내 실험을 공유해 보세요</div>
     </div>
     <div style="display:flex;gap:8px">
       <button class="btn-secondary" onclick="openShareModal()" style="font-size:0.85rem">📤 실험 공유하기</button>
@@ -1328,14 +1328,14 @@
     <!-- 헤더 -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
       <div class="share-modal-title" style="margin-bottom:0">📤 커뮤니티에 공유하기</div>
-      <button onclick="closeShareModal()" style="background:none;border:none;color:#718096;font-size:1.3rem;cursor:pointer;line-height:1;padding:4px">✕</button>
+      <button onclick="closeShareModal()" style="background:none;border:none;color:#8a97b2;font-size:1.3rem;cursor:pointer;line-height:1;padding:4px">✕</button>
     </div>
 
     <!-- ① 저장된 기록에서 실험 선택 (커뮤니티 탭 공유 버튼에서 열 때) -->
     <div id="share-select-section" style="display:none;margin-bottom:16px">
-      <div style="color:#a0aec0;font-size:0.85rem;font-weight:600;margin-bottom:10px">📋 공유할 실험 기록을 선택하세요</div>
+      <div style="color:#b4bfd4;font-size:0.85rem;font-weight:600;margin-bottom:10px">📋 공유할 실험 기록을 선택하세요</div>
       <div id="share-select-list" style="display:flex;flex-direction:column;gap:8px;max-height:220px;overflow-y:auto"></div>
-      <div id="share-no-data" style="display:none;text-align:center;padding:24px;color:#4a5568;font-size:0.85rem;background:#0f1117;border:1px solid #2d3250;border-radius:10px">
+      <div id="share-no-data" style="display:none;text-align:center;padding:24px;color:#6c7a98;font-size:0.85rem;background:#0f1117;border:1px solid #2d3250;border-radius:10px">
         저장된 실험 기록이 없습니다.<br>모의실험 실행 후 결과 화면에서 바로 공유할 수 있어요.
       </div>
     </div>
@@ -1371,7 +1371,7 @@
 
     <!-- 설명 -->
     <div class="input-group">
-      <label>실험 설명 * <span style="color:#4a5568;font-weight:400">(배운 점, 느낀 점을 자유롭게)</span></label>
+      <label>실험 설명 * <span style="color:#6c7a98;font-weight:400">(배운 점, 느낀 점을 자유롭게)</span></label>
       <textarea id="share-desc" rows="3" placeholder="실험을 통해 배운 점, 흥미로운 결과, 주의사항 등을 공유해 보세요" style="resize:vertical"></textarea>
     </div>
 
@@ -1395,7 +1395,7 @@
 <div class="share-modal-overlay" id="cc-settings-modal" style="display:none" onclick="if(event.target===this)closeCommunitySettings()">
   <div class="share-modal-box">
     <div class="share-modal-title">🔑 GitHub 설정</div>
-    <div style="font-size:0.83rem;color:#a0aec0;margin-bottom:16px;line-height:1.7">
+    <div style="font-size:0.83rem;color:#b4bfd4;margin-bottom:16px;line-height:1.7">
       공유하려면 <b style="color:#e2e8f0">public_repo</b> 권한의 GitHub PAT가 필요합니다.<br>
       1. <a href="https://github.com/settings/tokens/new" target="_blank" style="color:#63b3ed">github.com/settings/tokens/new</a> 접속<br>
       2. <b>public_repo</b> 체크 → Generate token<br>
@@ -1430,7 +1430,7 @@
     <div class="card-title">🟤 저항 색상 코드 계산기</div>
     <div class="tool-section">
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-        <span style="font-size:0.85rem;color:#a0aec0">밴드 수:</span>
+        <span style="font-size:0.85rem;color:#b4bfd4">밴드 수:</span>
         <label style="display:flex;align-items:center;gap:5px;font-size:0.85rem;color:#c6cad8;cursor:pointer">
           <input type="radio" name="res-bands" value="4" checked onchange="calcResistor()"> 4밴드
         </label>
@@ -1449,7 +1449,7 @@
           <div class="tool-result-label">허용오차</div>
         </div>
         <div>
-          <div class="tool-result-num" id="res-range" style="font-size:1rem;color:#a0aec0">—</div>
+          <div class="tool-result-num" id="res-range" style="font-size:1rem;color:#b4bfd4">—</div>
           <div class="tool-result-label">실제 범위</div>
         </div>
       </div>
@@ -1460,7 +1460,7 @@
   <div class="card">
     <div class="card-title">⚡ 옴의 법칙 계산기</div>
     <div class="tool-section">
-      <div style="font-size:0.8rem;color:#718096">V, I, R 중 2개를 입력하면 나머지 1개와 전력(P)을 자동 계산합니다.</div>
+      <div style="font-size:0.8rem;color:#8a97b2">V, I, R 중 2개를 입력하면 나머지 1개와 전력(P)을 자동 계산합니다.</div>
       <div class="ohm-grid">
         <div class="ohm-cell">
           <label>V — 전압 (V)</label>
@@ -1489,7 +1489,7 @@
         </div>
       </div>
       <div class="ohm-btns">
-        <span style="font-size:0.75rem;color:#4a5568;align-self:center">빠른 입력:</span>
+        <span style="font-size:0.75rem;color:#6c7a98;align-self:center">빠른 입력:</span>
         <button class="ohm-preset" onclick="ohmPreset(5,0.02,null)">5V · LED 20mA</button>
         <button class="ohm-preset" onclick="ohmPreset(3.3,0.02,null)">3.3V · LED 20mA</button>
         <button class="ohm-preset" onclick="ohmPreset(5,null,220)">5V · 220Ω</button>
@@ -2046,7 +2046,7 @@ function showPinmap(board, btn) {
   const typeClass = { power:'pin-power', gnd:'pin-gnd', pwm:'pin-pwm', analog:'pin-analog',
                       digital:'pin-digital', i2c:'pin-i2c', spi:'pin-spi' };
   document.getElementById('pinmap-content').innerHTML = `
-    <div style="font-size:0.8rem;color:#718096;margin-bottom:8px">
+    <div style="font-size:0.8rem;color:#8a97b2;margin-bottom:8px">
       <strong style="color:#c6cad8">${escHtml(data.title)}</strong> · ${escHtml(data.desc)}
     </div>
     <div style="overflow-x:auto">
@@ -2057,12 +2057,12 @@ function showPinmap(board, btn) {
           <tr>
             <td><span class="pin-badge ${typeClass[type]||''}">${escHtml(pin)}</span></td>
             <td>${escHtml(func)}</td>
-            <td style="font-size:0.75rem;color:#718096">${escHtml(volt)}</td>
+            <td style="font-size:0.75rem;color:#8a97b2">${escHtml(volt)}</td>
           </tr>`).join('')}
       </tbody>
     </table>
     </div>
-    <div style="font-size:0.7rem;color:#4a5568;margin-top:8px">★ = PWM 지원핀</div>
+    <div style="font-size:0.7rem;color:#6c7a98;margin-top:8px">★ = PWM 지원핀</div>
   `;
 }
 
@@ -2471,9 +2471,9 @@ function renderResult(r, meta) {
           ${(r.connectionGuide.pinMap).map(p => `
             <tr>
               <td><span class="code">${escHtml(p.from)}</span></td>
-              <td style="color:#718096">→</td>
+              <td style="color:#8a97b2">→</td>
               <td><span class="code">${escHtml(p.to)}</span></td>
-              <td style="color:#a0aec0;font-size:0.82rem">${escHtml(p.note || '')}</td>
+              <td style="color:#b4bfd4;font-size:0.82rem">${escHtml(p.note || '')}</td>
             </tr>`).join('')}
         </tbody>
       </table>
@@ -2502,7 +2502,7 @@ function renderResult(r, meta) {
           <div class="resistor-value">${r.resistorCalculation?.recommended ?? '—'}<span style="font-size:1.2rem"> ${r.resistorCalculation?.unit || 'Ω'}</span></div>
           <div class="resistor-label">권장 저항값</div>
         </div>
-        <div style="font-size:0.85rem;color:#a0aec0;display:flex;align-items:center">
+        <div style="font-size:0.85rem;color:#b4bfd4;display:flex;align-items:center">
           ${escHtml(r.resistorCalculation?.explanation || '')}
         </div>
         ${r.resistorCalculation?.formula ? `<div class="formula-box">${escHtml(r.resistorCalculation.formula)}</div>` : ''}
@@ -2542,9 +2542,9 @@ function renderResult(r, meta) {
             <span class="badge badge-blue" style="font-size:0.7rem">${escHtml(compStr)}</span>
           </div>
         </div>
-        <div style="font-size:0.75rem;color:#4a5568;white-space:nowrap;margin-top:4px">${dateStr}</div>
+        <div style="font-size:0.75rem;color:#6c7a98;white-space:nowrap;margin-top:4px">${dateStr}</div>
       </div>
-      ${r.summary ? `<p style="color:#a0aec0;font-size:0.9rem">${escHtml(r.summary)}</p>` : ''}
+      ${r.summary ? `<p style="color:#b4bfd4;font-size:0.9rem">${escHtml(r.summary)}</p>` : ''}
     </div>
 
     <div class="card">
@@ -2631,7 +2631,7 @@ function renderHistory() {
           <div class="history-info" onclick="reloadSim(${idx})" style="flex:1;cursor:pointer">
             <div class="history-title"><span class="history-tag tag-sim">실험</span>${escHtml(item.simTypeName || '모의실험')}</div>
             <div class="history-meta">${dateStr}${escHtml(extraStr)}</div>
-            <div class="history-meta" style="color:#4a5568;margin-top:2px;font-size:0.78rem">${escHtml(valSummary)}</div>
+            <div class="history-meta" style="color:#6c7a98;margin-top:2px;font-size:0.78rem">${escHtml(valSummary)}</div>
           </div>
           <div class="history-actions" style="flex-wrap:wrap;gap:6px">
             <button class="btn-secondary" onclick="reloadSim(${idx})" style="font-size:0.8rem;padding:7px 12px">불러오기</button>
@@ -5216,7 +5216,7 @@ async function loadCommunityPosts() {
     area.innerHTML = '<div class="card" style="text-align:center;padding:32px">'
       + '<div style="font-size:1.8rem;margin-bottom:10px">⚠️</div>'
       + '<div style="color:#fc8181;margin-bottom:6px">불러오기 실패</div>'
-      + '<div style="color:#718096;font-size:0.82rem;margin-bottom:14px">' + escHtml(msg) + '</div>'
+      + '<div style="color:#8a97b2;font-size:0.82rem;margin-bottom:14px">' + escHtml(msg) + '</div>'
       + '<button class="btn-secondary" onclick="loadCommunityPosts()" style="font-size:0.82rem">다시 시도</button>'
       + '</div>';
   }
@@ -5226,9 +5226,9 @@ function renderCommunityPosts(posts) {
   const area = document.getElementById('cc-posts-area');
   if (!posts.length) {
     area.innerHTML = `
-      <div class="card" style="text-align:center;padding:48px;color:#4a5568">
+      <div class="card" style="text-align:center;padding:48px;color:#6c7a98">
         <div style="font-size:2.5rem;margin-bottom:12px">🔬</div>
-        <div style="color:#718096;margin-bottom:8px">아직 공유된 실험이 없습니다</div>
+        <div style="color:#8a97b2;margin-bottom:8px">아직 공유된 실험이 없습니다</div>
         <div style="font-size:0.82rem">첫 번째 실험을 공유해 보세요!</div>
       </div>`;
     return;
@@ -5262,7 +5262,7 @@ function buildCcCard(issue) {
           const val = data.params[p.id];
           if (val === undefined) return null;
           const shortLabel = p.label.replace(/\(.*?\)/g, '').trim();
-          return `<span style="color:#a0aec0">${escHtml(shortLabel)}:</span> <b style="color:#e2e8f0">${val}${p.unit}</b>`;
+          return `<span style="color:#b4bfd4">${escHtml(shortLabel)}:</span> <b style="color:#e2e8f0">${val}${p.unit}</b>`;
         }).filter(Boolean);
         const extraParts = data.extraParts || [];
         let settingsInner = paramParts.join(' &nbsp;·&nbsp; ');
@@ -5307,7 +5307,7 @@ function buildCcCard(issue) {
         </div>
         <div class="cc-comments-section" id="cc-comments-${issue.number}">
           <div id="cc-comments-list-${issue.number}" style="display:flex;flex-direction:column;gap:6px">
-            <div style="color:#4a5568;font-size:0.78rem">댓글을 불러오는 중...</div>
+            <div style="color:#6c7a98;font-size:0.78rem">댓글을 불러오는 중...</div>
           </div>
           <div class="cc-comment-input-row">
             <textarea id="cc-comment-text-${issue.number}" placeholder="댓글을 입력하세요 (GitHub 토큰 필요)..." rows="2"></textarea>
@@ -5365,12 +5365,12 @@ function renderBookmarks() {
   const area = document.getElementById('cc-posts-area');
   const bm = getBookmarks();
   if (!bm.size) {
-    area.innerHTML = '<div style="text-align:center;padding:40px;color:#4a5568">북마크한 실험이 없습니다.<br>커뮤니티 게시물에서 ⭐ 북마크 버튼을 눌러보세요.</div>';
+    area.innerHTML = '<div style="text-align:center;padding:40px;color:#6c7a98">북마크한 실험이 없습니다.<br>커뮤니티 게시물에서 ⭐ 북마크 버튼을 눌러보세요.</div>';
     return;
   }
   const bookmarked = ccPosts.filter(p => bm.has(p.number));
   if (!bookmarked.length) {
-    area.innerHTML = '<div style="text-align:center;padding:40px;color:#4a5568">북마크한 게시물을 찾을 수 없습니다.<br>먼저 전체 탭에서 게시물을 불러오세요.</div>';
+    area.innerHTML = '<div style="text-align:center;padding:40px;color:#6c7a98">북마크한 게시물을 찾을 수 없습니다.<br>먼저 전체 탭에서 게시물을 불러오세요.</div>';
     return;
   }
   const cards = bookmarked.map(issue => buildCcCard(issue)).join('');
@@ -5381,13 +5381,13 @@ function renderBookmarks() {
 let shareAttachData = null;
 
 function buildSharePreviewHtml(data) {
-  if (!data) return '<span style="color:#4a5568">첨부 데이터 없음</span>';
+  if (!data) return '<span style="color:#6c7a98">첨부 데이터 없음</span>';
   if (data.type === 'ai') {
     const comps = (data.components || []).map(c => `${c.name} ×${c.quantity}`).join(', ');
     return `<b style="color:#9f7aea">🤖 AI 분석 결과</b><br>
-      <span style="color:#a0aec0">사용 부품: </span>${escHtml(comps || '없음')}<br>
-      <span style="color:#a0aec0">실험 목적: </span>${escHtml(data.purpose || '')}<br>
-      <span style="color:#a0aec0">분석 제목: </span><b style="color:#e2e8f0">${escHtml(data.title || '')}</b>`;
+      <span style="color:#b4bfd4">사용 부품: </span>${escHtml(comps || '없음')}<br>
+      <span style="color:#b4bfd4">실험 목적: </span>${escHtml(data.purpose || '')}<br>
+      <span style="color:#b4bfd4">분석 제목: </span><b style="color:#e2e8f0">${escHtml(data.title || '')}</b>`;
   }
   const simIdx = data.simTypeIdx ?? SIM_TYPES.findIndex(s => s.id === data.simType);
   const sim = SIM_TYPES[simIdx];
@@ -5396,7 +5396,7 @@ function buildSharePreviewHtml(data) {
     const val = data.params?.[p.id];
     if (val === undefined) return null;
     const shortLabel = p.label.replace(/\(.*?\)/g, '').trim();
-    return `<span style="color:#a0aec0">${escHtml(shortLabel)}:</span> <b style="color:#e2e8f0">${val}${p.unit}</b>`;
+    return `<span style="color:#b4bfd4">${escHtml(shortLabel)}:</span> <b style="color:#e2e8f0">${val}${p.unit}</b>`;
   }).filter(Boolean);
   const extraParts = data.extraParts || [];
   let html = `<b style="color:#63b3ed">${escHtml(sim.name)}</b><br>`;
@@ -5519,7 +5519,7 @@ function openShareModal(source, histIdx) {
           onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
           <div>
             <div style="font-weight:600;color:${it.textColor};font-size:0.87rem">${escHtml(it.label)}</div>
-            <div style="font-size:0.76rem;color:#4a5568;margin-top:3px">${escHtml(it.sub)}</div>
+            <div style="font-size:0.76rem;color:#6c7a98;margin-top:3px">${escHtml(it.sub)}</div>
           </div>
           <span style="color:#68d391;font-size:0.8rem;white-space:nowrap;margin-left:12px;flex-shrink:0">선택 →</span>
         </div>`
@@ -5658,7 +5658,7 @@ async function loadComments(issueNumber) {
     const comments = await resp.json();
     _ccCommentsLoaded.add(issueNumber);
     if (!comments.length) {
-      listEl.innerHTML = '<div style="color:#4a5568;font-size:0.78rem">아직 댓글이 없습니다.</div>';
+      listEl.innerHTML = '<div style="color:#6c7a98;font-size:0.78rem">아직 댓글이 없습니다.</div>';
       return;
     }
     listEl.innerHTML = comments.map(c => {
