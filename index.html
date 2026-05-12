@@ -919,9 +919,10 @@
       <div id="sim-interpretation" style="font-size:0.9rem;color:#cbd5e0;line-height:1.9"></div>
     </div>
 
-    <!-- 저장 -->
+    <!-- 저장 / 공유 -->
     <div class="row" style="margin-bottom:8px">
       <button class="btn-primary" onclick="saveSimToHistory()">💾 기록에 저장</button>
+      <button class="btn-secondary" onclick="openShareModal('current')" style="background:#1a3a2e;color:#68d391;border:1px solid #2d5a3e">📤 커뮤니티 공유</button>
       <button class="btn-secondary" onclick="document.getElementById('sim-result-area').scrollIntoView({block:'start'})">↑ 결과로</button>
     </div>
 
@@ -1109,6 +1110,12 @@
     <div class="input-group">
       <label>결과 요약 (선택)</label>
       <input type="text" id="share-results" placeholder="예: 전류 12.7mA, 밝기 63%, 정상 동작 확인">
+    </div>
+
+    <!-- 실험 세팅 미리보기 (현재 실험에서 공유할 때만 표시) -->
+    <div id="share-params-preview" style="display:none;background:#0f1117;border:1px solid #2d3250;border-radius:10px;padding:14px;margin-bottom:14px;font-size:0.83rem">
+      <div style="color:#68d391;font-weight:600;margin-bottom:8px">⚙️ 공유될 실험 세팅</div>
+      <div id="share-params-content" style="color:#a0aec0;line-height:1.8"></div>
     </div>
 
     <div class="input-group">
@@ -3245,8 +3252,32 @@ function renderCommunityPosts(posts) {
     const dateStr = new Date(issue.created_at).toLocaleDateString('ko-KR');
     const resultsHtml = data?.resultsSummary
       ? `<div class="cc-results">📊 ${escHtml(data.resultsSummary)}</div>` : '';
+
+    // 실험 세팅 표시
+    let settingsHtml = '';
+    if (data && data.params) {
+      const simIdx = data.simTypeIdx ?? SIM_TYPES.findIndex(s => s.id === data.simType);
+      const sim = SIM_TYPES[simIdx];
+      if (sim) {
+        const paramParts = sim.params.map(p => {
+          const val = data.params[p.id];
+          if (val === undefined) return null;
+          const shortLabel = p.label.replace(/\(.*?\)/g, '').trim();
+          return `<span style="color:#a0aec0">${escHtml(shortLabel)}:</span> <b style="color:#e2e8f0">${val}${p.unit}</b>`;
+        }).filter(Boolean);
+        const extraParts = data.extraParts || [];
+        let settingsInner = paramParts.join(' &nbsp;·&nbsp; ');
+        if (extraParts.length) {
+          settingsInner += `<br><span style="color:#f6ad55">추가 부품: </span>`
+            + extraParts.map(ep => `${escHtml(ep.label)} <b>${ep.value}${ep.unit}</b>`).join(', ');
+        }
+        settingsHtml = `<div style="background:#0f1117;border:1px solid #2d3250;border-radius:8px;padding:9px 12px;margin:8px 0;font-size:0.78rem;line-height:1.9">
+          <span style="color:#68d391;font-size:0.75rem;font-weight:600">⚙️ 실험 세팅</span><br>${settingsInner}</div>`;
+      }
+    }
+
     const loadBtn = data ? `<button class="btn-secondary" onclick="loadCcExperiment(${issue.number})"
-        style="font-size:0.75rem;padding:5px 10px">▶ 불러오기</button>` : '';
+        style="font-size:0.75rem;padding:5px 10px;background:#1a3a2e;color:#68d391;border:1px solid #2d5a3e">▶ 이 세팅으로 실험하기</button>` : '';
     const reactions = issue.reactions?.['+1'] || 0;
 
     return `
@@ -3257,6 +3288,7 @@ function renderCommunityPosts(posts) {
         </div>
         <div class="cc-author">@${escHtml(issue.user.login)}</div>
         ${extractDescription(issue.body) ? `<div class="cc-desc">${escHtml(extractDescription(issue.body))}</div>` : ''}
+        ${settingsHtml}
         ${resultsHtml}
         <div class="cc-footer">
           <div class="cc-date">${dateStr} · 👍 ${reactions}</div>
@@ -3305,7 +3337,25 @@ function setCcFilter(type) {
 }
 
 // ── 공유 모달 ──
-function openShareModal() {
+function buildParamsPreviewHtml(simTypeIdx, params, extraParts) {
+  const sim = SIM_TYPES[simTypeIdx];
+  if (!sim || !params) return '';
+  const paramLines = sim.params.map(p => {
+    const val = params[p.id];
+    if (val === undefined) return null;
+    const shortLabel = p.label.replace(/\(.*?\)/g, '').trim();
+    return `<span style="color:#e2e8f0">${shortLabel}:</span> ${val}${p.unit}`;
+  }).filter(Boolean);
+  const lines = [`<b style="color:#63b3ed">${escHtml(sim.name)}</b>`];
+  if (paramLines.length) lines.push(paramLines.join(' &nbsp;|&nbsp; '));
+  if (extraParts && extraParts.length) {
+    lines.push('<span style="color:#f6ad55">추가 부품:</span> ' +
+      extraParts.map(ep => `${escHtml(ep.label)} ${ep.value}${ep.unit}`).join(', '));
+  }
+  return lines.join('<br>');
+}
+
+function openShareModal(source) {
   // 기록에서 선택지 채우기
   const sel = document.getElementById('share-data-source');
   const history = getHistory();
@@ -3314,6 +3364,25 @@ function openShareModal() {
     + simItems.slice(0, 10).map((item, i) =>
         `<option value="hist_${i}">기록: ${escHtml(item.simTypeName)} (${new Date(item.date).toLocaleDateString('ko-KR')})</option>`
       ).join('');
+
+  const preview = document.getElementById('share-params-preview');
+  const previewContent = document.getElementById('share-params-content');
+
+  if (source === 'current' && simResult) {
+    // 실험 결과 창에서 직접 공유: 현재 세팅 자동 설정
+    sel.value = 'current';
+    const sim = SIM_TYPES[simType];
+    document.getElementById('share-type').value = sim.id;
+    document.getElementById('share-results').value =
+      (simResult.values || []).slice(0, 3).map(v => `${v.label} ${v.num}${v.unit}`).join(' / ');
+    // 세팅 미리보기 표시
+    const p = getSimParams();
+    previewContent.innerHTML = buildParamsPreviewHtml(simType, p, simExtraParts);
+    preview.style.display = 'block';
+  } else {
+    preview.style.display = 'none';
+  }
+
   document.getElementById('share-modal').style.display = 'flex';
 }
 function closeShareModal() { document.getElementById('share-modal').style.display = 'none'; }
@@ -3322,17 +3391,25 @@ function onShareDataChange() {
   const val = document.getElementById('share-data-source').value;
   const typeEl = document.getElementById('share-type');
   const resultsEl = document.getElementById('share-results');
+  const preview = document.getElementById('share-params-preview');
+  const previewContent = document.getElementById('share-params-content');
+
   if (val === 'current' && simResult) {
     typeEl.value = SIM_TYPES[simType].id;
     resultsEl.value = (simResult.values || []).slice(0, 3).map(v => `${v.label} ${v.num}${v.unit}`).join(' / ');
+    previewContent.innerHTML = buildParamsPreviewHtml(simType, getSimParams(), simExtraParts);
+    preview.style.display = 'block';
   } else if (val.startsWith('hist_')) {
     const idx = parseInt(val.replace('hist_', ''));
     const item = getHistory().filter(i => i.type === 'sim')[idx];
     if (item) {
-      const idMap = SIM_TYPES.reduce((a, s) => { a[s.name] = s.id; return a; }, {});
       typeEl.value = SIM_TYPES[item.simTypeIdx]?.id || 'led';
       resultsEl.value = (item.result?.values || []).slice(0, 3).map(v => `${v.label} ${v.num}${v.unit}`).join(' / ');
+      previewContent.innerHTML = buildParamsPreviewHtml(item.simTypeIdx, item.params, item.extraParts);
+      preview.style.display = 'block';
     }
+  } else {
+    preview.style.display = 'none';
   }
 }
 
