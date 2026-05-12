@@ -124,7 +124,8 @@
 
     .nav-tab:hover:not(.active) { color: var(--text-secondary); background: rgba(255,255,255,0.04); }
 
-    .nav-settings {
+    .nav-user-btn {
+      display: flex; align-items: center; gap: 7px;
       padding: 6px 14px;
       border: 1px solid var(--border-mid);
       border-radius: var(--r-sm);
@@ -135,8 +136,26 @@
       cursor: pointer;
       transition: all 0.18s;
       font-family: inherit;
+      white-space: nowrap;
+      max-width: 160px;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-    .nav-settings:hover { border-color: var(--blue); color: var(--blue); background: rgba(91,164,224,0.07); }
+    .nav-user-btn:hover { border-color: var(--blue); color: var(--blue); background: rgba(91,164,224,0.07); }
+    .nav-user-btn.logged-in { color: var(--blue); border-color: rgba(91,164,224,0.35); }
+
+    /* ── 인증 모달 ── */
+    .auth-tabs { display:flex; gap:4px; margin-bottom:20px; background:var(--bg-input); border-radius:var(--r-sm); padding:4px; }
+    .auth-tab-btn { flex:1; padding:8px; border:none; border-radius:6px; background:transparent; color:var(--text-muted); font-size:0.85rem; font-weight:600; cursor:pointer; transition:all .15s; font-family:inherit; }
+    .auth-tab-btn.active { background:var(--bg-elevated); color:var(--text-primary); }
+    .auth-error { color:#fc8181; font-size:0.82rem; margin-top:8px; display:none; padding:8px 10px; background:rgba(252,129,129,0.08); border:1px solid rgba(252,129,129,0.2); border-radius:6px; }
+    .auth-info { color:#63b3ed; font-size:0.82rem; margin-bottom:16px; padding:10px 12px; background:rgba(99,179,237,0.07); border:1px solid rgba(99,179,237,0.18); border-radius:8px; line-height:1.6; }
+    .account-user-box { display:flex; align-items:center; gap:10px; padding:12px 16px; background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--r-sm); margin-bottom:20px; }
+    .account-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--blue),var(--purple)); display:flex; align-items:center; justify-content:center; font-size:1rem; font-weight:700; color:#fff; flex-shrink:0; }
+    .account-username { font-size:0.95rem; font-weight:700; color:var(--text-primary); }
+    .account-label { font-size:0.75rem; color:var(--text-muted); margin-top:1px; }
+    .logout-btn { width:100%; padding:9px; border:1px solid rgba(245,101,101,0.3); border-radius:var(--r-sm); background:transparent; color:#fc8181; font-size:0.85rem; font-weight:600; cursor:pointer; transition:all .15s; font-family:inherit; margin-top:4px; }
+    .logout-btn:hover { background:rgba(245,101,101,0.08); border-color:rgba(245,101,101,0.5); }
 
     /* ── 뷰 공통 ── */
     .view { display: none; max-width: 920px; margin: 0 auto; padding: 36px 28px 60px; }
@@ -1038,7 +1057,7 @@
     <button class="nav-tab" onclick="showView('history')">기록</button>
     <button class="nav-tab" onclick="showView('tools')">도구</button>
   </div>
-  <button class="nav-settings" onclick="openSettings()">⚙ API 키</button>
+  <button class="nav-user-btn" id="nav-user-btn" onclick="openUserMenu()">👤 로그인</button>
 </nav>
 
 <!-- ── 홈 뷰 ── -->
@@ -1532,16 +1551,93 @@
   <div class="loading-text">AI가 회로를 분석하고 있습니다...</div>
 </div>
 
-<!-- ── API 키 설정 모달 ── -->
+<!-- ── 로그인 / 회원가입 모달 ── -->
+<div class="modal-overlay" id="auth-modal" style="display:none" onclick="if(event.target===this)closeAuthModal()">
+  <div class="modal" style="max-width:420px">
+    <div class="auth-tabs">
+      <button class="auth-tab-btn active" id="auth-tab-login" onclick="switchAuthTab('login')">🔐 로그인</button>
+      <button class="auth-tab-btn" id="auth-tab-register" onclick="switchAuthTab('register')">📝 회원가입</button>
+    </div>
+
+    <!-- 로그인 폼 -->
+    <div id="auth-login-form">
+      <div class="auth-info">로그인하면 공유 실험에 내 아이디가 표시됩니다.</div>
+      <div class="input-group">
+        <label>아이디</label>
+        <input type="text" id="auth-login-id" placeholder="아이디 입력" autocomplete="username" onkeydown="if(event.key==='Enter')submitLogin()">
+      </div>
+      <div class="input-group">
+        <label>비밀번호</label>
+        <input type="password" id="auth-login-pw" placeholder="비밀번호 입력" autocomplete="current-password" onkeydown="if(event.key==='Enter')submitLogin()">
+      </div>
+      <div class="auth-error" id="auth-login-error"></div>
+      <div class="row" style="margin-top:18px">
+        <button class="btn-primary" onclick="submitLogin()">로그인</button>
+        <button class="btn-secondary" onclick="closeAuthModal()">취소</button>
+      </div>
+    </div>
+
+    <!-- 회원가입 폼 -->
+    <div id="auth-register-form" style="display:none">
+      <div class="auth-info">아이디는 영문·숫자·한글·_(밑줄) 사용 가능, 2~20자.</div>
+      <div class="input-group">
+        <label>아이디</label>
+        <input type="text" id="auth-reg-id" placeholder="사용할 아이디 입력" autocomplete="username">
+      </div>
+      <div class="input-group">
+        <label>비밀번호</label>
+        <input type="password" id="auth-reg-pw" placeholder="비밀번호 (4자 이상)" autocomplete="new-password">
+      </div>
+      <div class="input-group">
+        <label>비밀번호 확인</label>
+        <input type="password" id="auth-reg-pw2" placeholder="비밀번호 재입력" autocomplete="new-password" onkeydown="if(event.key==='Enter')submitRegister()">
+      </div>
+      <div class="auth-error" id="auth-reg-error"></div>
+      <div class="row" style="margin-top:18px">
+        <button class="btn-primary" onclick="submitRegister()">가입하기</button>
+        <button class="btn-secondary" onclick="closeAuthModal()">취소</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── 계정 설정 모달 ── -->
+<div class="modal-overlay" id="account-modal" style="display:none" onclick="if(event.target===this)closeAccountModal()">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-title">⚙ 계정 설정</div>
+    <div class="account-user-box">
+      <div class="account-avatar" id="account-avatar-letter">?</div>
+      <div>
+        <div class="account-username" id="account-username-display">-</div>
+        <div class="account-label">CircuitMind 계정</div>
+      </div>
+    </div>
+    <div class="input-group">
+      <label>Claude API 키</label>
+      <input type="password" id="account-api-key-input" placeholder="sk-ant-..." autocomplete="off">
+      <div style="font-size:0.75rem;color:var(--text-muted);margin-top:5px;line-height:1.6">
+        AI 분석에 필요합니다. <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:#63b3ed">console.anthropic.com</a>에서 발급
+      </div>
+    </div>
+    <div class="row" style="margin-top:16px">
+      <button class="btn-primary" onclick="saveAccountSettings()">저장</button>
+      <button class="btn-secondary" onclick="closeAccountModal()">취소</button>
+    </div>
+    <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+      <button class="logout-btn" onclick="logout()">로그아웃</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── API 키 설정 모달 (비로그인 호환용) ── -->
 <div class="modal-overlay" id="settings-modal" style="display:none">
   <div class="modal">
     <div class="modal-title">Claude API 키 설정</div>
     <div class="modal-sub">
-      <strong style="color:#fc8181">API 키가 없거나 유효하지 않습니다.</strong><br><br>
+      로그인 후 계정 설정에서 API 키를 저장하면 다음부터 자동으로 불러옵니다.<br><br>
       1. <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:#63b3ed">console.anthropic.com</a> 접속<br>
       2. <strong>API Keys</strong> → <strong>Create Key</strong> 클릭<br>
-      3. 생성된 <code style="background:#0f1117;padding:1px 6px;border-radius:4px;color:#90cdf4">sk-ant-...</code> 키를 아래에 붙여넣기<br><br>
-      키는 이 기기의 브라우저에만 저장됩니다.
+      3. 생성된 <code style="background:#0f1117;padding:1px 6px;border-radius:4px;color:#90cdf4">sk-ant-...</code> 키를 아래에 붙여넣기
     </div>
     <div class="input-group">
       <label>API 키</label>
@@ -1704,7 +1800,8 @@ const EXPERIMENTS = [
 ];
 
 // ── 초기화 ──
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
+  await restoreSession();
   addPart();
   checkApiKey();
   renderHistory();
@@ -2276,8 +2373,161 @@ function getPurpose() {
   return sel;
 }
 
+// ── 계정 시스템 ──
+let currentUser = null; // { username, apiKey }
+
+async function hashPassword(password) {
+  const data = new TextEncoder().encode(password);
+  const buf = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+function getAccounts() {
+  try { return JSON.parse(localStorage.getItem('cm_accounts') || '{}'); } catch(e) { return {}; }
+}
+function saveAccounts(a) { localStorage.setItem('cm_accounts', JSON.stringify(a)); }
+function getStoredSession() { return localStorage.getItem('cm_session') || ''; }
+function saveSession(u) { localStorage.setItem('cm_session', u); }
+function clearSession() { localStorage.removeItem('cm_session'); }
+
+function updateNavUser() {
+  const btn = document.getElementById('nav-user-btn');
+  if (currentUser) {
+    btn.textContent = '👤 ' + currentUser.username;
+    btn.classList.add('logged-in');
+  } else {
+    btn.textContent = '👤 로그인';
+    btn.classList.remove('logged-in');
+  }
+}
+
+function openUserMenu() {
+  if (currentUser) openAccountModal();
+  else openAuthModal();
+}
+
+// ── 인증 모달 ──
+function openAuthModal(tab) {
+  switchAuthTab(tab || 'login');
+  document.getElementById('auth-login-id').value = '';
+  document.getElementById('auth-login-pw').value = '';
+  document.getElementById('auth-reg-id').value = '';
+  document.getElementById('auth-reg-pw').value = '';
+  document.getElementById('auth-reg-pw2').value = '';
+  document.getElementById('auth-login-error').style.display = 'none';
+  document.getElementById('auth-reg-error').style.display = 'none';
+  document.getElementById('auth-modal').style.display = 'flex';
+}
+function closeAuthModal() { document.getElementById('auth-modal').style.display = 'none'; }
+
+function switchAuthTab(tab) {
+  const isLogin = tab === 'login';
+  document.getElementById('auth-login-form').style.display = isLogin ? 'block' : 'none';
+  document.getElementById('auth-register-form').style.display = isLogin ? 'none' : 'block';
+  document.getElementById('auth-tab-login').classList.toggle('active', isLogin);
+  document.getElementById('auth-tab-register').classList.toggle('active', !isLogin);
+  if (isLogin) setTimeout(() => document.getElementById('auth-login-id').focus(), 50);
+  else setTimeout(() => document.getElementById('auth-reg-id').focus(), 50);
+}
+
+async function submitLogin() {
+  const id = document.getElementById('auth-login-id').value.trim();
+  const pw = document.getElementById('auth-login-pw').value;
+  const errEl = document.getElementById('auth-login-error');
+  errEl.style.display = 'none';
+  if (!id || !pw) { errEl.textContent = '아이디와 비밀번호를 입력하세요'; errEl.style.display = 'block'; return; }
+  const accounts = getAccounts();
+  const account = accounts[id];
+  if (!account) { errEl.textContent = '존재하지 않는 아이디입니다'; errEl.style.display = 'block'; return; }
+  const hash = await hashPassword(pw);
+  if (hash !== account.passwordHash) { errEl.textContent = '비밀번호가 올바르지 않습니다'; errEl.style.display = 'block'; return; }
+  currentUser = { username: id, apiKey: account.apiKey || '' };
+  if (account.apiKey) localStorage.setItem('cm_api_key', account.apiKey);
+  saveSession(id);
+  closeAuthModal();
+  updateNavUser();
+  checkApiKey();
+  showToast('로그인되었습니다: ' + id);
+}
+
+async function submitRegister() {
+  const id = document.getElementById('auth-reg-id').value.trim();
+  const pw = document.getElementById('auth-reg-pw').value;
+  const pw2 = document.getElementById('auth-reg-pw2').value;
+  const errEl = document.getElementById('auth-reg-error');
+  errEl.style.display = 'none';
+  if (!id) { errEl.textContent = '아이디를 입력하세요'; errEl.style.display = 'block'; return; }
+  if (id.length < 2 || id.length > 20) { errEl.textContent = '아이디는 2~20자여야 합니다'; errEl.style.display = 'block'; return; }
+  if (!/^[a-zA-Z0-9가-힣_]+$/.test(id)) { errEl.textContent = '아이디는 영문·숫자·한글·_(밑줄)만 사용 가능합니다'; errEl.style.display = 'block'; return; }
+  if (!pw || pw.length < 4) { errEl.textContent = '비밀번호는 4자 이상이어야 합니다'; errEl.style.display = 'block'; return; }
+  if (pw !== pw2) { errEl.textContent = '비밀번호가 일치하지 않습니다'; errEl.style.display = 'block'; return; }
+  const accounts = getAccounts();
+  if (accounts[id]) { errEl.textContent = '이미 사용 중인 아이디입니다'; errEl.style.display = 'block'; return; }
+  const hash = await hashPassword(pw);
+  accounts[id] = { passwordHash: hash, apiKey: '' };
+  saveAccounts(accounts);
+  currentUser = { username: id, apiKey: '' };
+  saveSession(id);
+  closeAuthModal();
+  updateNavUser();
+  showToast('가입 완료! 환영합니다, ' + id);
+  // API 키 설정 안내
+  openAccountModal();
+}
+
+// ── 계정 설정 모달 ──
+function openAccountModal() {
+  if (!currentUser) { openAuthModal(); return; }
+  document.getElementById('account-username-display').textContent = currentUser.username;
+  document.getElementById('account-avatar-letter').textContent = currentUser.username.charAt(0).toUpperCase();
+  const accounts = getAccounts();
+  const account = accounts[currentUser.username];
+  document.getElementById('account-api-key-input').value = account?.apiKey || localStorage.getItem('cm_api_key') || '';
+  document.getElementById('account-modal').style.display = 'flex';
+}
+function closeAccountModal() { document.getElementById('account-modal').style.display = 'none'; }
+
+function saveAccountSettings() {
+  if (!currentUser) return;
+  const apiKey = document.getElementById('account-api-key-input').value.trim();
+  const accounts = getAccounts();
+  if (accounts[currentUser.username]) {
+    accounts[currentUser.username].apiKey = apiKey;
+    saveAccounts(accounts);
+  }
+  currentUser.apiKey = apiKey;
+  if (apiKey) localStorage.setItem('cm_api_key', apiKey);
+  else localStorage.removeItem('cm_api_key');
+  closeAccountModal();
+  checkApiKey();
+  showToast('설정이 저장되었습니다');
+}
+
+function logout() {
+  currentUser = null;
+  clearSession();
+  updateNavUser();
+  closeAccountModal();
+  checkApiKey();
+  showToast('로그아웃되었습니다');
+}
+
+async function restoreSession() {
+  const saved = getStoredSession();
+  if (!saved) return;
+  const accounts = getAccounts();
+  const account = accounts[saved];
+  if (!account) { clearSession(); return; }
+  currentUser = { username: saved, apiKey: account.apiKey || '' };
+  if (account.apiKey) localStorage.setItem('cm_api_key', account.apiKey);
+  updateNavUser();
+}
+
 // ── API 키 ──
-function getApiKey() { return localStorage.getItem('cm_api_key') || ''; }
+function getApiKey() {
+  if (currentUser?.apiKey) return currentUser.apiKey;
+  return localStorage.getItem('cm_api_key') || '';
+}
 
 function checkApiKey() {
   const hasKey = !!getApiKey();
@@ -2285,6 +2535,8 @@ function checkApiKey() {
 }
 
 function openSettings() {
+  // 로그인된 경우 계정 설정으로 리다이렉트
+  if (currentUser) { openAccountModal(); return; }
   document.getElementById('api-key-input').value = getApiKey();
   document.getElementById('settings-modal').style.display = 'flex';
 }
@@ -5329,7 +5581,7 @@ function buildCcCard(issue) {
           <div class="cc-title">${escHtml(issue.title)}</div>
           <span class="cc-type-badge">${simLabel}</span>
         </div>
-        <div class="cc-author">@${escHtml(issue.user.login)}</div>
+        <div class="cc-author">${data?.cmAuthor ? `<span style="color:var(--blue);font-weight:700">${escHtml(data.cmAuthor)}</span> <span style="color:var(--text-muted);font-size:0.7rem">(GitHub: @${escHtml(issue.user.login)})</span>` : `@${escHtml(issue.user.login)}`}</div>
         ${extractDescription(issue.body) ? `<div class="cc-desc">${escHtml(extractDescription(issue.body))}</div>` : ''}
         ${settingsHtml}
         ${resultsHtml}
@@ -5616,11 +5868,10 @@ async function submitShare() {
   if (!desc)  { showToast('실험 설명을 입력하세요'); return; }
 
   // 첨부 데이터: shareAttachData 없으면 유형만
-  let attachData = shareAttachData;
-  if (!attachData) {
-    const type = document.getElementById('share-type').value;
-    attachData = { simType: type, resultsSummary: '' };
-  }
+  let attachData = shareAttachData ? {...shareAttachData} : { simType: document.getElementById('share-type').value, resultsSummary: '' };
+
+  // CircuitMind 계정 닉네임 삽입
+  if (currentUser) attachData.cmAuthor = currentUser.username;
 
   const body = `${desc}\n\n<!--CIRCUITMIND:${JSON.stringify(attachData)}-->`;
 
@@ -5706,11 +5957,18 @@ async function loadComments(issueNumber) {
     listEl.innerHTML = comments.map(c => {
       const d = new Date(c.created_at);
       const dateStr = `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
-      const body = c.body.replace(/<!--CIRCUITMIND:[\s\S]*?-->/g, '').trim();
+      let rawBody = c.body.replace(/<!--CIRCUITMIND:[\s\S]*?-->/g, '').trim();
+      // CircuitMind 닉네임 추출: **[닉네임]** 형식
+      const cmMatch = rawBody.match(/^\*\*\[([^\]]+)\]\*\*\s*/);
+      const cmName = cmMatch ? cmMatch[1] : null;
+      const displayBody = cmName ? rawBody.slice(cmMatch[0].length) : rawBody;
+      const authorDisplay = cmName
+        ? `<span style="color:var(--blue);font-weight:700">${escHtml(cmName)}</span>`
+        : `<span class="cc-comment-author">@${escHtml(c.user.login)}</span>`;
       return `<div class="cc-comment-item">
-        <span class="cc-comment-author">@${escHtml(c.user.login)}</span>
+        ${authorDisplay}
         <span class="cc-comment-date">${dateStr}</span>
-        <div class="cc-comment-body">${escHtml(body)}</div>
+        <div class="cc-comment-body">${escHtml(displayBody)}</div>
       </div>`;
     }).join('');
 
@@ -5736,7 +5994,7 @@ async function submitComment(issueNumber) {
       method: 'POST',
       headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json',
         'Accept': 'application/vnd.github.v3+json' },
-      body: JSON.stringify({ body: text })
+      body: JSON.stringify({ body: currentUser ? `**[${currentUser.username}]** ${text}` : text })
     });
     if (!resp.ok) throw new Error(resp.status);
     ta.value = '';
