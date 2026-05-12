@@ -2863,6 +2863,7 @@ function saveHistory(history) {
 }
 
 function saveToHistory() {
+  if (!currentUser) { showToast('로그인 후 저장할 수 있습니다'); openAuthModal(); return; }
   if (!lastResult || !lastMeta) { showToast('저장할 결과가 없습니다'); return; }
   const history = getHistory();
   history.unshift({ type: 'ai', result: lastResult, meta: lastMeta, id: Date.now() });
@@ -2972,6 +2973,7 @@ function deleteHistory(idx) {
 }
 
 function saveSimToHistory() {
+  if (!currentUser) { showToast('로그인 후 저장할 수 있습니다'); openAuthModal(); return; }
   if (!simResult) { showToast('저장할 실험 결과가 없습니다'); return; }
   const sim = SIM_TYPES[simType];
   const params = getSimParams();
@@ -5733,6 +5735,7 @@ function selectShareHistItem(idx) {
 }
 
 function openShareModal(source, histIdx) {
+  if (!currentUser) { showToast('로그인 후 공유할 수 있습니다'); openAuthModal(); return; }
   shareAttachData = null;
   const errEl = document.getElementById('share-error');
   if (errEl) errEl.style.display = 'none';
@@ -5919,6 +5922,7 @@ async function submitShare() {
 
 // ── 좋아요 ──
 async function likeCcPost(issueNumber, btn) {
+  if (!currentUser) { showToast('로그인 후 좋아요를 누를 수 있습니다'); openAuthModal(); return; }
   const token = getCcToken();
   if (!token) { showToast('좋아요는 GitHub 토큰이 필요합니다'); openCommunitySettings(); return; }
   btn.disabled = true;
@@ -5989,6 +5993,7 @@ async function loadComments(issueNumber) {
 }
 
 async function submitComment(issueNumber) {
+  if (!currentUser) { showToast('로그인 후 댓글을 작성할 수 있습니다'); openAuthModal(); return; }
   const token = getCcToken();
   if (!token) { showToast('댓글 작성은 GitHub 토큰이 필요합니다'); openCommunitySettings(); return; }
   const ta = document.getElementById(`cc-comment-text-${issueNumber}`);
