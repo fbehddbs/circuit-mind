@@ -2077,6 +2077,7 @@ const SIM_TYPES = [
   {
     id: 'dht11',
     name: '🌡️ 온습도 센서',
+    schematic: false,
     params: [
       { id: 'temp', label: '환경 온도 설정', unit: '°C', min: -10, max: 60, step: 1, def: 25 },
       { id: 'hum',  label: '환경 습도 설정', unit: '%',  min: 0,   max: 100, step: 1, def: 60 },
@@ -2128,6 +2129,7 @@ const SIM_TYPES = [
   {
     id: 'ultrasonic',
     name: '📡 초음파 센서',
+    schematic: false,
     params: [
       { id: 'dist',  label: '실제 거리',    unit: 'cm', min: 2,   max: 400, step: 1,   def: 50 },
       { id: 'temp',  label: '현재 온도',    unit: '°C', min: -10, max: 50,  step: 1,   def: 25 },
@@ -2227,6 +2229,7 @@ const SIM_TYPES = [
   {
     id: 'motor',
     name: '⚙️ DC 모터',
+    schematic: false,
     params: [
       { id: 'volt',  label: '공급 전압',    unit: 'V',   min: 1.5, max: 12, step: 0.5, def: 6 },
       { id: 'kv',    label: 'KV 계수 (RPM/V)', unit: '',  min: 100, max: 2000, step: 50, def: 300 },
@@ -2456,6 +2459,7 @@ Arduino tone() 함수로 제어: <code>tone(8, ${p.freq});</code>`,
   {
     id: 'servo',
     name: '🔁 서보모터',
+    schematic: false,
     params: [
       { id: 'angle', label: '목표 각도',   unit: '°', min: 0,   max: 180, step: 1,   def: 90  },
       { id: 'vcc',   label: '공급 전압',   unit: 'V', min: 4.5, max: 7.4, step: 0.1, def: 5.0 },
@@ -2591,6 +2595,8 @@ function selectSimType(i) {
   simExtraParts = [];
   document.querySelectorAll('.sim-type-btn').forEach((b, idx) => b.classList.toggle('active', idx === i));
   document.getElementById('sim-result-area').style.display = 'none';
+  const hasSchematic = SIM_TYPES[i].schematic !== false;
+  document.getElementById('sim-circuit-card').style.display = hasSchematic ? '' : 'none';
   renderSimParams();
   updateExtraSelect();
   renderExtraParts();
@@ -2692,6 +2698,7 @@ function drawSimCanvas(r) {
 
 let _circuitRafId = null;
 function scheduleCircuitUpdate() {
+  if (SIM_TYPES[simType].schematic === false) return;
   if (_circuitRafId) cancelAnimationFrame(_circuitRafId);
   _circuitRafId = requestAnimationFrame(updateCircuitDiagram);
 }
