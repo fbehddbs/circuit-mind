@@ -796,6 +796,65 @@
     }
     .extra-btn-add:hover { background: #2d5a3e; }
 
+    /* ── 도구 탭 ── */
+    .tool-section { display: flex; flex-direction: column; gap: 10px; }
+    .tool-bands { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
+    .tool-band-sel {
+      display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.7rem; color: #718096;
+    }
+    .tool-band-sel select {
+      width: 90px; font-size: 0.75rem; padding: 5px 4px; background: #0f1117;
+      border: 1px solid #2d3250; border-radius: 6px; color: #e2e8f0; cursor: pointer;
+    }
+    .band-swatch {
+      width: 18px; height: 18px; border-radius: 4px; border: 1px solid #2d325066;
+      pointer-events: none; transition: background 0.2s;
+    }
+    .tool-result-box {
+      background: #0f1117; border: 1px solid #2d5a3e; border-radius: 10px;
+      padding: 14px 18px; display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+    }
+    .tool-result-num { font-size: 1.6rem; font-weight: 800; color: #68d391; }
+    .tool-result-label { font-size: 0.78rem; color: #718096; margin-top: 2px; }
+    .ohm-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 8px 0;
+    }
+    .ohm-cell { display: flex; flex-direction: column; gap: 4px; }
+    .ohm-cell label { font-size: 0.75rem; color: #a0aec0; font-weight: 600; }
+    .ohm-cell input {
+      background: #0a0d14; border: 1px solid #2d3250; border-radius: 8px;
+      color: #e2e8f0; padding: 8px 10px; font-size: 0.9rem; width: 100%; box-sizing: border-box;
+    }
+    .ohm-cell input:focus { outline: none; border-color: #63b3ed; }
+    .ohm-cell input[readonly] { color: #68d391; border-color: #2d5a3e; background: #0f1117; }
+    .ohm-btns { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+    .ohm-preset {
+      font-size: 0.72rem; padding: 4px 10px; background: #1a1d2e; border: 1px solid #2d3250;
+      border-radius: 6px; color: #a0aec0; cursor: pointer; transition: all 0.15s;
+    }
+    .ohm-preset:hover { border-color: #63b3ed; color: #63b3ed; }
+    .pinmap-tabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+    .pinmap-tab {
+      padding: 5px 14px; background: #1a1d2e; border: 1px solid #2d3250; border-radius: 20px;
+      color: #718096; font-size: 0.8rem; cursor: pointer; transition: all 0.15s;
+    }
+    .pinmap-tab.active { background: #1a3a2e; border-color: #2d5a3e; color: #68d391; }
+    .pinmap-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    .pinmap-table th { background: #1a1d2e; color: #718096; padding: 6px 10px; text-align: left; border-bottom: 1px solid #2d3250; }
+    .pinmap-table td { padding: 5px 10px; border-bottom: 1px solid #2d325030; color: #c6cad8; }
+    .pinmap-table tr:hover td { background: #1a1d2e22; }
+    .pin-badge {
+      display: inline-block; padding: 1px 7px; border-radius: 5px; font-size: 0.7rem;
+      font-weight: 700; white-space: nowrap;
+    }
+    .pin-power  { background: #2d1515; color: #fc8181; }
+    .pin-gnd    { background: #1a1a1a; color: #718096; }
+    .pin-pwm    { background: #1a253d; color: #63b3ed; }
+    .pin-analog { background: #2d2515; color: #f6ad55; }
+    .pin-digital{ background: #1a2d1a; color: #68d391; }
+    .pin-i2c    { background: #2d1a3d; color: #b794f4; }
+    .pin-spi    { background: #1a2d2d; color: #76e4f7; }
+
     /* ── 실험 추천 카드 ── */
     .exp-grid {
       display: grid;
@@ -843,6 +902,7 @@
     <button class="nav-tab" onclick="showView('realtime')">실시간</button>
     <button class="nav-tab" onclick="showView('community')">커뮤니티</button>
     <button class="nav-tab" onclick="showView('history')">기록</button>
+    <button class="nav-tab" onclick="showView('tools')">도구</button>
   </div>
   <button class="nav-settings" onclick="openSettings()">⚙ API 키</button>
 </nav>
@@ -1128,6 +1188,7 @@
       <button class="filter-tab" onclick="setCcFilter('pwm')">🔵 PWM</button>
       <button class="filter-tab" onclick="setCcFilter('motor')">⚙️ 모터</button>
       <button class="filter-tab" onclick="setCcFilter('ai-analysis')">🤖 AI분석</button>
+      <button class="filter-tab" onclick="setCcFilter('bookmarks')">⭐ 북마크</button>
     </div>
   </div>
 
@@ -1237,6 +1298,97 @@
     <div class="history-cat">🔬 모의실험 기록</div>
     <div id="history-sim-list"></div>
   </div>
+</div>
+
+<!-- ── 도구 뷰 ── -->
+<div id="view-tools" class="view">
+
+  <!-- 저항 색상 코드 계산기 -->
+  <div class="card">
+    <div class="card-title">🟤 저항 색상 코드 계산기</div>
+    <div class="tool-section">
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <span style="font-size:0.85rem;color:#a0aec0">밴드 수:</span>
+        <label style="display:flex;align-items:center;gap:5px;font-size:0.85rem;color:#c6cad8;cursor:pointer">
+          <input type="radio" name="res-bands" value="4" checked onchange="calcResistor()"> 4밴드
+        </label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:0.85rem;color:#c6cad8;cursor:pointer">
+          <input type="radio" name="res-bands" value="5" onchange="calcResistor()"> 5밴드
+        </label>
+      </div>
+      <div class="tool-bands" id="res-bands-row"></div>
+      <div class="tool-result-box" id="res-result" style="display:none">
+        <div>
+          <div class="tool-result-num" id="res-val">—</div>
+          <div class="tool-result-label">저항값</div>
+        </div>
+        <div>
+          <div class="tool-result-num" id="res-tol" style="font-size:1.1rem;color:#f6ad55">—</div>
+          <div class="tool-result-label">허용오차</div>
+        </div>
+        <div>
+          <div class="tool-result-num" id="res-range" style="font-size:1rem;color:#a0aec0">—</div>
+          <div class="tool-result-label">실제 범위</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 옴의 법칙 계산기 -->
+  <div class="card">
+    <div class="card-title">⚡ 옴의 법칙 계산기</div>
+    <div class="tool-section">
+      <div style="font-size:0.8rem;color:#718096">V, I, R 중 2개를 입력하면 나머지 1개와 전력(P)을 자동 계산합니다.</div>
+      <div class="ohm-grid">
+        <div class="ohm-cell">
+          <label>V — 전압 (V)</label>
+          <input type="number" id="ohm-v" placeholder="입력" oninput="calcOhm('V')" step="any" min="0">
+        </div>
+        <div class="ohm-cell">
+          <label>I — 전류 (A)</label>
+          <input type="number" id="ohm-i" placeholder="입력" oninput="calcOhm('I')" step="any" min="0">
+        </div>
+        <div class="ohm-cell">
+          <label>R — 저항 (Ω)</label>
+          <input type="number" id="ohm-r" placeholder="입력" oninput="calcOhm('R')" step="any" min="0">
+        </div>
+      </div>
+      <div class="tool-result-box" id="ohm-result" style="display:none">
+        <div>
+          <div class="tool-result-num" id="ohm-res-val">—</div>
+          <div class="tool-result-label" id="ohm-res-label">계산값</div>
+        </div>
+        <div>
+          <div class="tool-result-num" id="ohm-power" style="font-size:1.1rem;color:#f6ad55">—</div>
+          <div class="tool-result-label">전력 (W)</div>
+        </div>
+        <div>
+          <div id="ohm-led-hint" style="font-size:0.78rem;color:#68d391;max-width:200px"></div>
+        </div>
+      </div>
+      <div class="ohm-btns">
+        <span style="font-size:0.75rem;color:#4a5568;align-self:center">빠른 입력:</span>
+        <button class="ohm-preset" onclick="ohmPreset(5,0.02,null)">5V · LED 20mA</button>
+        <button class="ohm-preset" onclick="ohmPreset(3.3,0.02,null)">3.3V · LED 20mA</button>
+        <button class="ohm-preset" onclick="ohmPreset(5,null,220)">5V · 220Ω</button>
+        <button class="ohm-preset" onclick="ohmPreset(5,null,1000)">5V · 1kΩ</button>
+        <button class="ohm-preset" onclick="ohmPreset(null,null,null)">초기화</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 핀맵 참조 -->
+  <div class="card">
+    <div class="card-title">📌 핀맵 빠른 참조</div>
+    <div class="pinmap-tabs">
+      <button class="pinmap-tab active" onclick="showPinmap('uno',this)">아두이노 우노</button>
+      <button class="pinmap-tab" onclick="showPinmap('nano',this)">아두이노 나노</button>
+      <button class="pinmap-tab" onclick="showPinmap('esp32',this)">ESP32</button>
+      <button class="pinmap-tab" onclick="showPinmap('esp8266',this)">ESP8266</button>
+    </div>
+    <div id="pinmap-content"></div>
+  </div>
+
 </div>
 
 <!-- ── 로딩 ── -->
@@ -1426,6 +1578,7 @@ function showView(name) {
   if (name === 'realtime'){ tabs[2].classList.add('active'); initRealtime(); }
   if (name === 'community'){ tabs[3].classList.add('active'); initCommunity(); }
   if (name === 'history') { tabs[4].classList.add('active'); renderHistory(); }
+  if (name === 'tools')   { tabs[5].classList.add('active'); initTools(); }
   if (name === 'result')  { /* no tab highlight */ }
 }
 
@@ -1466,15 +1619,340 @@ function applyExperiment(i) {
   showToast(`${exp.name} 부품이 자동으로 입력되었습니다`);
 }
 
+// ════════════════════════════════════════════════
+// 도구 탭
+// ════════════════════════════════════════════════
+
+const RES_COLORS = [
+  { name:'검정', hex:'#111111', digit:0,  mult:1,          tol:null  },
+  { name:'갈색', hex:'#8B4513', digit:1,  mult:10,         tol:'±1%' },
+  { name:'빨강', hex:'#CC0000', digit:2,  mult:100,        tol:'±2%' },
+  { name:'주황', hex:'#FF8000', digit:3,  mult:1000,       tol:null  },
+  { name:'노랑', hex:'#FFD700', digit:4,  mult:10000,      tol:null  },
+  { name:'초록', hex:'#228B22', digit:5,  mult:100000,     tol:'±0.5%'},
+  { name:'파랑', hex:'#0055AA', digit:6,  mult:1000000,    tol:'±0.25%'},
+  { name:'보라', hex:'#7B00CC', digit:7,  mult:10000000,   tol:'±0.1%'},
+  { name:'회색', hex:'#808080', digit:8,  mult:100000000,  tol:'±0.05%'},
+  { name:'흰색', hex:'#EEEEEE', digit:9,  mult:1000000000, tol:null  },
+  { name:'금색', hex:'#CFB53B', digit:null, mult:0.1,      tol:'±5%' },
+  { name:'은색', hex:'#C0C0C0', digit:null, mult:0.01,     tol:'±10%'},
+];
+
+function fmtOhm(v) {
+  if (v >= 1e9) return (v/1e9).toFixed(v%1e9===0?0:2) + ' GΩ';
+  if (v >= 1e6) return (v/1e6).toFixed(v%1e6===0?0:2) + ' MΩ';
+  if (v >= 1e3) return (v/1e3).toFixed(v%1e3===0?0:1) + ' kΩ';
+  return v.toFixed(v%1===0?0:1) + ' Ω';
+}
+
+function buildResBands() {
+  const bands = parseInt(document.querySelector('input[name="res-bands"]:checked').value);
+  const row = document.getElementById('res-bands-row');
+  const digitColors = RES_COLORS.filter(c => c.digit !== null);
+  const multColors  = RES_COLORS.filter(c => c.mult !== undefined);
+  const tolColors   = RES_COLORS.filter(c => c.tol !== null);
+
+  const makeSelect = (id, colors, label) => `
+    <div class="tool-band-sel">
+      <span>${label}</span>
+      <div class="band-swatch" id="swatch-${id}"></div>
+      <select id="band-${id}" onchange="updateSwatch('${id}');calcResistor()">
+        ${colors.map((c,i) => `<option value="${i}" style="background:${c.hex};color:${c.hex==='#EEEEEE'||c.hex==='#FFD700'?'#111':'#eee'}">${c.name}</option>`).join('')}
+      </select>
+    </div>`;
+
+  if (bands === 4) {
+    row.innerHTML =
+      makeSelect('d1', digitColors, '1번') +
+      makeSelect('d2', digitColors, '2번') +
+      makeSelect('m',  multColors,  '배수') +
+      makeSelect('t',  tolColors,   '허용');
+    document.getElementById('band-d1').value = 1; // 갈색
+    document.getElementById('band-d2').value = 0; // 검정
+    document.getElementById('band-m').value  = 1; // 갈색(×10)
+    document.getElementById('band-t').value  = 10; // 금색 idx
+  } else {
+    row.innerHTML =
+      makeSelect('d1', digitColors, '1번') +
+      makeSelect('d2', digitColors, '2번') +
+      makeSelect('d3', digitColors, '3번') +
+      makeSelect('m',  multColors,  '배수') +
+      makeSelect('t',  tolColors,   '허용');
+    document.getElementById('band-d1').value = 1;
+    document.getElementById('band-d2').value = 0;
+    document.getElementById('band-d3').value = 0;
+    document.getElementById('band-m').value  = 1;
+    document.getElementById('band-t').value  = 0;
+  }
+  ['d1','d2','d3','m','t'].forEach(id => {
+    const el = document.getElementById(`band-${id}`);
+    if (el) updateSwatch(id);
+  });
+  calcResistor();
+}
+
+function updateSwatch(id) {
+  const sel = document.getElementById(`band-${id}`);
+  const sw  = document.getElementById(`swatch-${id}`);
+  if (!sel || !sw) return;
+  const isDigit = ['d1','d2','d3'].includes(id);
+  const isMult  = id === 'm';
+  const isTol   = id === 't';
+  let color;
+  if (isDigit)     color = RES_COLORS.filter(c=>c.digit!==null)[parseInt(sel.value)];
+  else if (isMult) color = RES_COLORS.filter(c=>c.mult!==undefined)[parseInt(sel.value)];
+  else             color = RES_COLORS.filter(c=>c.tol!==null)[parseInt(sel.value)];
+  if (color) sw.style.background = color.hex;
+}
+
+function calcResistor() {
+  const bands = parseInt(document.querySelector('input[name="res-bands"]:checked').value);
+  const digitColors = RES_COLORS.filter(c => c.digit !== null);
+  const multColors  = RES_COLORS.filter(c => c.mult !== undefined);
+  const tolColors   = RES_COLORS.filter(c => c.tol !== null);
+
+  const getVal = (id, arr) => {
+    const sel = document.getElementById(`band-${id}`);
+    return sel ? arr[parseInt(sel.value)] : null;
+  };
+
+  let base;
+  if (bands === 4) {
+    const d1 = getVal('d1', digitColors), d2 = getVal('d2', digitColors);
+    const m  = getVal('m', multColors),   t  = getVal('t', tolColors);
+    if (!d1||!d2||!m||!t) return;
+    base = (d1.digit * 10 + d2.digit) * m.mult;
+    const pct = parseFloat(t.tol);
+    const lo = fmtOhm(base * (1 - pct/100)), hi = fmtOhm(base * (1 + pct/100));
+    document.getElementById('res-val').textContent  = fmtOhm(base);
+    document.getElementById('res-tol').textContent  = t.tol;
+    document.getElementById('res-range').textContent= `${lo} ~ ${hi}`;
+  } else {
+    const d1=getVal('d1',digitColors),d2=getVal('d2',digitColors),d3=getVal('d3',digitColors);
+    const m=getVal('m',multColors), t=getVal('t',tolColors);
+    if (!d1||!d2||!d3||!m||!t) return;
+    base = (d1.digit*100 + d2.digit*10 + d3.digit) * m.mult;
+    const pct = parseFloat(t.tol);
+    const lo = fmtOhm(base*(1-pct/100)), hi = fmtOhm(base*(1+pct/100));
+    document.getElementById('res-val').textContent  = fmtOhm(base);
+    document.getElementById('res-tol').textContent  = t.tol;
+    document.getElementById('res-range').textContent= `${lo} ~ ${hi}`;
+  }
+  document.getElementById('res-result').style.display = 'flex';
+}
+
+function initTools() {
+  buildResBands();
+  showPinmap('uno', document.querySelector('.pinmap-tab'));
+}
+
+// ── 옴의 법칙 ──
+function calcOhm(changed) {
+  const vEl = document.getElementById('ohm-v');
+  const iEl = document.getElementById('ohm-i');
+  const rEl = document.getElementById('ohm-r');
+
+  // 방금 수정된 필드는 readonly 해제
+  [vEl, iEl, rEl].forEach(el => el.removeAttribute('readonly'));
+
+  const v = parseFloat(vEl.value), i = parseFloat(iEl.value), r = parseFloat(rEl.value);
+  const hasV = !isNaN(v) && v > 0, hasI = !isNaN(i) && i > 0, hasR = !isNaN(r) && r > 0;
+
+  let calcV=v, calcI=i, calcR=r, which='';
+
+  if (hasI && hasR && !hasV) {
+    calcV = i * r; vEl.value = +calcV.toPrecision(4); vEl.setAttribute('readonly','');
+    which = `V = ${calcI} A × ${calcR} Ω = ${+calcV.toPrecision(4)} V`;
+  } else if (hasV && hasR && !hasI) {
+    calcI = v / r; iEl.value = +calcI.toPrecision(4); iEl.setAttribute('readonly','');
+    which = `I = ${calcV} V ÷ ${calcR} Ω = ${+(calcI*1000).toPrecision(4)} mA`;
+  } else if (hasV && hasI && !hasR) {
+    calcR = v / i; rEl.value = +calcR.toPrecision(4); rEl.setAttribute('readonly','');
+    which = `R = ${calcV} V ÷ ${calcI*1000} mA = ${+calcR.toPrecision(4)} Ω`;
+  } else { document.getElementById('ohm-result').style.display='none'; return; }
+
+  const P = (calcV||0) * (calcI||0);
+  document.getElementById('ohm-res-val').textContent  = which.split('=').pop().trim();
+  document.getElementById('ohm-res-label').textContent = which.split('=')[0].trim();
+  document.getElementById('ohm-power').textContent    = P >= 1 ? P.toPrecision(3)+' W' : (P*1000).toPrecision(3)+' mW';
+  // LED 저항 힌트
+  const hint = document.getElementById('ohm-led-hint');
+  if (calcR && calcV >= 3 && calcI > 0) {
+    const ledVf = calcV >= 4.5 ? 2.0 : 1.8;
+    const sugR = Math.ceil((calcV - ledVf) / 0.020 / 10) * 10;
+    hint.textContent = `💡 LED(Vf≈${ledVf}V, 20mA) 직렬 저항: 약 ${sugR}Ω`;
+  } else { hint.textContent = ''; }
+  document.getElementById('ohm-result').style.display = 'flex';
+}
+
+function ohmPreset(v, i, r) {
+  const vEl=document.getElementById('ohm-v'), iEl=document.getElementById('ohm-i'), rEl=document.getElementById('ohm-r');
+  [vEl,iEl,rEl].forEach(el=>{ el.value=''; el.removeAttribute('readonly'); });
+  if (v!==null) vEl.value=v;
+  if (i!==null) iEl.value=i;
+  if (r!==null) rEl.value=r;
+  document.getElementById('ohm-result').style.display='none';
+  const filled = [v!==null,i!==null,r!==null].filter(Boolean).length;
+  if (filled === 2) calcOhm('');
+}
+
+// ── 핀맵 ──
+const PINMAPS = {
+  uno: {
+    title: '아두이노 우노 (Arduino Uno R3)',
+    desc: '5V 동작 · ATmega328P · 디지털 14핀 · 아날로그 6핀',
+    pins: [
+      ['Vin', '외부 전원 입력', '7~12V', 'power'],
+      ['5V',  '5V 출력 (최대 500mA)', '5V', 'power'],
+      ['3.3V','3.3V 출력 (최대 50mA)', '3.3V', 'power'],
+      ['GND', '접지', '0V', 'gnd'],
+      ['D0 (RX)',  '시리얼 수신 / 디지털', '5V', 'digital'],
+      ['D1 (TX)',  '시리얼 송신 / 디지털', '5V', 'digital'],
+      ['D2', '디지털 I/O · 외부인터럽트', '5V', 'digital'],
+      ['D3 ★', '디지털 I/O · PWM · 외부인터럽트', '5V', 'pwm'],
+      ['D4', '디지털 I/O', '5V', 'digital'],
+      ['D5 ★', '디지털 I/O · PWM', '5V', 'pwm'],
+      ['D6 ★', '디지털 I/O · PWM', '5V', 'pwm'],
+      ['D7', '디지털 I/O', '5V', 'digital'],
+      ['D8', '디지털 I/O', '5V', 'digital'],
+      ['D9 ★', '디지털 I/O · PWM', '5V', 'pwm'],
+      ['D10 ★','디지털 I/O · PWM · SPI SS', '5V', 'pwm'],
+      ['D11 ★','디지털 I/O · PWM · SPI MOSI', '5V', 'pwm'],
+      ['D12', '디지털 I/O · SPI MISO', '5V', 'spi'],
+      ['D13', '디지털 I/O · SPI SCK · 내장 LED', '5V', 'spi'],
+      ['A0', '아날로그 입력 (0~1023)', '5V', 'analog'],
+      ['A1', '아날로그 입력', '5V', 'analog'],
+      ['A2', '아날로그 입력', '5V', 'analog'],
+      ['A3', '아날로그 입력', '5V', 'analog'],
+      ['A4 (SDA)', '아날로그 · I2C 데이터', '5V', 'i2c'],
+      ['A5 (SCL)', '아날로그 · I2C 클럭', '5V', 'i2c'],
+    ]
+  },
+  nano: {
+    title: '아두이노 나노 (Arduino Nano)',
+    desc: '5V 동작 · ATmega328P · Uno와 동일 핀 기능 · 소형',
+    pins: [
+      ['Vin', '외부 전원 입력', '7~12V', 'power'],
+      ['5V',  '5V 출력', '5V', 'power'],
+      ['3.3V','3.3V 출력 (최대 50mA)', '3.3V', 'power'],
+      ['GND', '접지', '0V', 'gnd'],
+      ['D0 (RX)', '시리얼 수신', '5V', 'digital'],
+      ['D1 (TX)', '시리얼 송신', '5V', 'digital'],
+      ['D2',  '디지털 · 외부인터럽트', '5V', 'digital'],
+      ['D3 ★','디지털 · PWM · 외부인터럽트', '5V', 'pwm'],
+      ['D4',  '디지털', '5V', 'digital'],
+      ['D5 ★','디지털 · PWM', '5V', 'pwm'],
+      ['D6 ★','디지털 · PWM', '5V', 'pwm'],
+      ['D7',  '디지털', '5V', 'digital'],
+      ['D8',  '디지털', '5V', 'digital'],
+      ['D9 ★','디지털 · PWM', '5V', 'pwm'],
+      ['D10 ★','디지털 · PWM · SPI SS', '5V', 'pwm'],
+      ['D11 ★','디지털 · PWM · SPI MOSI', '5V', 'pwm'],
+      ['D12', 'SPI MISO', '5V', 'spi'],
+      ['D13', 'SPI SCK · 내장 LED', '5V', 'spi'],
+      ['A0',  '아날로그', '5V', 'analog'],
+      ['A1',  '아날로그', '5V', 'analog'],
+      ['A2',  '아날로그', '5V', 'analog'],
+      ['A3',  '아날로그', '5V', 'analog'],
+      ['A4 (SDA)', 'I2C 데이터', '5V', 'i2c'],
+      ['A5 (SCL)', 'I2C 클럭', '5V', 'i2c'],
+      ['A6',  '아날로그 입력 전용', '5V', 'analog'],
+      ['A7',  '아날로그 입력 전용', '5V', 'analog'],
+    ]
+  },
+  esp32: {
+    title: 'ESP32 (DevKit)',
+    desc: '3.3V 동작 · 240MHz 듀얼코어 · Wi-Fi/BT 내장 · 주의: GPIO 입력은 3.3V MAX',
+    pins: [
+      ['3.3V', '3.3V 출력 (최대 600mA)', '3.3V', 'power'],
+      ['5V (Vin)', 'USB 또는 외부 5V 입력', '5V', 'power'],
+      ['GND', '접지', '0V', 'gnd'],
+      ['EN (RST)', '리셋 핀 (LOW → 리셋)', '3.3V', 'digital'],
+      ['GPIO0',  '부트 모드 선택 · GPIO · PWM', '3.3V', 'pwm'],
+      ['GPIO2',  '내장 LED · GPIO · PWM', '3.3V', 'pwm'],
+      ['GPIO4',  '범용 GPIO · PWM', '3.3V', 'pwm'],
+      ['GPIO5',  '범용 GPIO · SPI SS', '3.3V', 'spi'],
+      ['GPIO12', '범용 GPIO · ADC · 부트 시 LOW 권장', '3.3V', 'analog'],
+      ['GPIO13', '범용 GPIO · ADC', '3.3V', 'analog'],
+      ['GPIO14', '범용 GPIO · ADC', '3.3V', 'analog'],
+      ['GPIO15', '범용 GPIO', '3.3V', 'digital'],
+      ['GPIO16', '범용 GPIO · UART2 RX', '3.3V', 'digital'],
+      ['GPIO17', '범용 GPIO · UART2 TX', '3.3V', 'digital'],
+      ['GPIO18', 'SPI SCK', '3.3V', 'spi'],
+      ['GPIO19', 'SPI MISO', '3.3V', 'spi'],
+      ['GPIO21 (SDA)', 'I2C 데이터 (기본)', '3.3V', 'i2c'],
+      ['GPIO22 (SCL)', 'I2C 클럭 (기본)', '3.3V', 'i2c'],
+      ['GPIO23', 'SPI MOSI', '3.3V', 'spi'],
+      ['GPIO25', 'DAC1 · ADC', '3.3V', 'analog'],
+      ['GPIO26', 'DAC2 · ADC', '3.3V', 'analog'],
+      ['GPIO27', '범용 GPIO · ADC', '3.3V', 'analog'],
+      ['GPIO32', 'ADC · 터치 · PWM', '3.3V', 'analog'],
+      ['GPIO33', 'ADC · 터치 · PWM', '3.3V', 'analog'],
+      ['GPIO34', '입력 전용 · ADC', '3.3V', 'analog'],
+      ['GPIO35', '입력 전용 · ADC', '3.3V', 'analog'],
+      ['GPIO36 (VP)', '입력 전용 · ADC', '3.3V', 'analog'],
+      ['GPIO39 (VN)', '입력 전용 · ADC', '3.3V', 'analog'],
+    ]
+  },
+  esp8266: {
+    title: 'ESP8266 (NodeMCU)',
+    desc: '3.3V 동작 · 80/160MHz · Wi-Fi 내장 · GPIO 입력은 3.3V MAX',
+    pins: [
+      ['3.3V', '3.3V 출력', '3.3V', 'power'],
+      ['Vin',  '5V 입력', '5V', 'power'],
+      ['GND',  '접지', '0V', 'gnd'],
+      ['RST',  '리셋', '3.3V', 'digital'],
+      ['D0 (GPIO16)', '범용 GPIO (PWM 불가)', '3.3V', 'digital'],
+      ['D1 (GPIO5)',  '범용 GPIO · I2C SCL', '3.3V', 'i2c'],
+      ['D2 (GPIO4)',  '범용 GPIO · I2C SDA', '3.3V', 'i2c'],
+      ['D3 (GPIO0)',  '부트 모드 · GPIO', '3.3V', 'digital'],
+      ['D4 (GPIO2)',  '내장 LED · GPIO · UART TX', '3.3V', 'digital'],
+      ['D5 (GPIO14)', 'SPI SCK · GPIO', '3.3V', 'spi'],
+      ['D6 (GPIO12)', 'SPI MISO · GPIO', '3.3V', 'spi'],
+      ['D7 (GPIO13)', 'SPI MOSI · GPIO', '3.3V', 'spi'],
+      ['D8 (GPIO15)', 'SPI SS · 부트 시 LOW 필요', '3.3V', 'spi'],
+      ['A0', '아날로그 입력 (0~1V)', '1V MAX', 'analog'],
+    ]
+  }
+};
+
+function showPinmap(board, btn) {
+  document.querySelectorAll('.pinmap-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const data = PINMAPS[board];
+  if (!data) return;
+  const typeClass = { power:'pin-power', gnd:'pin-gnd', pwm:'pin-pwm', analog:'pin-analog',
+                      digital:'pin-digital', i2c:'pin-i2c', spi:'pin-spi' };
+  document.getElementById('pinmap-content').innerHTML = `
+    <div style="font-size:0.8rem;color:#718096;margin-bottom:8px">
+      <strong style="color:#c6cad8">${escHtml(data.title)}</strong> · ${escHtml(data.desc)}
+    </div>
+    <div style="overflow-x:auto">
+    <table class="pinmap-table">
+      <thead><tr><th>핀</th><th>기능</th><th>전압</th></tr></thead>
+      <tbody>
+        ${data.pins.map(([pin,func,volt,type]) => `
+          <tr>
+            <td><span class="pin-badge ${typeClass[type]||''}">${escHtml(pin)}</span></td>
+            <td>${escHtml(func)}</td>
+            <td style="font-size:0.75rem;color:#718096">${escHtml(volt)}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+    <div style="font-size:0.7rem;color:#4a5568;margin-top:8px">★ = PWM 지원핀</div>
+  `;
+}
+
 // ── 추천 부품 데이터 ──
 const PART_SUGGESTIONS = [
   // 마이크로컨트롤러
-  { icon:'🟦', name:'아두이노 우노',          desc:'ATmega328P, 5V, 14 디지털핀' },
-  { icon:'🟦', name:'아두이노 나노',           desc:'소형, USB-B Mini, 5V' },
-  { icon:'🟦', name:'아두이노 메가',           desc:'54 디지털핀, 대형 프로젝트' },
-  { icon:'🟩', name:'ESP32',                  desc:'Wi-Fi/BT 내장, 240MHz' },
-  { icon:'🟩', name:'ESP8266',                desc:'Wi-Fi 내장, 저가형 IoT' },
-  { icon:'🔵', name:'라즈베리파이 피코',       desc:'RP2040, MicroPython 지원' },
+  { icon:'🟦', name:'아두이노 우노',          desc:'ATmega328P, 5V, 14 디지털핀',    ds:'https://docs.arduino.cc/hardware/uno-rev3/' },
+  { icon:'🟦', name:'아두이노 나노',           desc:'소형, USB-B Mini, 5V',           ds:'https://docs.arduino.cc/hardware/nano/' },
+  { icon:'🟦', name:'아두이노 메가',           desc:'54 디지털핀, 대형 프로젝트',       ds:'https://docs.arduino.cc/hardware/mega-2560/' },
+  { icon:'🟩', name:'ESP32',                  desc:'Wi-Fi/BT 내장, 240MHz',          ds:'https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf' },
+  { icon:'🟩', name:'ESP8266',                desc:'Wi-Fi 내장, 저가형 IoT',          ds:'https://www.espressif.com/sites/default/files/documentation/0a-esp8266ex_datasheet_en.pdf' },
+  { icon:'🔵', name:'라즈베리파이 피코',       desc:'RP2040, MicroPython 지원',        ds:'https://datasheets.raspberrypi.com/pico/pico-datasheet.pdf' },
   // LED
   { icon:'💡', name:'LED 빨강',               desc:'2V, 20mA, 직렬 저항 필요' },
   { icon:'💡', name:'LED 초록',               desc:'2.2V, 20mA' },
@@ -1496,31 +1974,31 @@ const PART_SUGGESTIONS = [
   { icon:'⚡', name:'커패시터 100nF (0.1μF)', desc:'세라믹, 고주파 바이패스' },
   { icon:'⚡', name:'커패시터 47μF',           desc:'전원 안정화' },
   // 센서
-  { icon:'🌡️', name:'DHT11',                  desc:'온습도, 3~5V, ±2°C' },
-  { icon:'🌡️', name:'DHT22',                  desc:'고정밀 온습도, ±0.5°C' },
-  { icon:'📡', name:'HC-SR04',                desc:'초음파 거리 센서, 2~400cm' },
+  { icon:'🌡️', name:'DHT11',                  desc:'온습도, 3~5V, ±2°C',             ds:'https://www.mouser.com/datasheet/2/758/DHT11-Technical-Data-Sheet-Translated-Version-1143054.pdf' },
+  { icon:'🌡️', name:'DHT22',                  desc:'고정밀 온습도, ±0.5°C',           ds:'https://www.sparkfun.com/datasheets/Sensors/Temperature/DHT22.pdf' },
+  { icon:'📡', name:'HC-SR04',                desc:'초음파 거리 센서, 2~400cm',       ds:'https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf' },
   { icon:'☀️', name:'LDR (조도센서)',           desc:'광의존저항, 밝기에 따라 저항 변화' },
   { icon:'🔥', name:'NTC 서미스터 10kΩ',       desc:'온도에 따라 저항 감소' },
-  { icon:'📐', name:'MPU-6050',               desc:'6축 가속도+자이로, I2C' },
+  { icon:'📐', name:'MPU-6050',               desc:'6축 가속도+자이로, I2C',          ds:'https://invensense.tdk.com/wp-content/uploads/2015/02/MPU-6000-Datasheet1.pdf' },
   { icon:'🧲', name:'홀 센서',                desc:'자기장 감지' },
   { icon:'🔴', name:'IR 수신 모듈',            desc:'적외선 리모컨 수신' },
   // 출력
   { icon:'🔊', name:'부저 (피에조)',            desc:'수동 부저, PWM으로 음계 제어' },
   { icon:'🔊', name:'부저 (액티브)',            desc:'능동 부저, 전원만 연결하면 울림' },
-  { icon:'📺', name:'OLED 0.96인치 (I2C)',     desc:'128×64, SSD1306, I2C' },
+  { icon:'📺', name:'OLED 0.96인치 (I2C)',     desc:'128×64, SSD1306, I2C',           ds:'https://cdn-shop.adafruit.com/datasheets/SSD1306.pdf' },
   { icon:'📺', name:'LCD 1602 (I2C)',          desc:'16×2 문자, I2C 어댑터' },
-  { icon:'🔁', name:'서보모터 SG90',           desc:'180°, 5V, PWM 제어' },
+  { icon:'🔁', name:'서보모터 SG90',           desc:'180°, 5V, PWM 제어',             ds:'https://www.electronicoscaldas.com/datasheet/MG90S_Tower-Pro.pdf' },
   { icon:'⚙️', name:'DC 모터',                desc:'드라이버 필요 (L298N 등)' },
   { icon:'🔄', name:'스텝모터 28BYJ-48',       desc:'ULN2003 드라이버와 세트' },
   // 드라이버/모듈
-  { icon:'🟠', name:'L298N 모터드라이버',      desc:'DC/스텝모터 2채널, 12V' },
-  { icon:'🟠', name:'ULN2003 드라이버',        desc:'스텝모터 전용' },
+  { icon:'🟠', name:'L298N 모터드라이버',      desc:'DC/스텝모터 2채널, 12V',          ds:'https://www.st.com/resource/en/datasheet/l298.pdf' },
+  { icon:'🟠', name:'ULN2003 드라이버',        desc:'스텝모터 전용',                   ds:'https://www.ti.com/lit/ds/symlink/uln2003a.pdf' },
   { icon:'🟠', name:'릴레이 모듈 5V',          desc:'고전압 회로 전환' },
   // 기본 소자
-  { icon:'🔺', name:'트랜지스터 2N2222',       desc:'NPN, 신호 증폭/스위칭' },
-  { icon:'🔺', name:'트랜지스터 BC547',        desc:'NPN, 소신호' },
-  { icon:'🔺', name:'MOSFET IRF540N',         desc:'N채널, 모터 구동' },
-  { icon:'◈',  name:'다이오드 1N4007',         desc:'정류/역전류 보호' },
+  { icon:'🔺', name:'트랜지스터 2N2222',       desc:'NPN, 신호 증폭/스위칭',           ds:'https://www.onsemi.com/pdf/datasheet/p2n2222a-d.pdf' },
+  { icon:'🔺', name:'트랜지스터 BC547',        desc:'NPN, 소신호',                    ds:'https://www.onsemi.com/pdf/datasheet/bc546-d.pdf' },
+  { icon:'🔺', name:'MOSFET IRF540N',         desc:'N채널, 모터 구동',               ds:'https://www.vishay.com/docs/91021/91021.pdf' },
+  { icon:'◈',  name:'다이오드 1N4007',         desc:'정류/역전류 보호',                ds:'https://www.vishay.com/docs/88503/1n4001.pdf' },
   { icon:'◈',  name:'제너 다이오드 5.1V',      desc:'정전압' },
   // 전원
   { icon:'🔋', name:'9V 배터리',               desc:'아두이노 Vin 입력' },
@@ -1587,9 +2065,9 @@ function showPartSuggestions(rowIdx, query) {
     <div class="part-sug-item" data-si="${si}"
       onmousedown="selectPartSuggestion(${rowIdx}, ${PART_SUGGESTIONS.indexOf(s)})">
       <span class="sug-icon">${s.icon}</span>
-      <span>
+      <span style="flex:1;min-width:0">
         <div class="sug-name">${escHtml(s.name)}</div>
-        <div class="sug-desc">${escHtml(s.desc)}</div>
+        <div class="sug-desc">${escHtml(s.desc)}${s.ds ? ` · <a href="${escHtml(s.ds)}" target="_blank" onmousedown="event.stopPropagation()" style="color:#63b3ed;text-decoration:none;font-size:0.68rem">📄 데이터시트</a>` : ''}</div>
       </span>
     </div>
   `).join('');
@@ -1677,6 +2155,43 @@ function saveApiKey() {
 }
 
 // ── 분석 ──
+function preCheckCircuit(parts, purpose) {
+  const names = parts.map(p => p.name.toLowerCase());
+  const warnings = [];
+
+  const has = (...kws) => kws.some(kw => names.some(n => n.includes(kw)));
+  const hasLED   = has('led');
+  const hasRes   = has('저항', 'resistor', 'kΩ', 'kohm', '220', '330', '470', '100', '10k', 'ohm', 'ω');
+  const hasMotor = has('모터', 'motor');
+  const hasDriver= has('l298', 'l293', 'drv', '드라이버', 'driver', 'uln2003');
+  const hasArduino = has('아두이노', 'arduino', 'esp32', 'esp8266', '피코', 'pico');
+  const hasServo = has('서보', 'servo');
+  const hasBuzzer= has('부저', 'buzzer');
+  const hasDHT   = has('dht11', 'dht22', 'dht');
+  const hasSensor= has('초음파', 'hc-sr04', 'hcsr04', 'ultrasonic');
+  const hasOLED  = has('oled', 'lcd', '디스플레이');
+  const hasLDR   = has('ldr', '조도', '광저항');
+  const has5V    = has('5v', '아두이노', 'arduino');
+  const has33V   = has('3.3v', 'esp32', 'esp8266', '피코', 'pico');
+
+  if (hasLED && !hasRes)
+    warnings.push({ level:'경고', msg:'LED가 있지만 전류 제한 저항이 없습니다. 직렬 저항(220Ω~330Ω)을 추가하지 않으면 LED가 과전류로 타버릴 수 있습니다.' });
+
+  if (hasMotor && !hasDriver)
+    warnings.push({ level:'경고', msg:'DC 모터가 있지만 모터 드라이버(L298N 등)가 없습니다. 아두이노 핀에서 직접 모터를 구동하면 보드가 손상될 수 있습니다.' });
+
+  if ((hasDHT || hasSensor) && !hasArduino)
+    warnings.push({ level:'주의', msg:'센서를 제어할 마이크로컨트롤러(아두이노 등)가 목록에 없습니다. 실제 코드 실행을 위해 필요합니다.' });
+
+  if (hasOLED && !hasArduino)
+    warnings.push({ level:'주의', msg:'디스플레이를 제어할 마이크로컨트롤러가 목록에 없습니다.' });
+
+  if (has33V && hasSensor && has5V)
+    warnings.push({ level:'주의', msg:'ESP32/ESP8266(3.3V) GPIO에 5V 신호를 직접 연결하면 보드가 손상됩니다. 레벨 시프터 또는 저항 분압이 필요합니다.' });
+
+  return warnings;
+}
+
 async function analyze() {
   const apiKey = getApiKey();
   if (!apiKey) { openSettings(); return; }
@@ -1687,6 +2202,13 @@ async function analyze() {
   }
 
   const purpose = getPurpose();
+
+  // 사전 회로 검사
+  const preWarnings = preCheckCircuit(validParts, purpose);
+  if (preWarnings.length > 0) {
+    const msg = preWarnings.map(w => `[${w.level}] ${w.msg}`).join('\n\n');
+    if (!confirm(`⚠ 회로 사전 검사 경고\n\n${msg}\n\n그래도 계속 분석하시겠습니까?`)) return;
+  }
 
   document.getElementById('loading').style.display = 'flex';
   document.getElementById('analyze-btn').disabled = true;
@@ -1748,16 +2270,18 @@ Required JSON structure (all fields mandatory):
     "explanation": string
   },
   "precautions": string[],
-  "expectedResults": string
+  "expectedResults": string,
+  "arduinoCode": string
 }
 
 Rules:
-- All string values must be in Korean.
+- All string values must be in Korean, EXCEPT "arduinoCode" which must be valid Arduino C++ code in English with Korean comments.
 - "difficulty" must be exactly one of: "초급", "중급", "고급"
 - "severity" must be exactly one of: "위험", "경고", "주의"
 - "resistorCalculation.needed" must be a JSON boolean (true or false, not a string)
 - "resistorCalculation.recommended" must be a JSON number (e.g. 220), not a string
 - "connectionGuide.steps" must have at least 3 items
+- "arduinoCode": provide a complete, runnable Arduino sketch (.ino) for this circuit. If no microcontroller is involved, set to empty string "".
 - Respond with ONLY the JSON object, starting with { and ending with }`;
 
   const userMsg = `부품 목록: ${compStr}\n회로 목적: ${purpose}`;
@@ -1877,6 +2401,15 @@ function renderResult(r, meta) {
       <p style="font-size:0.92rem;color:#cbd5e0;line-height:1.8">${escHtml(r.expectedResults)}</p>
     </div>` : '';
 
+  const arduinoHtml = r.arduinoCode ? `
+    <div class="card">
+      <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
+        <span>🤖 Arduino 예제 코드</span>
+        <button class="btn-secondary" onclick="copyArduinoGenCode()" style="font-size:0.75rem;padding:5px 12px">📋 복사</button>
+      </div>
+      <pre class="arduino-code-block" id="arduino-gen-code" style="white-space:pre-wrap;word-break:break-all;max-height:420px;overflow-y:auto">${escHtml(r.arduinoCode)}</pre>
+    </div>` : '';
+
   document.getElementById('result-content').innerHTML = `
     <div class="card">
       <div class="result-header">
@@ -1902,7 +2435,14 @@ function renderResult(r, meta) {
     ${resistorHtml}
     ${precautionsHtml}
     ${expectedHtml}
+    ${arduinoHtml}
   `;
+}
+
+function copyArduinoGenCode() {
+  const code = document.getElementById('arduino-gen-code')?.textContent;
+  if (!code) return;
+  navigator.clipboard.writeText(code).then(() => showToast('코드가 복사되었습니다 ✓'));
 }
 
 // ── 기록 ──
@@ -4572,19 +5112,25 @@ function renderCommunityPosts(posts) {
     return;
   }
 
-  const typeLabel = {
-    led:'💡 LED', resistor:'⚡ 저항', dht11:'🌡️ 온습도',
-    ultrasonic:'📡 초음파', pwm:'🔵 PWM', motor:'⚙️ 모터', 'ai-analysis':'🤖 AI분석'
-  };
+  const cards = posts.map(issue => buildCcCard(issue)).join('');
+  area.innerHTML = `<div class="community-grid">${cards}</div>
+    <div style="text-align:center;margin-top:16px">
+      <button class="btn-secondary" onclick="loadCommunityPosts()" style="font-size:0.82rem">🔄 새로고침</button>
+    </div>`;
+}
 
-  const cards = posts.map(issue => {
+const CC_TYPE_LABEL = {
+  led:'💡 LED', resistor:'⚡ 저항', dht11:'🌡️ 온습도',
+  ultrasonic:'📡 초음파', pwm:'🔵 PWM', motor:'⚙️ 모터', 'ai-analysis':'🤖 AI분석'
+};
+
+function buildCcCard(issue) {
     const data = parseCcData(issue.body);
-    const simLabel = data?.simType ? (typeLabel[data.simType] || data.simType) : '실험';
+    const simLabel = data?.simType ? (CC_TYPE_LABEL[data.simType] || data.simType) : '실험';
     const dateStr = new Date(issue.created_at).toLocaleDateString('ko-KR');
     const resultsHtml = data?.resultsSummary
       ? `<div class="cc-results">📊 ${escHtml(data.resultsSummary)}</div>` : '';
 
-    // 실험 세팅 표시
     let settingsHtml = '';
     if (data && data.params) {
       const simIdx = data.simTypeIdx ?? SIM_TYPES.findIndex(s => s.id === data.simType);
@@ -4611,6 +5157,7 @@ function renderCommunityPosts(posts) {
         style="font-size:0.75rem;padding:5px 10px;background:#1a3a2e;color:#68d391;border:1px solid #2d5a3e">▶ 이 세팅으로 실험하기</button>` : '';
     const reactions = issue.reactions?.['+1'] || 0;
     const commentCount = issue.comments || 0;
+    const isBookmarked = getBookmarks().has(issue.number);
 
     return `
       <div class="cc-card" id="cc-card-${issue.number}">
@@ -4631,6 +5178,9 @@ function renderCommunityPosts(posts) {
             <button class="btn-secondary" onclick="toggleComments(${issue.number})"
               id="cc-cmtbtn-${issue.number}"
               style="font-size:0.75rem;padding:5px 10px">💬 댓글 ${commentCount > 0 ? commentCount : ''}</button>
+            <button class="btn-secondary" onclick="toggleBookmark(${issue.number}, this)"
+              style="font-size:0.75rem;padding:5px 10px;${isBookmarked ? 'color:#f6ad55' : ''}"
+              >${isBookmarked ? '★ 저장됨' : '⭐ 북마크'}</button>
           </div>
         </div>
         <div class="cc-comments-section" id="cc-comments-${issue.number}">
@@ -4643,12 +5193,6 @@ function renderCommunityPosts(posts) {
           </div>
         </div>
       </div>`;
-  }).join('');
-
-  area.innerHTML = `<div class="community-grid">${cards}</div>
-    <div style="text-align:center;margin-top:16px">
-      <button class="btn-secondary" onclick="loadCommunityPosts()" style="font-size:0.82rem">🔄 새로고침</button>
-    </div>`;
 }
 
 function parseCcData(body) {
@@ -4666,18 +5210,49 @@ function extractDescription(body) {
 // ── 필터 ──
 function setCcFilter(type) {
   ccFilter = type;
-  document.querySelectorAll('.filter-tab').forEach(b =>
-    b.classList.toggle('active', b.textContent.trim().toLowerCase().includes(
-      type === 'all' ? '전체' : type === 'ai-analysis' ? 'ai' : type.slice(0, 3)
-    ) || (type === 'all' && b.textContent.includes('전체')))
-  );
-  // 더 정확한 active 처리
   document.querySelectorAll('#cc-filters .filter-tab').forEach((b, i) => {
-    const map = ['all','led','resistor','dht11','ultrasonic','pwm','motor','ai-analysis'];
+    const map = ['all','led','resistor','dht11','ultrasonic','pwm','motor','ai-analysis','bookmarks'];
     b.classList.toggle('active', map[i] === type);
   });
   ccInitialized = false;
+  if (type === 'bookmarks') { renderBookmarks(); return; }
   loadCommunityPosts();
+}
+
+// ── 북마크 ──
+function getBookmarks() {
+  try { return new Set(JSON.parse(localStorage.getItem('cm_bookmarks') || '[]')); } catch(e) { return new Set(); }
+}
+function saveBookmarks(set) {
+  localStorage.setItem('cm_bookmarks', JSON.stringify([...set]));
+}
+function toggleBookmark(issueNumber, btn) {
+  const bm = getBookmarks();
+  if (bm.has(issueNumber)) {
+    bm.delete(issueNumber);
+    if (btn) { btn.textContent = '⭐ 북마크'; btn.style.color = ''; }
+    showToast('북마크가 해제되었습니다');
+  } else {
+    bm.add(issueNumber);
+    if (btn) { btn.textContent = '★ 저장됨'; btn.style.color = '#f6ad55'; }
+    showToast('북마크에 추가되었습니다 ⭐');
+  }
+  saveBookmarks(bm);
+}
+function renderBookmarks() {
+  const area = document.getElementById('cc-posts-area');
+  const bm = getBookmarks();
+  if (!bm.size) {
+    area.innerHTML = '<div style="text-align:center;padding:40px;color:#4a5568">북마크한 실험이 없습니다.<br>커뮤니티 게시물에서 ⭐ 북마크 버튼을 눌러보세요.</div>';
+    return;
+  }
+  const bookmarked = ccPosts.filter(p => bm.has(p.number));
+  if (!bookmarked.length) {
+    area.innerHTML = '<div style="text-align:center;padding:40px;color:#4a5568">북마크한 게시물을 찾을 수 없습니다.<br>먼저 전체 탭에서 게시물을 불러오세요.</div>';
+    return;
+  }
+  const cards = bookmarked.map(issue => buildCcCard(issue)).join('');
+  area.innerHTML = `<div class="community-grid">${cards}</div>`;
 }
 
 // ── 공유 모달 ──
