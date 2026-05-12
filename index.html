@@ -129,6 +129,36 @@
     }
 
     .part-row input { margin: 0; }
+    .part-row { position: relative; }
+
+    .part-suggestions {
+      position: absolute;
+      top: 100%; left: 0;
+      width: calc(100% - 80px - 36px - 16px);
+      background: #1a1d2e;
+      border: 1px solid #63b3ed55;
+      border-top: none;
+      border-radius: 0 0 10px 10px;
+      z-index: 200;
+      max-height: 200px;
+      overflow-y: auto;
+      box-shadow: 0 8px 24px #00000066;
+    }
+    .part-sug-item {
+      padding: 8px 12px;
+      font-size: 0.82rem;
+      color: #c6cad8;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #2d325020;
+    }
+    .part-sug-item:last-child { border-bottom: none; }
+    .part-sug-item:hover, .part-sug-item.focused { background: #2d3250; color: #e2e8f0; }
+    .part-sug-item .sug-icon { font-size: 1rem; flex-shrink: 0; }
+    .part-sug-item .sug-name { font-weight: 600; }
+    .part-sug-item .sug-desc { font-size: 0.72rem; color: #718096; }
 
     .btn-icon {
       width: 36px; height: 36px;
@@ -1380,6 +1410,9 @@ window.addEventListener('DOMContentLoaded', () => {
   checkApiKey();
   renderHistory();
   renderExperiments();
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.part-row')) hideAllSuggestions();
+  });
 });
 
 // ── 뷰 전환 ──
@@ -1433,6 +1466,75 @@ function applyExperiment(i) {
   showToast(`${exp.name} 부품이 자동으로 입력되었습니다`);
 }
 
+// ── 추천 부품 데이터 ──
+const PART_SUGGESTIONS = [
+  // 마이크로컨트롤러
+  { icon:'🟦', name:'아두이노 우노',          desc:'ATmega328P, 5V, 14 디지털핀' },
+  { icon:'🟦', name:'아두이노 나노',           desc:'소형, USB-B Mini, 5V' },
+  { icon:'🟦', name:'아두이노 메가',           desc:'54 디지털핀, 대형 프로젝트' },
+  { icon:'🟩', name:'ESP32',                  desc:'Wi-Fi/BT 내장, 240MHz' },
+  { icon:'🟩', name:'ESP8266',                desc:'Wi-Fi 내장, 저가형 IoT' },
+  { icon:'🔵', name:'라즈베리파이 피코',       desc:'RP2040, MicroPython 지원' },
+  // LED
+  { icon:'💡', name:'LED 빨강',               desc:'2V, 20mA, 직렬 저항 필요' },
+  { icon:'💡', name:'LED 초록',               desc:'2.2V, 20mA' },
+  { icon:'💡', name:'LED 파랑',               desc:'3.2V, 20mA' },
+  { icon:'💡', name:'LED 노랑',               desc:'2.1V, 20mA' },
+  { icon:'💡', name:'LED 흰색',               desc:'3.2V, 20mA' },
+  { icon:'🌈', name:'RGB LED (공통캐소드)',    desc:'3색, 핀 4개' },
+  { icon:'🌈', name:'RGB LED (공통애노드)',    desc:'3색, HIGH가 OFF' },
+  // 저항
+  { icon:'🟤', name:'저항 220Ω',              desc:'LED 전류 제한 (5V 기준)' },
+  { icon:'🟤', name:'저항 330Ω',              desc:'LED 전류 제한' },
+  { icon:'🟤', name:'저항 1kΩ',               desc:'풀업/풀다운' },
+  { icon:'🟤', name:'저항 4.7kΩ',             desc:'DHT11 풀업 권장값' },
+  { icon:'🟤', name:'저항 10kΩ',              desc:'풀업/풀다운 기본값' },
+  { icon:'🟤', name:'저항 100kΩ',             desc:'고임피던스 풀업' },
+  // 커패시터
+  { icon:'⚡', name:'커패시터 100μF',          desc:'전원 디커플링, 전해' },
+  { icon:'⚡', name:'커패시터 10μF',           desc:'전해 커패시터' },
+  { icon:'⚡', name:'커패시터 100nF (0.1μF)', desc:'세라믹, 고주파 바이패스' },
+  { icon:'⚡', name:'커패시터 47μF',           desc:'전원 안정화' },
+  // 센서
+  { icon:'🌡️', name:'DHT11',                  desc:'온습도, 3~5V, ±2°C' },
+  { icon:'🌡️', name:'DHT22',                  desc:'고정밀 온습도, ±0.5°C' },
+  { icon:'📡', name:'HC-SR04',                desc:'초음파 거리 센서, 2~400cm' },
+  { icon:'☀️', name:'LDR (조도센서)',           desc:'광의존저항, 밝기에 따라 저항 변화' },
+  { icon:'🔥', name:'NTC 서미스터 10kΩ',       desc:'온도에 따라 저항 감소' },
+  { icon:'📐', name:'MPU-6050',               desc:'6축 가속도+자이로, I2C' },
+  { icon:'🧲', name:'홀 센서',                desc:'자기장 감지' },
+  { icon:'🔴', name:'IR 수신 모듈',            desc:'적외선 리모컨 수신' },
+  // 출력
+  { icon:'🔊', name:'부저 (피에조)',            desc:'수동 부저, PWM으로 음계 제어' },
+  { icon:'🔊', name:'부저 (액티브)',            desc:'능동 부저, 전원만 연결하면 울림' },
+  { icon:'📺', name:'OLED 0.96인치 (I2C)',     desc:'128×64, SSD1306, I2C' },
+  { icon:'📺', name:'LCD 1602 (I2C)',          desc:'16×2 문자, I2C 어댑터' },
+  { icon:'🔁', name:'서보모터 SG90',           desc:'180°, 5V, PWM 제어' },
+  { icon:'⚙️', name:'DC 모터',                desc:'드라이버 필요 (L298N 등)' },
+  { icon:'🔄', name:'스텝모터 28BYJ-48',       desc:'ULN2003 드라이버와 세트' },
+  // 드라이버/모듈
+  { icon:'🟠', name:'L298N 모터드라이버',      desc:'DC/스텝모터 2채널, 12V' },
+  { icon:'🟠', name:'ULN2003 드라이버',        desc:'스텝모터 전용' },
+  { icon:'🟠', name:'릴레이 모듈 5V',          desc:'고전압 회로 전환' },
+  // 기본 소자
+  { icon:'🔺', name:'트랜지스터 2N2222',       desc:'NPN, 신호 증폭/스위칭' },
+  { icon:'🔺', name:'트랜지스터 BC547',        desc:'NPN, 소신호' },
+  { icon:'🔺', name:'MOSFET IRF540N',         desc:'N채널, 모터 구동' },
+  { icon:'◈',  name:'다이오드 1N4007',         desc:'정류/역전류 보호' },
+  { icon:'◈',  name:'제너 다이오드 5.1V',      desc:'정전압' },
+  // 전원
+  { icon:'🔋', name:'9V 배터리',               desc:'아두이노 Vin 입력' },
+  { icon:'🔋', name:'18650 리튬셀',            desc:'3.7V, 2600mAh' },
+  { icon:'🔌', name:'3.3V 레귤레이터 AMS1117', desc:'5V → 3.3V 변환' },
+  // 기타
+  { icon:'🍞', name:'브레드보드',              desc:'납땜 없이 회로 구성' },
+  { icon:'🧵', name:'점퍼선 (M-M)',            desc:'수-수 브레드보드 연결' },
+  { icon:'🧵', name:'점퍼선 (M-F)',            desc:'수-암, 모듈 연결' },
+  { icon:'🔘', name:'택트 스위치',              desc:'순간 접점, 풀업/다운 필요' },
+  { icon:'🔘', name:'토글 스위치',              desc:'락 타입 ON/OFF' },
+  { icon:'🎛️', name:'가변저항 (포텐셔미터) 10kΩ', desc:'A0 아날로그 입력으로 사용' },
+];
+
 // ── 부품 관리 ──
 function addPart() {
   parts.push({ name: '', quantity: 1 });
@@ -1448,15 +1550,91 @@ function removePart(i) {
 function renderParts() {
   const container = document.getElementById('parts-list');
   container.innerHTML = parts.map((p, i) => `
-    <div class="part-row">
+    <div class="part-row" id="part-row-${i}">
       <input type="text" placeholder="부품명 (예: 아두이노 우노, LED 빨강, 220Ω 저항)"
-        value="${p.name}"
-        oninput="parts[${i}].name = this.value">
+        value="${escHtml(p.name)}"
+        oninput="parts[${i}].name = this.value; showPartSuggestions(${i}, this.value)"
+        onfocus="showPartSuggestions(${i}, this.value)"
+        onkeydown="handleSugKey(event, ${i})"
+        autocomplete="off">
       <input type="number" min="1" max="99" value="${p.quantity}" style="text-align:center"
         oninput="parts[${i}].quantity = parseInt(this.value)||1">
       <button class="btn-icon danger" onclick="removePart(${i})" title="삭제">✕</button>
     </div>
   `).join('');
+}
+
+let _sugFocusIdx = -1;
+
+function showPartSuggestions(rowIdx, query) {
+  hideAllSuggestions();
+  const q = query.trim().toLowerCase();
+  const row = document.getElementById(`part-row-${rowIdx}`);
+  if (!row) return;
+
+  const matched = q.length === 0
+    ? PART_SUGGESTIONS.slice(0, 12)
+    : PART_SUGGESTIONS.filter(s =>
+        s.name.toLowerCase().includes(q) || s.desc.toLowerCase().includes(q)
+      ).slice(0, 10);
+
+  if (!matched.length) return;
+
+  const box = document.createElement('div');
+  box.className = 'part-suggestions';
+  box.id = `part-sug-${rowIdx}`;
+  box.innerHTML = matched.map((s, si) => `
+    <div class="part-sug-item" data-si="${si}"
+      onmousedown="selectPartSuggestion(${rowIdx}, ${PART_SUGGESTIONS.indexOf(s)})">
+      <span class="sug-icon">${s.icon}</span>
+      <span>
+        <div class="sug-name">${escHtml(s.name)}</div>
+        <div class="sug-desc">${escHtml(s.desc)}</div>
+      </span>
+    </div>
+  `).join('');
+  row.appendChild(box);
+  _sugFocusIdx = -1;
+}
+
+function hideAllSuggestions() {
+  document.querySelectorAll('.part-suggestions').forEach(el => el.remove());
+  _sugFocusIdx = -1;
+}
+
+function selectPartSuggestion(rowIdx, sugIdx) {
+  const s = PART_SUGGESTIONS[sugIdx];
+  if (!s) return;
+  parts[rowIdx].name = s.name;
+  hideAllSuggestions();
+  renderParts();
+  // 선택 후 수량 입력란으로 포커스
+  const row = document.getElementById(`part-row-${rowIdx}`);
+  if (row) row.querySelector('input[type=number]').focus();
+}
+
+function handleSugKey(e, rowIdx) {
+  const box = document.getElementById(`part-sug-${rowIdx}`);
+  if (!box) return;
+  const items = box.querySelectorAll('.part-sug-item');
+  if (!items.length) return;
+
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    _sugFocusIdx = Math.min(_sugFocusIdx + 1, items.length - 1);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    _sugFocusIdx = Math.max(_sugFocusIdx - 1, 0);
+  } else if (e.key === 'Enter' && _sugFocusIdx >= 0) {
+    e.preventDefault();
+    items[_sugFocusIdx].dispatchEvent(new MouseEvent('mousedown'));
+    return;
+  } else if (e.key === 'Escape') {
+    hideAllSuggestions(); return;
+  } else { return; }
+
+  items.forEach((el, i) => el.classList.toggle('focused', i === _sugFocusIdx));
+  items[_sugFocusIdx]?.scrollIntoView({ block: 'nearest' });
 }
 
 // ── 목적 선택 ──
