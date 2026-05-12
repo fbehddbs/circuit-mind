@@ -842,8 +842,9 @@
 <!-- ── 결과 뷰 ── -->
 <div id="view-result" class="view">
   <div id="result-content"></div>
-  <div class="row">
+  <div class="row" style="flex-wrap:wrap;gap:10px">
     <button class="btn-primary" onclick="saveToHistory()">💾 기록에 저장</button>
+    <button onclick="openShareModal('ai')" style="flex:1;min-width:140px;padding:11px 18px;background:linear-gradient(135deg,#1a4a2e,#1a3a50);color:#68d391;border:1.5px solid #2d6a4e;border-radius:10px;font-size:0.9rem;font-weight:600;cursor:pointer">📤 커뮤니티에 공유</button>
     <button class="btn-secondary" onclick="showView('home')">← 홈으로</button>
   </div>
 </div>
@@ -920,9 +921,9 @@
     </div>
 
     <!-- 저장 / 공유 -->
-    <div class="row" style="margin-bottom:8px">
+    <div class="row" style="margin-bottom:8px;flex-wrap:wrap;gap:10px">
       <button class="btn-primary" onclick="saveSimToHistory()">💾 기록에 저장</button>
-      <button class="btn-secondary" onclick="openShareModal('current')" style="background:#1a3a2e;color:#68d391;border:1px solid #2d5a3e">📤 커뮤니티 공유</button>
+      <button onclick="openShareModal('current')" style="flex:1;min-width:140px;padding:11px 18px;background:linear-gradient(135deg,#1a4a2e,#1a3a50);color:#68d391;border:1.5px solid #2d6a4e;border-radius:10px;font-size:0.9rem;font-weight:600;cursor:pointer">📤 커뮤니티에 공유</button>
       <button class="btn-secondary" onclick="document.getElementById('sim-result-area').scrollIntoView({block:'start'})">↑ 결과로</button>
     </div>
 
@@ -1081,15 +1082,40 @@
 
 <!-- ── 공유 모달 ── -->
 <div class="share-modal-overlay" id="share-modal" style="display:none" onclick="if(event.target===this)closeShareModal()">
-  <div class="share-modal-box">
-    <div class="share-modal-title">📤 실험 공유하기</div>
+  <div class="share-modal-box" style="max-height:90vh;overflow-y:auto">
 
-    <div class="input-group">
-      <label>실험 제목 *</label>
-      <input type="text" id="share-title" placeholder="예: DHT11로 교실 온습도 측정하기">
+    <!-- 헤더 -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div class="share-modal-title" style="margin-bottom:0">📤 커뮤니티에 공유하기</div>
+      <button onclick="closeShareModal()" style="background:none;border:none;color:#718096;font-size:1.3rem;cursor:pointer;line-height:1;padding:4px">✕</button>
     </div>
 
+    <!-- ① 저장된 기록에서 실험 선택 (커뮤니티 탭 공유 버튼에서 열 때) -->
+    <div id="share-select-section" style="display:none;margin-bottom:16px">
+      <div style="color:#a0aec0;font-size:0.85rem;font-weight:600;margin-bottom:10px">📋 공유할 실험 기록을 선택하세요</div>
+      <div id="share-select-list" style="display:flex;flex-direction:column;gap:8px;max-height:220px;overflow-y:auto"></div>
+      <div id="share-no-data" style="display:none;text-align:center;padding:24px;color:#4a5568;font-size:0.85rem;background:#0f1117;border:1px solid #2d3250;border-radius:10px">
+        저장된 실험 기록이 없습니다.<br>모의실험 실행 후 결과 화면에서 바로 공유할 수 있어요.
+      </div>
+    </div>
+
+    <!-- ② 공유될 실험 데이터 미리보기 -->
+    <div id="share-preview-section" style="display:none;background:#0f1117;border:1.5px solid #2d5a3e;border-radius:12px;padding:14px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <span style="color:#68d391;font-size:0.8rem;font-weight:600">📎 공유될 실험 데이터</span>
+        <button id="share-change-btn" onclick="showShareSelectSection()" style="display:none;background:none;border:1px solid #2d3250;color:#63b3ed;font-size:0.75rem;padding:3px 10px;border-radius:6px;cursor:pointer">다른 실험 선택</button>
+      </div>
+      <div id="share-preview-content" style="color:#cbd5e0;font-size:0.83rem;line-height:2"></div>
+    </div>
+
+    <!-- 제목 -->
     <div class="input-group">
+      <label>실험 제목 *</label>
+      <input type="text" id="share-title" placeholder="예: LED 회로로 배우는 옴의 법칙">
+    </div>
+
+    <!-- 유형 선택 (첨부 데이터 없을 때만 표시) -->
+    <div class="input-group" id="share-type-group" style="display:none">
       <label>실험 유형 *</label>
       <select id="share-type">
         <option value="led">💡 LED 회로</option>
@@ -1102,38 +1128,24 @@
       </select>
     </div>
 
+    <!-- 설명 -->
     <div class="input-group">
-      <label>실험 설명 *</label>
-      <textarea id="share-desc" rows="3" placeholder="실험 내용, 사용 부품, 배운 점 등을 자유롭게 작성하세요" style="resize:vertical"></textarea>
+      <label>실험 설명 * <span style="color:#4a5568;font-weight:400">(배운 점, 느낀 점을 자유롭게)</span></label>
+      <textarea id="share-desc" rows="3" placeholder="실험을 통해 배운 점, 흥미로운 결과, 주의사항 등을 공유해 보세요" style="resize:vertical"></textarea>
     </div>
 
-    <div class="input-group">
-      <label>결과 요약 (선택)</label>
-      <input type="text" id="share-results" placeholder="예: 전류 12.7mA, 밝기 63%, 정상 동작 확인">
-    </div>
+    <!-- 오류 표시 -->
+    <div id="share-error" style="display:none;background:#3a1a1a;border:1px solid #822727;border-radius:8px;padding:12px;margin-bottom:12px;color:#fc8181;font-size:0.83rem;line-height:1.6"></div>
 
-    <!-- 실험 세팅 미리보기 (현재 실험에서 공유할 때만 표시) -->
-    <div id="share-params-preview" style="display:none;background:#0f1117;border:1px solid #2d3250;border-radius:10px;padding:14px;margin-bottom:14px;font-size:0.83rem">
-      <div style="color:#68d391;font-weight:600;margin-bottom:8px">⚙️ 공유될 실험 세팅</div>
-      <div id="share-params-content" style="color:#a0aec0;line-height:1.8"></div>
-    </div>
-
-    <div class="input-group">
-      <label>실험 데이터 불러오기 <span style="color:#4a5568;font-weight:400">(선택)</span></label>
-      <select id="share-data-source" onchange="onShareDataChange()">
-        <option value="">-- 데이터 없이 공유 --</option>
-        <option value="current">현재 모의실험 결과 첨부</option>
-      </select>
-    </div>
-
-    <div class="alert-info" style="margin-bottom:14px">
+    <!-- PAT 안내 -->
+    <div class="alert-info" id="share-token-notice" style="margin-bottom:14px">
       🔑 공유하려면 GitHub PAT가 필요합니다.
       <a onclick="closeShareModal();openCommunitySettings()" style="color:#63b3ed;cursor:pointer">설정하기 →</a>
     </div>
 
     <div class="row">
-      <button class="btn-primary" onclick="submitShare()">공유하기</button>
-      <button class="btn-secondary" onclick="closeShareModal()">취소</button>
+      <button id="share-submit-btn" onclick="submitShare()" style="flex:1;padding:13px;background:linear-gradient(135deg,#2d6a4e,#2a4a7a);color:#e2e8f0;border:none;border-radius:10px;font-size:0.95rem;font-weight:700;cursor:pointer">📤 공유하기</button>
+      <button class="btn-secondary" onclick="closeShareModal()" style="padding:13px 22px">취소</button>
     </div>
   </div>
 </div>
@@ -1753,8 +1765,9 @@ function renderHistory() {
             <div class="history-meta">${dateStr}${escHtml(extraStr)}</div>
             <div class="history-meta" style="color:#4a5568;margin-top:2px;font-size:0.78rem">${escHtml(valSummary)}</div>
           </div>
-          <div class="history-actions">
+          <div class="history-actions" style="flex-wrap:wrap;gap:6px">
             <button class="btn-secondary" onclick="reloadSim(${idx})" style="font-size:0.8rem;padding:7px 12px">불러오기</button>
+            <button onclick="openShareModal('hist',${i})" style="font-size:0.8rem;padding:7px 12px;background:#1a3a2e;color:#68d391;border:1px solid #2d5a3e;border-radius:8px;cursor:pointer">📤 공유</button>
             <button class="btn-icon danger" onclick="deleteHistory(${idx})">✕</button>
           </div>
         </div>`;
@@ -3337,136 +3350,241 @@ function setCcFilter(type) {
 }
 
 // ── 공유 모달 ──
-function buildParamsPreviewHtml(simTypeIdx, params, extraParts) {
-  const sim = SIM_TYPES[simTypeIdx];
-  if (!sim || !params) return '';
-  const paramLines = sim.params.map(p => {
-    const val = params[p.id];
+let shareAttachData = null;
+
+function buildSharePreviewHtml(data) {
+  if (!data) return '<span style="color:#4a5568">첨부 데이터 없음</span>';
+  if (data.type === 'ai') {
+    const comps = (data.components || []).map(c => `${c.name} ×${c.quantity}`).join(', ');
+    return `<b style="color:#9f7aea">🤖 AI 분석 결과</b><br>
+      <span style="color:#a0aec0">사용 부품: </span>${escHtml(comps || '없음')}<br>
+      <span style="color:#a0aec0">실험 목적: </span>${escHtml(data.purpose || '')}<br>
+      <span style="color:#a0aec0">분석 제목: </span><b style="color:#e2e8f0">${escHtml(data.title || '')}</b>`;
+  }
+  const simIdx = data.simTypeIdx ?? SIM_TYPES.findIndex(s => s.id === data.simType);
+  const sim = SIM_TYPES[simIdx];
+  if (!sim) return escHtml(data.simTypeName || '실험');
+  const paramParts = sim.params.map(p => {
+    const val = data.params?.[p.id];
     if (val === undefined) return null;
     const shortLabel = p.label.replace(/\(.*?\)/g, '').trim();
-    return `<span style="color:#e2e8f0">${shortLabel}:</span> ${val}${p.unit}`;
+    return `<span style="color:#a0aec0">${escHtml(shortLabel)}:</span> <b style="color:#e2e8f0">${val}${p.unit}</b>`;
   }).filter(Boolean);
-  const lines = [`<b style="color:#63b3ed">${escHtml(sim.name)}</b>`];
-  if (paramLines.length) lines.push(paramLines.join(' &nbsp;|&nbsp; '));
-  if (extraParts && extraParts.length) {
-    lines.push('<span style="color:#f6ad55">추가 부품:</span> ' +
-      extraParts.map(ep => `${escHtml(ep.label)} ${ep.value}${ep.unit}`).join(', '));
+  const extraParts = data.extraParts || [];
+  let html = `<b style="color:#63b3ed">${escHtml(sim.name)}</b><br>`;
+  html += paramParts.join(' &nbsp;·&nbsp; ');
+  if (extraParts.length) {
+    html += `<br><span style="color:#f6ad55">추가 부품: </span>`
+      + extraParts.map(ep => `${escHtml(ep.label)} ${ep.value}${ep.unit}`).join(', ');
   }
-  return lines.join('<br>');
+  if (data.resultsSummary) {
+    html += `<br><span style="color:#68d391">📊 결과: </span>${escHtml(data.resultsSummary)}`;
+  }
+  return html;
 }
 
-function openShareModal(source) {
-  // 기록에서 선택지 채우기
-  const sel = document.getElementById('share-data-source');
-  const history = getHistory();
-  const simItems = history.filter(i => i.type === 'sim');
-  sel.innerHTML = '<option value="">-- 데이터 없이 공유 --</option><option value="current">현재 모의실험 결과 첨부</option>'
-    + simItems.slice(0, 10).map((item, i) =>
-        `<option value="hist_${i}">기록: ${escHtml(item.simTypeName)} (${new Date(item.date).toLocaleDateString('ko-KR')})</option>`
-      ).join('');
+function showShareSelectSection() {
+  document.getElementById('share-select-section').style.display = 'block';
+  document.getElementById('share-preview-section').style.display = 'none';
+  document.getElementById('share-change-btn').style.display = 'none';
+}
 
-  const preview = document.getElementById('share-params-preview');
-  const previewContent = document.getElementById('share-params-content');
+function selectShareHistItem(idx) {
+  const it = window._shareItems && window._shareItems[idx];
+  if (!it) return;
+  shareAttachData = it.d;
+  document.getElementById('share-preview-content').innerHTML = buildSharePreviewHtml(shareAttachData);
+  document.getElementById('share-preview-section').style.display = 'block';
+  document.getElementById('share-select-section').style.display = 'none';
+  document.getElementById('share-change-btn').style.display = 'inline-block';
+  document.getElementById('share-type-group').style.display = 'none';
+  if (!document.getElementById('share-title').value)
+    document.getElementById('share-title').value = it.label + ' 실험';
+}
+
+function openShareModal(source, histIdx) {
+  shareAttachData = null;
+  const errEl = document.getElementById('share-error');
+  if (errEl) errEl.style.display = 'none';
+  document.getElementById('share-title').value = '';
+  document.getElementById('share-desc').value = '';
+  document.getElementById('share-type').value = 'led';
+  document.getElementById('share-type-group').style.display = 'none';
+  document.getElementById('share-select-section').style.display = 'none';
+  document.getElementById('share-preview-section').style.display = 'none';
+  document.getElementById('share-change-btn').style.display = 'none';
+  document.getElementById('share-token-notice').style.display = getCcToken() ? 'none' : 'block';
 
   if (source === 'current' && simResult) {
-    // 실험 결과 창에서 직접 공유: 현재 세팅 자동 설정
-    sel.value = 'current';
-    const sim = SIM_TYPES[simType];
-    document.getElementById('share-type').value = sim.id;
-    document.getElementById('share-results').value =
-      (simResult.values || []).slice(0, 3).map(v => `${v.label} ${v.num}${v.unit}`).join(' / ');
-    // 세팅 미리보기 표시
-    const p = getSimParams();
-    previewContent.innerHTML = buildParamsPreviewHtml(simType, p, simExtraParts);
-    preview.style.display = 'block';
+    // 모의실험 결과에서 직접 공유
+    const fullResults = (simResult.values || []).map(v => `${v.label} ${v.num}${v.unit}`).join(' / ');
+    shareAttachData = {
+      simTypeIdx: simType, simTypeName: SIM_TYPES[simType].name,
+      simType: SIM_TYPES[simType].id, params: getSimParams(),
+      extraParts: [...simExtraParts], resultsSummary: fullResults
+    };
+    document.getElementById('share-title').value = SIM_TYPES[simType].name + ' 실험';
+
+  } else if (source === 'ai' && lastResult) {
+    // AI 분석 결과에서 직접 공유
+    shareAttachData = {
+      type: 'ai', simType: 'ai-analysis',
+      components: lastMeta?.components || [],
+      purpose: lastMeta?.purpose || '',
+      title: lastResult.title || '',
+      resultsSummary: lastResult.title || ''
+    };
+    document.getElementById('share-title').value = lastResult.title || 'AI 회로 분석 결과';
+    document.getElementById('share-type').value = 'ai-analysis';
+
+  } else if (source === 'hist' && histIdx !== undefined) {
+    // 기록 탭에서 특정 항목 공유
+    const simItems = getHistory().filter(i => i.type === 'sim');
+    const item = simItems[histIdx];
+    if (item) {
+      const fullResults = (item.result?.values || []).map(v => `${v.label} ${v.num}${v.unit}`).join(' / ');
+      shareAttachData = {
+        simTypeIdx: item.simTypeIdx, simTypeName: item.simTypeName,
+        simType: SIM_TYPES[item.simTypeIdx]?.id || 'led',
+        params: item.params, extraParts: item.extraParts || [],
+        resultsSummary: fullResults
+      };
+      document.getElementById('share-title').value = item.simTypeName + ' 실험';
+    }
+
   } else {
-    preview.style.display = 'none';
+    // 커뮤니티 탭 공유 버튼 → 저장된 실험 목록 표시
+    const simItems = getHistory().filter(i => i.type === 'sim');
+    const list = document.getElementById('share-select-list');
+
+    if (simItems.length === 0 && !simResult) {
+      list.innerHTML = '';
+      document.getElementById('share-no-data').style.display = 'block';
+    } else {
+      document.getElementById('share-no-data').style.display = 'none';
+      const items = [];
+
+      // 현재 실행 중인 실험 (맨 위)
+      if (simResult) {
+        const fullResults = (simResult.values || []).map(v => `${v.label} ${v.num}${v.unit}`).join(' / ');
+        const d = { simTypeIdx: simType, simTypeName: SIM_TYPES[simType].name,
+          simType: SIM_TYPES[simType].id, params: getSimParams(),
+          extraParts: [...simExtraParts], resultsSummary: fullResults };
+        items.push({ d, label: `🔬 현재 실험 (${SIM_TYPES[simType].name})`, sub: '방금 실행한 실험', color: '#1a3a2e', borderColor: '#2d5a3e', textColor: '#68d391' });
+      }
+
+      // 저장된 기록
+      simItems.slice(0, 12).forEach((item, i) => {
+        const dateStr = new Date(item.date || item.id).toLocaleDateString('ko-KR');
+        const valSum = (item.result?.values || []).slice(0, 2).map(v => `${v.label} ${v.num}${v.unit}`).join(' / ');
+        const fullResults = (item.result?.values || []).map(v => `${v.label} ${v.num}${v.unit}`).join(' / ');
+        const d = { simTypeIdx: item.simTypeIdx, simTypeName: item.simTypeName,
+          simType: SIM_TYPES[item.simTypeIdx]?.id || 'led',
+          params: item.params, extraParts: item.extraParts || [], resultsSummary: fullResults };
+        items.push({ d, label: item.simTypeName || '모의실험', sub: `${dateStr}  ·  ${valSum}`, color: '#0f1117', borderColor: '#2d3250', textColor: '#e2e8f0' });
+      });
+
+      window._shareItems = items;
+      list.innerHTML = items.map((it, idx) =>
+        `<div onclick="selectShareHistItem(${idx})"
+          style="background:${it.color};border:1px solid ${it.borderColor};border-radius:8px;padding:11px 14px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:opacity .15s"
+          onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+          <div>
+            <div style="font-weight:600;color:${it.textColor};font-size:0.87rem">${escHtml(it.label)}</div>
+            <div style="font-size:0.76rem;color:#4a5568;margin-top:3px">${escHtml(it.sub)}</div>
+          </div>
+          <span style="color:#68d391;font-size:0.8rem;white-space:nowrap;margin-left:12px;flex-shrink:0">선택 →</span>
+        </div>`
+      ).join('');
+    }
+    document.getElementById('share-select-section').style.display = 'block';
+    document.getElementById('share-modal').style.display = 'flex';
+    return;
+  }
+
+  // 데이터 있으면 미리보기 표시
+  if (shareAttachData) {
+    document.getElementById('share-preview-content').innerHTML = buildSharePreviewHtml(shareAttachData);
+    document.getElementById('share-preview-section').style.display = 'block';
   }
 
   document.getElementById('share-modal').style.display = 'flex';
 }
-function closeShareModal() { document.getElementById('share-modal').style.display = 'none'; }
 
-function onShareDataChange() {
-  const val = document.getElementById('share-data-source').value;
-  const typeEl = document.getElementById('share-type');
-  const resultsEl = document.getElementById('share-results');
-  const preview = document.getElementById('share-params-preview');
-  const previewContent = document.getElementById('share-params-content');
+function closeShareModal() {
+  document.getElementById('share-modal').style.display = 'none';
+  shareAttachData = null;
+}
 
-  if (val === 'current' && simResult) {
-    typeEl.value = SIM_TYPES[simType].id;
-    resultsEl.value = (simResult.values || []).slice(0, 3).map(v => `${v.label} ${v.num}${v.unit}`).join(' / ');
-    previewContent.innerHTML = buildParamsPreviewHtml(simType, getSimParams(), simExtraParts);
-    preview.style.display = 'block';
-  } else if (val.startsWith('hist_')) {
-    const idx = parseInt(val.replace('hist_', ''));
-    const item = getHistory().filter(i => i.type === 'sim')[idx];
-    if (item) {
-      typeEl.value = SIM_TYPES[item.simTypeIdx]?.id || 'led';
-      resultsEl.value = (item.result?.values || []).slice(0, 3).map(v => `${v.label} ${v.num}${v.unit}`).join(' / ');
-      previewContent.innerHTML = buildParamsPreviewHtml(item.simTypeIdx, item.params, item.extraParts);
-      preview.style.display = 'block';
-    }
-  } else {
-    preview.style.display = 'none';
-  }
+async function ensureCcLabel(token) {
+  try {
+    await fetch(`${CC_API}/labels`, {
+      method: 'POST',
+      headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json',
+        'Accept': 'application/vnd.github.v3+json' },
+      body: JSON.stringify({ name: CC_LABEL, color: '0075ca', description: 'CircuitMind 실험 공유' })
+    });
+    // 201=생성됨, 422=이미 존재 → 둘 다 정상
+  } catch(e) {}
 }
 
 async function submitShare() {
   const token = getCcToken();
-  if (!token) { showToast('GitHub 토큰을 먼저 설정하세요'); openCommunitySettings(); return; }
+  const errEl = document.getElementById('share-error');
+  errEl.style.display = 'none';
+
+  if (!token) {
+    errEl.textContent = 'GitHub 토큰이 없습니다. 아래 [설정하기]에서 GitHub PAT를 먼저 입력해 주세요.';
+    errEl.style.display = 'block';
+    return;
+  }
 
   const title = document.getElementById('share-title').value.trim();
   const desc  = document.getElementById('share-desc').value.trim();
-  const type  = document.getElementById('share-type').value;
-  const results = document.getElementById('share-results').value.trim();
-  const source = document.getElementById('share-data-source').value;
 
   if (!title) { showToast('실험 제목을 입력하세요'); return; }
   if (!desc)  { showToast('실험 설명을 입력하세요'); return; }
 
-  // 첨부 데이터 수집
-  let attachData = null;
-  if (source === 'current' && simResult) {
-    attachData = { simTypeIdx: simType, simTypeName: SIM_TYPES[simType].name,
-      simType: SIM_TYPES[simType].id, params: getSimParams(), extraParts: [...simExtraParts],
-      resultsSummary: results };
-  } else if (source.startsWith('hist_')) {
-    const idx = parseInt(source.replace('hist_', ''));
-    const item = getHistory().filter(i => i.type === 'sim')[idx];
-    if (item) attachData = { simTypeIdx: item.simTypeIdx, simTypeName: item.simTypeName,
-      simType: SIM_TYPES[item.simTypeIdx]?.id || type, params: item.params,
-      extraParts: item.extraParts || [], resultsSummary: results };
+  // 첨부 데이터: shareAttachData 없으면 유형만
+  let attachData = shareAttachData;
+  if (!attachData) {
+    const type = document.getElementById('share-type').value;
+    attachData = { simType: type, resultsSummary: '' };
   }
-  if (!attachData) attachData = { simType: type, resultsSummary: results };
 
   const body = `${desc}\n\n<!--CIRCUITMIND:${JSON.stringify(attachData)}-->`;
-  const labels = [CC_LABEL, type];
 
-  const btn = document.querySelector('#share-modal .btn-primary');
-  btn.disabled = true; btn.textContent = '공유 중...';
+  const btn = document.getElementById('share-submit-btn');
+  btn.disabled = true; btn.textContent = '⏳ 공유 중...';
 
   try {
+    await ensureCcLabel(token);
+
     const resp = await fetch(`${CC_API}/issues`, {
       method: 'POST',
       headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json',
         'Accept': 'application/vnd.github.v3+json' },
-      body: JSON.stringify({ title, body, labels })
+      body: JSON.stringify({ title, body, labels: [CC_LABEL] })
     });
     const data = await resp.json();
-    if (!resp.ok) throw new Error(data.message || `오류 (${resp.status})`);
+    if (!resp.ok) {
+      const msg = data.message || `GitHub API 오류 (${resp.status})`;
+      if (resp.status === 401) throw new Error('토큰 인증 실패: 토큰이 잘못되었거나 만료되었습니다. 설정에서 토큰을 다시 입력하세요.');
+      if (resp.status === 403) throw new Error('권한 없음: public_repo 권한이 있는 토큰인지 확인하세요. (' + msg + ')');
+      if (resp.status === 404) throw new Error('레포를 찾을 수 없습니다. (' + msg + ')');
+      throw new Error(msg);
+    }
     closeShareModal();
-    showToast('공유되었습니다 ✓');
+    showToast('공유되었습니다 ✓ 커뮤니티에서 확인하세요');
     document.getElementById('share-title').value = '';
     document.getElementById('share-desc').value = '';
-    document.getElementById('share-results').value = '';
     ccInitialized = false;
     loadCommunityPosts();
   } catch (err) {
-    showToast('공유 실패: ' + err.message);
+    errEl.textContent = '공유 실패: ' + err.message;
+    errEl.style.display = 'block';
   } finally {
-    btn.disabled = false; btn.textContent = '공유하기';
+    btn.disabled = false; btn.textContent = '📤 공유하기';
   }
 }
 
