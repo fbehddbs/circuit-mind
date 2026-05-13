@@ -6,7 +6,8 @@
   <title>CircuitMind — AI 전자회로 도우미</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800;900&family=Noto+Sans+KR:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
   <style>
     :root {
       --bg-base:       #080b14;
@@ -45,14 +46,17 @@
     ::-webkit-scrollbar-thumb:hover { background: #3a4480; }
 
     body {
-      font-family: 'Inter', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: 'Pretendard', 'Inter', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
       background: var(--bg-base);
       color: var(--text-primary);
       min-height: 100vh;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
-      font-feature-settings: 'kern' 1;
+      font-feature-settings: 'kern' 1, 'ss01' 1;
       line-height: 1.6;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 20% 10%, rgba(74,144,217,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 90%, rgba(124,92,196,0.06) 0%, transparent 60%);
     }
 
     /* ── 상단 네비게이션 ── */
@@ -1104,6 +1108,416 @@
       .nav-tabs { gap: 0; }
       .nav-tab { padding: 7px 10px; font-size: 0.76rem; }
     }
+
+    /* ═══════════════════════════════════════════
+       PREMIUM UI UPGRADE
+    ═══════════════════════════════════════════ */
+
+    /* ── 네비게이션 개선 ── */
+    .nav { height: 66px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .nav-brand .logo {
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      box-shadow: 0 4px 20px rgba(59,130,246,0.45), inset 0 1px 0 rgba(255,255,255,0.18);
+      border-radius: 12px;
+    }
+    .nav-brand { font-size: 1.08rem; letter-spacing: -0.5px; }
+    .nav-tab { font-family: 'Pretendard', inherit; font-size: 0.87rem; font-weight: 500; position: relative; }
+    .nav-tab.active {
+      background: transparent;
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+    .nav-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -12px; left: 10%; right: 10%;
+      height: 2px;
+      background: linear-gradient(90deg, var(--blue), var(--purple));
+      border-radius: 2px;
+      box-shadow: 0 0 10px rgba(91,164,224,0.6);
+    }
+
+    /* ── 카드 프리미엄 ── */
+    .card {
+      background: linear-gradient(155deg, rgba(17,24,39,0.98), rgba(12,17,30,0.98));
+      border: 1px solid rgba(30,37,64,0.9);
+      border-radius: 20px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s, box-shadow 0.3s, transform 0.25s;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 5%, rgba(91,164,224,0.5) 40%, rgba(145,113,232,0.5) 60%, transparent 95%);
+      opacity: 0;
+      transition: opacity 0.35s;
+    }
+    .card:hover::before { opacity: 1; }
+    .card:hover {
+      border-color: rgba(91,164,224,0.22);
+      box-shadow: 0 12px 48px rgba(0,0,0,0.55), 0 0 0 1px rgba(91,164,224,0.07);
+      transform: translateY(-2px);
+    }
+    .card-title {
+      font-size: 0.67rem;
+      letter-spacing: 3px;
+      font-weight: 700;
+      font-family: 'Pretendard', inherit;
+      background: linear-gradient(90deg, var(--text-muted), rgba(108,122,152,0.6));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── 프리미엄 시뮬레이션 수치 박스 ── */
+    .sim-value-grid { gap: 14px; }
+    .sim-value-box {
+      background: linear-gradient(145deg, #0c1422, #0f1929);
+      border: 1px solid rgba(99,179,237,0.11);
+      border-radius: 18px;
+      padding: 22px 16px 18px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .sim-value-box::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 10%; right: 10%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(99,179,237,0.45), transparent);
+    }
+    .sim-value-box::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(99,179,237,0.05), transparent 65%);
+      pointer-events: none;
+    }
+    .sim-value-box:hover {
+      border-color: rgba(99,179,237,0.3);
+      box-shadow: 0 0 32px rgba(99,179,237,0.1), 0 8px 24px rgba(0,0,0,0.3);
+      transform: translateY(-3px) scale(1.01);
+    }
+    .sim-value-num {
+      font-size: 2.15rem;
+      font-weight: 200;
+      letter-spacing: -0.5px;
+      font-variant-numeric: tabular-nums;
+      line-height: 1.05;
+      margin-bottom: 6px;
+      font-family: 'Inter', 'Pretendard', sans-serif;
+    }
+    .sim-value-num span { font-size: 0.9rem; font-weight: 400; opacity: 0.7; }
+    .sim-value-label {
+      font-size: 0.66rem;
+      color: #5a6a88;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    /* ── 프리미엄 기본 버튼 ── */
+    .btn-primary {
+      background: linear-gradient(135deg, #3b7dd8 0%, #6c48c8 100%);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      padding: 14px 28px;
+      font-family: 'Pretendard', inherit;
+      font-size: 0.93rem;
+      font-weight: 600;
+      letter-spacing: 0.1px;
+      box-shadow: 0 4px 24px rgba(74,144,217,0.32), inset 0 1px 0 rgba(255,255,255,0.14);
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.07) 0%, transparent 50%);
+      pointer-events: none;
+    }
+    .btn-primary::after {
+      content: '';
+      position: absolute;
+      top: -60%; left: -60%;
+      width: 220%; height: 220%;
+      background: conic-gradient(from 180deg, transparent 60%, rgba(255,255,255,0.05) 70%, transparent 80%);
+      animation: btn-shimmer 4s linear infinite;
+      pointer-events: none;
+    }
+    @keyframes btn-shimmer { to { transform: rotate(360deg); } }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 36px rgba(74,144,217,0.48), inset 0 1px 0 rgba(255,255,255,0.18);
+    }
+
+    /* ── 슬라이더 프리미엄 ── */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 5px;
+      border-radius: 5px;
+      background: rgba(30,37,64,0.9);
+      outline: none;
+      border: none;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #5ba4e0, #9171e8);
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(91,164,224,0.5), 0 2px 6px rgba(0,0,0,0.4);
+      border: 2px solid rgba(255,255,255,0.15);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.25);
+      box-shadow: 0 0 18px rgba(91,164,224,0.7), 0 2px 8px rgba(0,0,0,0.4);
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #5ba4e0, #9171e8);
+      border: 2px solid rgba(255,255,255,0.15);
+      cursor: pointer;
+    }
+
+    /* ── 모의실험 탭 버튼 ── */
+    .sim-type-btn {
+      font-family: 'Pretendard', inherit;
+      font-size: 0.83rem;
+      font-weight: 500;
+      padding: 7px 16px;
+      border-radius: 22px;
+      transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .sim-type-btn.active {
+      background: linear-gradient(135deg, rgba(74,144,217,0.2), rgba(124,92,196,0.14));
+      border-color: rgba(91,164,224,0.55);
+      color: #d4e8f8;
+      font-weight: 600;
+      box-shadow: 0 0 20px rgba(91,164,224,0.18), inset 0 0 0 1px rgba(91,164,224,0.12);
+      transform: scale(1.02);
+    }
+
+    /* ── 기록 아이템 ── */
+    .history-item {
+      border-radius: 18px;
+      position: relative;
+      overflow: hidden;
+      padding: 18px 22px;
+    }
+    .history-item::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 15%; bottom: 15%;
+      width: 2.5px;
+      background: linear-gradient(180deg, var(--blue), var(--purple));
+      border-radius: 2px;
+      opacity: 0;
+      transition: opacity 0.2s;
+      transform: scaleY(0.6);
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .history-item:hover::before { opacity: 1; transform: scaleY(1); }
+    .history-title { font-size: 0.95rem; font-weight: 600; font-family: 'Pretendard', inherit; }
+
+    /* ── 커뮤니티 카드 ── */
+    .cc-card {
+      background: linear-gradient(145deg, #111827, #0e1520);
+      border-radius: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .cc-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(91,164,224,0.4), rgba(145,113,232,0.3), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .cc-card:hover::before { opacity: 1; }
+    .cc-title { font-family: 'Pretendard', inherit; font-size: 0.94rem; font-weight: 700; }
+
+    /* ── 입력 필드 ── */
+    input[type="text"], input[type="password"], textarea, select {
+      font-family: 'Pretendard', inherit;
+      border-radius: 10px;
+      border: 1px solid rgba(30,37,64,0.9);
+      background: rgba(10,14,26,0.8);
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(91,164,224,0.1), 0 0 20px rgba(91,164,224,0.06);
+    }
+
+    /* ── 토스트 ── */
+    .toast {
+      border-radius: 50px;
+      padding: 13px 30px;
+      font-family: 'Pretendard', inherit;
+      font-weight: 600;
+      font-size: 0.9rem;
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      box-shadow: 0 20px 56px rgba(0,0,0,0.55), 0 0 0 1px rgba(78,206,138,0.1);
+      border: 1px solid rgba(78,206,138,0.22);
+    }
+
+    /* ── 실험 추천 카드 ── */
+    .exp-card {
+      border-radius: 16px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s, background 0.2s, transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s;
+    }
+    .exp-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(91,164,224,0.4), transparent);
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+    .exp-card:hover::before { opacity: 1; }
+    .exp-card:hover { transform: translateY(-3px) scale(1.01); box-shadow: 0 12px 40px rgba(0,0,0,0.5); }
+    .exp-card .exp-icon { font-size: 1.7rem; }
+    .exp-card .exp-name { font-family: 'Pretendard', inherit; font-size: 0.86rem; font-weight: 700; }
+
+    /* ── 결과 수치 표시 개선 ── */
+    .result-title { font-family: 'Pretendard', inherit; letter-spacing: -0.6px; }
+    .resistor-value {
+      font-family: 'Inter', sans-serif;
+      font-size: 3rem;
+      font-weight: 200;
+      background: linear-gradient(135deg, var(--purple), var(--blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .tool-result-num {
+      font-size: 2rem;
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+      background: linear-gradient(135deg, #4ece8a, #38c8c8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── 뷰 전환 애니메이션 ── */
+    .view.active {
+      animation: viewEnter 0.3s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    @keyframes viewEnter {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Canvas 캔버스 ── */
+    #sim-circuit-canvas {
+      border-radius: 14px !important;
+      background: #060910 !important;
+      border: 1px solid rgba(20,28,52,0.9) !important;
+    }
+
+    /* ── 코드 블록 ── */
+    .formula-box, .arduino-code-block {
+      font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+      border-radius: 12px;
+    }
+    .formula-box { background: rgba(9,14,28,0.8); border-color: rgba(144,205,244,0.1); }
+
+    /* ── 배지 개선 ── */
+    .badge { font-family: 'Pretendard', inherit; }
+    .badge-blue   { background: rgba(91,164,224,0.1);  box-shadow: 0 0 12px rgba(91,164,224,0.06); }
+    .badge-purple { background: rgba(145,113,232,0.1); box-shadow: 0 0 12px rgba(145,113,232,0.06); }
+    .badge-green  { background: rgba(78,206,138,0.1);  box-shadow: 0 0 12px rgba(78,206,138,0.06); }
+
+    /* ── 스피너 개선 ── */
+    .spinner {
+      border: 2px solid rgba(30,37,64,0.6);
+      border-top-color: var(--blue);
+      border-right-color: var(--purple);
+      width: 48px; height: 48px;
+      animation: spin 0.7s linear infinite;
+      box-shadow: 0 0 20px rgba(91,164,224,0.15);
+    }
+
+    /* ── 스텝 번호 ── */
+    .step-num {
+      background: linear-gradient(135deg, rgba(74,144,217,0.22), rgba(124,92,196,0.18));
+      border-color: rgba(91,164,224,0.3);
+      box-shadow: 0 0 12px rgba(91,164,224,0.1);
+    }
+
+    /* ── 검색바 ── */
+    .cc-search-input { border-radius: 12px; font-family: 'Pretendard', inherit; }
+
+    /* ── 모달 ── */
+    .modal, .share-modal-box, .sim-pick-box {
+      background: linear-gradient(155deg, #181e30, #111827);
+      border: 1px solid rgba(40,48,96,0.7);
+      box-shadow: 0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(91,164,224,0.05);
+    }
+    .modal-title, .share-modal-title, .sim-pick-title {
+      font-family: 'Pretendard', inherit;
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    /* ── 그래프 캔버스 ── */
+    #sim-graph-canvas { border-radius: 12px; }
+
+    /* ── 도구 탭 결과 박스 ── */
+    .tool-result-box {
+      background: linear-gradient(145deg, #0c1422, #0f1929);
+      border: 1px solid rgba(78,206,138,0.18);
+      border-radius: 16px;
+      box-shadow: 0 0 24px rgba(78,206,138,0.06);
+    }
+
+    /* ── 프리미엄 scrollbar ── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-thumb { background: rgba(40,48,96,0.7); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(91,164,224,0.35); }
+
+    /* ── 보조 버튼 개선 ── */
+    .btn-secondary {
+      font-family: 'Pretendard', inherit;
+      border-radius: 10px;
+      font-weight: 500;
+    }
+
+    /* ── sim-param-label 개선 ── */
+    .sim-param-label { font-family: 'Pretendard', inherit; font-size: 0.87rem; }
+    .sim-param-label .val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.88rem;
+      color: var(--blue);
+      font-weight: 600;
+      background: rgba(91,164,224,0.08);
+      padding: 1px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(91,164,224,0.15);
+    }
+
+    /* ── 빈 상태 ── */
+    .empty-state { padding: 72px 20px; }
+    .empty-state .icon { font-size: 3.5rem; opacity: 0.4; filter: drop-shadow(0 0 18px rgba(91,164,224,0.3)); }
   </style>
 </head>
 <body>
@@ -2162,6 +2576,42 @@ const EXPERIMENTS = [
       { name: '10kΩ 저항', quantity: 1 },
       { name: '10kΩ 저항', quantity: 1 },
       { name: '9V 배터리', quantity: 1 }
+    ]
+  },
+  {
+    icon: '📊', name: 'OP-AMP 반전 증폭기', level: 3,
+    desc: '연산 증폭기로 신호를 정밀하게 증폭하는 아날로그 회로 — R2/R1 비율로 이득 설정',
+    purpose: '기타',
+    purposeCustom: 'OP-AMP 반전 증폭기로 아날로그 신호 증폭',
+    parts: [
+      { name: 'OP-AMP IC (LM358/LM741)', quantity: 1 },
+      { name: '10kΩ 저항 (R1)', quantity: 1 },
+      { name: '100kΩ 저항 (R2 귀환)', quantity: 1 },
+      { name: '±5V 이중 전원', quantity: 1 }
+    ]
+  },
+  {
+    icon: '🔗', name: '풀업 저항 버튼', level: 1,
+    desc: '버튼 부유 상태 방지를 위한 풀업 저항 회로 — HIGH(열림) / LOW(눌림) 로직',
+    purpose: '버튼으로 LED 제어',
+    parts: [
+      { name: '아두이노 우노', quantity: 1 },
+      { name: '푸시버튼', quantity: 1 },
+      { name: '10kΩ 저항 (풀업)', quantity: 1 },
+      { name: 'LED', quantity: 1 },
+      { name: '220Ω 저항', quantity: 1 }
+    ]
+  },
+  {
+    icon: '🔌', name: '브리지 정류 회로', level: 3,
+    desc: '4개의 다이오드로 교류(AC)를 직류(DC)로 변환하는 전파 브리지 정류 회로',
+    purpose: '기타',
+    purposeCustom: '브리지 정류 회로로 AC → DC 변환',
+    parts: [
+      { name: '1N4007 다이오드', quantity: 4 },
+      { name: '전해 커패시터 1000μF/25V', quantity: 1 },
+      { name: '부하 저항 1kΩ', quantity: 1 },
+      { name: '변압기 (12V AC)', quantity: 1 }
     ]
   }
 ];
@@ -4455,6 +4905,144 @@ Arduino 코드: <code>myServo.write(${p.angle});</code><br>
       };
     }
   },
+  {
+    id: 'opamp',
+    name: '📊 OP-AMP 증폭기',
+    desc: '연산 증폭기(OP-AMP)로 신호를 증폭하는 반전/비반전 회로입니다. 귀환 저항 비율(R2/R1)이 이득을 결정하며, 출력이 공급 전압에 클리핑되는 현상도 확인합니다.',
+    params: [
+      { id:'vcc',  label:'공급 전압 (±V)',  unit:'V',  min:1.5, max:15,   step:0.5, def:5    },
+      { id:'vin',  label:'입력 전압 Vin',   unit:'V',  min:-5,  max:5,    step:0.1, def:0.5  },
+      { id:'r1',   label:'입력 저항 R1',    unit:'kΩ', min:1,   max:100,  step:1,   def:10   },
+      { id:'r2',   label:'귀환 저항 R2',    unit:'kΩ', min:1,   max:1000, step:1,   def:100  },
+      { id:'mode', label:'회로 방식',        unit:'',   type:'select', options:[{v:'inv',l:'반전 증폭'},{v:'noninv',l:'비반전 증폭'}], def:'inv' },
+    ],
+    availableExtra: [
+      { id:'r_load', label:'부하 저항', unit:'kΩ', min:1, max:100, def:10, step:1, tip:'출력단 부하 저항. 실제 출력 전류를 계산합니다.' },
+    ],
+    run(p, ex={}) {
+      const isInv = !(p.mode === 'noninv');
+      const gain = isInv ? p.r2/p.r1 : 1 + p.r2/p.r1;
+      const vout_ideal = isInv ? -p.vin*(p.r2/p.r1) : p.vin*(1+p.r2/p.r1);
+      const vout = Math.max(-p.vcc*0.9, Math.min(p.vcc*0.9, vout_ideal));
+      const clipped = Math.abs(vout_ideal) > p.vcc*0.9;
+      const iout = ex.r_load ? (vout/(ex.r_load*1000)*1000) : null;
+      const rows = [];
+      const step = p.vcc/5;
+      for (let v=-p.vcc; v<=p.vcc+0.01; v+=step) {
+        const vo_i = isInv ? -v*(p.r2/p.r1) : v*(1+p.r2/p.r1);
+        const vo = Math.max(-p.vcc*0.9, Math.min(p.vcc*0.9, vo_i));
+        rows.push({'Vin(V)':v.toFixed(2),'Vout(V)':vo.toFixed(2),'이득(배)':gain.toFixed(1),'클리핑':Math.abs(vo_i)>p.vcc*0.9?'예':'아니오'});
+      }
+      const extraVals = iout!==null ? [{num:iout.toFixed(2),unit:'mA',label:'출력 전류',color:'#68d391'}] : [];
+      return {
+        values:[
+          {num:gain.toFixed(1),unit:'V/V',label:`이득 (${isInv?'반전':'비반전'})`,color:'#63b3ed'},
+          {num:vout.toFixed(3),unit:'V',label:'출력 전압 Vout',color:clipped?'#fc8181':'#68d391'},
+          {num:(p.r2/p.r1).toFixed(1),unit:'',label:'R2/R1 비율',color:'#f6ad55'},
+          {num:(p.vcc*0.9).toFixed(1),unit:'V',label:'출력 최대한계',color:'#9f7aea'},
+          ...extraVals,
+        ],
+        rows, type:'opamp',
+        extra:{gain,vout,vcc:p.vcc,vin:p.vin,isInv,clipped,r1:p.r1,r2:p.r2},
+        interpretation:`OP-AMP ${isInv?'반전':'비반전'} 증폭기<br>
+이득 = ${isInv?`R2/R1 = ${p.r2}/${p.r1}`:`1+R2/R1 = 1+${p.r2}/${p.r1}`} = <b>${gain.toFixed(1)}배</b><br>
+Vout = ${isInv?`−${p.vin}V × ${gain.toFixed(1)}`:`${p.vin}V × ${gain.toFixed(1)}`} = <b>${vout_ideal.toFixed(3)}V</b>${clipped?' → ⚠️ 클리핑! ±'+p.vcc+'V 한계 → 실제 '+vout.toFixed(3)+'V':' ✓ 정상 출력'}<br>
+💡 이득을 높이려면 R2를 키우거나 R1을 줄이세요. 단, 대역폭은 좁아집니다.`,
+      };
+    }
+  },
+  {
+    id: 'pullup',
+    name: '🔗 풀업/풀다운',
+    desc: '디지털 입력핀의 부유 상태(floating)를 방지하는 풀업/풀다운 저항 회로입니다. 버튼이 열렸을 때와 눌렸을 때의 전압 레벨을 확인하고, 저항값에 따른 누설 전류를 계산합니다.',
+    params: [
+      { id:'vcc',   label:'공급 전압',   unit:'V',  min:1.8, max:5.5, step:0.1, def:5   },
+      { id:'r_pu',  label:'저항값',      unit:'kΩ', min:1,   max:100, step:1,   def:10  },
+      { id:'mode',  label:'회로 방식',   unit:'',   type:'select', options:[{v:'pullup',l:'풀업 (저항→VCC)'},{v:'pulldown',l:'풀다운 (저항→GND)'}], def:'pullup' },
+    ],
+    availableExtra: [
+      { id:'cap_debounce', label:'디바운스 커패시터', unit:'nF', min:1, max:1000, def:100, step:10, tip:'버튼 채터링 방지용 커패시터. RC 시정수로 디바운스 시간 계산.' },
+    ],
+    run(p, ex={}) {
+      const isPullup = !(p.mode === 'pulldown');
+      const r_ohm = p.r_pu * 1000;
+      const v_open    = isPullup ? p.vcc : 0;
+      const v_pressed = isPullup ? 0 : p.vcc;
+      const i_leak = p.vcc / r_ohm * 1000;
+      const p_mw   = i_leak * p.vcc;
+      const tau_us = ex.cap_debounce ? (r_ohm * ex.cap_debounce/1e9 * 1e6) : null;
+      const rows = [];
+      [1,2,4.7,10,20,47,100].forEach(r => {
+        const i = p.vcc/(r*1000)*1000;
+        rows.push({'저항(kΩ)':r,'누설전류(mA)':i.toFixed(3),'소비전력(mW)':(i*p.vcc).toFixed(3),'권장':r>=1&&r<=47?'✓':'△'});
+      });
+      const extraVals = tau_us ? [{num:tau_us.toFixed(1),unit:'μs',label:'디바운스 시정수',color:'#9f7aea'}] : [];
+      return {
+        values:[
+          {num:v_open.toFixed(1),unit:'V',label:`버튼 열림 (${isPullup?'HIGH':'LOW'})`,color:'#68d391'},
+          {num:v_pressed.toFixed(1),unit:'V',label:`버튼 눌림 (${isPullup?'LOW':'HIGH'})`,color:'#fc8181'},
+          {num:i_leak.toFixed(3),unit:'mA',label:'누설 전류',color:'#63b3ed'},
+          {num:p_mw.toFixed(2),unit:'mW',label:'소비전력 (ON시)',color:'#f6ad55'},
+          ...extraVals,
+        ],
+        rows, type:'pullup',
+        extra:{isPullup,vcc:p.vcc,r_pu:p.r_pu,v_open,v_pressed},
+        interpretation:`${isPullup?'풀업':'풀다운'} 저항 회로 (${p.r_pu}kΩ)<br>
+버튼 열림: <b>${v_open.toFixed(1)}V (${isPullup?'HIGH':'LOW'})</b> — 저항이 핀을 ${isPullup?'VCC쪽으로':'GND쪽으로'} 당깁니다<br>
+버튼 눌림: <b>${v_pressed.toFixed(1)}V (${isPullup?'LOW':'HIGH'})</b><br>
+누설 전류: ${p.vcc}V ÷ ${p.r_pu}kΩ = <b>${i_leak.toFixed(3)}mA</b><br>
+💡 Arduino에서는 <code>pinMode(pin, INPUT_PULLUP)</code>으로 내부 풀업(~20~50kΩ)을 사용할 수 있습니다.`,
+      };
+    }
+  },
+  {
+    id: 'diode_rect',
+    name: '🔌 다이오드 정류',
+    desc: '다이오드로 교류(AC)를 직류(DC)로 변환하는 정류 회로입니다. 반파(다이오드 1개)와 전파 브리지(4개)의 출력 파형·평균전압·리플을 비교합니다.',
+    params: [
+      { id:'vpeak', label:'입력 최대전압 Vpeak', unit:'V',  min:1,   max:50,    step:0.5, def:12   },
+      { id:'rl',    label:'부하 저항 RL',         unit:'Ω',  min:100, max:10000, step:100, def:1000 },
+      { id:'type',  label:'정류 방식',             unit:'',   type:'select', options:[{v:'half',l:'반파 정류 (다이오드 1개)'},{v:'full',l:'전파 브리지 (다이오드 4개)'}], def:'half' },
+    ],
+    availableExtra: [
+      { id:'cap_filter', label:'평활 커패시터', unit:'μF', min:10, max:10000, def:1000, step:10, tip:'정류 후 파형을 평탄하게 만듭니다. 클수록 리플 감소.' },
+    ],
+    run(p, ex={}) {
+      const Vf = 0.7;
+      const isFull = (p.type === 'full');
+      const vDrop = isFull ? 2*Vf : Vf;
+      const vout_peak = Math.max(0, p.vpeak - vDrop);
+      const vavg = isFull ? (2*vout_peak/Math.PI) : (vout_peak/Math.PI);
+      const vrms = isFull ? (vout_peak/Math.sqrt(2)) : (vout_peak/2);
+      const i_avg = vavg/p.rl*1000;
+      const f_ripple = isFull ? 120 : 60;
+      const ripple = ex.cap_filter ? (i_avg/(f_ripple*ex.cap_filter/1000)) : null;
+      const rows = [];
+      for (let deg=0; deg<=360; deg+=15) {
+        const rad = deg*Math.PI/180;
+        const vin = p.vpeak*Math.sin(rad);
+        const vout = isFull ? (Math.abs(vin)>vDrop?Math.abs(vin)-vDrop:0) : (vin>Vf?vin-Vf:0);
+        rows.push({'각도(°)':deg,'Vin(V)':vin.toFixed(2),'Vout(V)':vout.toFixed(2)});
+      }
+      const extraVals = ripple!==null ? [{num:ripple.toFixed(3),unit:'V',label:'리플 전압',color:ripple<0.5?'#68d391':'#fc8181'}] : [];
+      return {
+        values:[
+          {num:vout_peak.toFixed(2),unit:'V',label:'출력 최대전압',color:'#63b3ed'},
+          {num:vavg.toFixed(2),unit:'V',label:'평균 출력전압',color:'#68d391'},
+          {num:vrms.toFixed(2),unit:'V',label:'RMS 전압',color:'#9f7aea'},
+          {num:i_avg.toFixed(2),unit:'mA',label:'평균 부하전류',color:'#f6ad55'},
+          ...extraVals,
+        ],
+        rows, type:'diode_rect',
+        extra:{vout_peak,vavg,isFull,vpeak:p.vpeak,rl:p.rl},
+        interpretation:`${isFull?'전파 브리지':'반파'} 정류 회로<br>
+다이오드 전압강하: ${isFull?'2×0.7V=1.4V':'0.7V'} → 출력 최대 = ${p.vpeak}V − ${vDrop}V = <b>${vout_peak.toFixed(2)}V</b><br>
+평균 출력: Vavg = ${isFull?'2':'1'}×Vpeak ÷ π = <b>${vavg.toFixed(2)}V</b><br>
+리플 주파수: <b>${f_ripple}Hz</b> (${isFull?'입력의 2배, 전파가 유리':'입력과 동일'})<br>
+${ex.cap_filter?`평활 커패시터 ${ex.cap_filter}μF → 리플 <b>${ripple?.toFixed(3)}V</b>`:'💡 평활 커패시터를 추가하면 더 깨끗한 직류를 만들 수 있습니다.'}`,
+      };
+    }
+  },
 ];
 
 // 해석 함수들
@@ -4564,25 +5152,33 @@ function renderSimParams() {
     descEl.textContent = sim.desc || '';
     descEl.style.display = sim.desc ? 'block' : 'none';
   }
-  document.getElementById('sim-params').innerHTML = sim.params.map(p => `
-    <div class="sim-param-row">
+  document.getElementById('sim-params').innerHTML = sim.params.map(pr => {
+    if (pr.type === 'select') {
+      const opts = pr.options.map(o => `<option value="${o.v}"${o.v===pr.def?' selected':''}>${o.l}</option>`).join('');
+      return `<div class="sim-param-row">
+        <div class="sim-param-label"><span>${pr.label}</span><span class="val" id="val-${pr.id}">${(pr.options.find(o=>o.v===pr.def)||{l:''}).l}</span></div>
+        <select data-param-id="${pr.id}" onchange="document.getElementById('val-${pr.id}').textContent=this.options[this.selectedIndex].text;scheduleCircuitUpdate()" style="background:#1a253d;color:#e2e8f0;border:1px solid #283060;border-radius:6px;padding:6px 10px;width:100%;margin-top:6px">${opts}</select>
+      </div>`;
+    }
+    return `<div class="sim-param-row">
       <div class="sim-param-label">
-        <span>${p.label}</span>
-        <span class="val" id="val-${p.id}">${p.def} ${p.unit}</span>
+        <span>${pr.label}</span>
+        <span class="val" id="val-${pr.id}">${pr.def} ${pr.unit}</span>
       </div>
-      <input type="range" min="${p.min}" max="${p.max}" step="${p.step}" value="${p.def}"
-        oninput="document.getElementById('val-${p.id}').textContent = this.value + ' ${p.unit}'; scheduleCircuitUpdate()">
-    </div>
-  `).join('');
+      <input type="range" min="${pr.min}" max="${pr.max}" step="${pr.step}" value="${pr.def}" data-param-id="${pr.id}"
+        oninput="document.getElementById('val-${pr.id}').textContent = this.value + ' ${pr.unit}'; scheduleCircuitUpdate()">
+    </div>`;
+  }).join('');
   scheduleCircuitUpdate();
 }
 
 function getSimParams() {
   const sim = SIM_TYPES[simType];
   const p = {};
-  sim.params.forEach((param, i) => {
-    const inputs = document.getElementById('sim-params').querySelectorAll('input[type=range]');
-    p[param.id] = parseFloat(inputs[i].value);
+  sim.params.forEach(param => {
+    const el = document.getElementById('sim-params').querySelector(`[data-param-id="${param.id}"]`);
+    if (!el) return;
+    p[param.id] = el.tagName === 'SELECT' ? el.value : parseFloat(el.value);
   });
   return p;
 }
@@ -4667,8 +5263,11 @@ function drawResultGraph(r) {
     ultrasonic:{ x:'측정#',       lines:[{k:'거리(cm)',c:'#63b3ed'},{k:'오차(cm)',c:'#fc8181'}] },
     pwm:        { x:'듀티사이클(%)', lines:[{k:'평균전압(V)',c:'#9171e8'},{k:'밝기(%)',c:'#f59e36'}] },
     motor:      { x:'전압(V)',       lines:[{k:'RPM',c:'#63b3ed'},{k:'전류(A)',c:'#fc8181'}] },
-    transistor: { x:'Vb(V)',        lines:[{k:'Ic(mA)',c:'#f6ad55'},{k:'Ib(μA)',c:'#63b3ed'}] },
-    rc_charge:  { x:'시간(ms)',      lines:[{k:'커패시터 전압(V)',c:'#63b3ed'},{k:'충전전류(mA)',c:'#fc8181'}] },
+    transistor:  { x:'Vb(V)',      lines:[{k:'Ic(mA)',c:'#f6ad55'},{k:'Ib(μA)',c:'#63b3ed'}] },
+    rc_charge:   { x:'시간(ms)',   lines:[{k:'커패시터 전압(V)',c:'#63b3ed'},{k:'충전전류(mA)',c:'#fc8181'}] },
+    opamp:       { x:'Vin(V)',     lines:[{k:'Vout(V)',c:'#63b3ed'}] },
+    pullup:      { x:'저항(kΩ)',   lines:[{k:'누설전류(mA)',c:'#fc8181'},{k:'소비전력(mW)',c:'#f6ad55'}] },
+    diode_rect:  { x:'각도(°)',    lines:[{k:'Vin(V)',c:'#9171e8'},{k:'Vout(V)',c:'#63b3ed'}] },
   };
   const cfg = GRAPH_CONFIG[r.type];
   if (!cfg) { card.style.display = 'none'; return; }
@@ -4806,6 +5405,9 @@ function drawCircuit(typeId, p, ex, result) {
   else if (typeId === 'servo')      drawServoWiring(ctx, W, H, p, ex, result);
   else if (typeId === 'transistor') drawTransistorSchematic(ctx, W, H, p, ex, result);
   else if (typeId === 'rc_charge')  drawRCChargeSchematic(ctx, W, H, p, ex, result);
+  else if (typeId === 'opamp')      drawOPAMPSchematic(ctx, W, H, p, ex, result);
+  else if (typeId === 'pullup')     drawPullupSchematic(ctx, W, H, p, ex, result);
+  else if (typeId === 'diode_rect') drawDiodeRectSchematic(ctx, W, H, p, ex, result);
 }
 
 // ── 공통 드로잉 헬퍼 ──
@@ -5798,6 +6400,253 @@ function drawRCChargeSchematic(ctx, W, H, p, ex, result) {
   cTxt(ctx,W/2,btmY+20,`τ = R×C = ${r}Ω × ${c}μF = ${tauStr}   │   5τ = ${(tau*5).toFixed(1)}ms   │   fc = ${fc.toFixed(1)}Hz`,wc,10,'center',true);
 
   cTxt(ctx,8,H-6,'🔋 RC 충방전 회로','#4a5568',11,'left');
+}
+
+function drawOPAMPSchematic(ctx, W, H, p, ex, result) {
+  const vcc=p?.vcc??5, vin=p?.vin??0.5, r1=p?.r1??10, r2=p?.r2??100;
+  const isInv = !(p?.mode === 'noninv');
+  const gain = isInv ? r2/r1 : 1+r2/r1;
+  const vout_ideal = isInv ? -vin*(r2/r1) : vin*(1+r2/r1);
+  const vout = Math.max(-vcc*0.9, Math.min(vcc*0.9, vout_ideal));
+  const clipped = Math.abs(vout_ideal) > vcc*0.9;
+  const rc='#fc8181', gc='#718096', yc='#f6ad55', gc2='#68d391', bc='#63b3ed';
+
+  // 배경 격자
+  ctx.strokeStyle='rgba(255,255,255,0.025)'; ctx.lineWidth=1;
+  for(let gx=0;gx<W;gx+=24){ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,H);ctx.stroke();}
+  for(let gy=0;gy<H;gy+=24){ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(W,gy);ctx.stroke();}
+
+  // OP-AMP 삼각형
+  const cx=W*0.54, cy=H*0.50;
+  const aW=46, aH=34;
+  const xL=cx-aW, xR=cx+aW;
+  const yNeg=cy-aH*0.6, yPos=cy+aH*0.6;
+
+  ctx.strokeStyle='#5ba4e0'; ctx.lineWidth=2.5;
+  ctx.beginPath();
+  ctx.moveTo(xL, yNeg-8); ctx.lineTo(xL, yPos+8); ctx.lineTo(xR, cy); ctx.closePath();
+  ctx.stroke();
+  cTxt(ctx,xL+16,yNeg+4,'−','#fc8181',13,'center',true);
+  cTxt(ctx,xL+16,yPos+1,'+','#68d391',13,'center',true);
+  cTxt(ctx,cx+6,cy+4,'U1','#4a5568',9,'center');
+
+  if (isInv) {
+    const xJunc=xL-46, yLine=yNeg;
+    // Vin → R1 → junction → (−)
+    cW(ctx,28,yLine,xJunc,yLine,rc,2);
+    cVCC(ctx,28,yLine,`${vin>=0?'+':''}${vin.toFixed(1)}V`,rc);
+    cDot(ctx,xJunc,yLine,yc,3.5);
+    cRes(ctx,xJunc,xL,yLine,yc,2.5);
+    cTxt(ctx,(xJunc+xL)/2,yLine-14,`R1=${r1}kΩ`,yc,9,'center',true);
+    // R2 귀환: output → top → junction
+    const yFeed=18, xFeedR=xR+16;
+    cW(ctx,xR,cy,xFeedR,cy,gc2,1.8);
+    cW(ctx,xFeedR,cy,xFeedR,yFeed,gc2,1.8);
+    cRes(ctx,xJunc+4,xFeedR-4,yFeed,gc2,2);
+    cTxt(ctx,(xJunc+xFeedR)/2,yFeed-12,`R2=${r2}kΩ`,gc2,9,'center',true);
+    cW(ctx,xJunc,yFeed,xJunc,yLine,gc2,1.8);
+    cDot(ctx,xJunc,yLine,gc2,3.5);
+    // (+) → GND
+    cW(ctx,xL,yPos,xL-12,yPos,gc,1.8);
+    cW(ctx,xL-12,yPos,xL-12,yPos+22,gc,1.8);
+    cGND(ctx,xL-12,yPos+22,gc);
+  } else {
+    // Vin → (+)
+    cW(ctx,28,yPos,xL,yPos,gc2,2);
+    cVCC(ctx,28,yPos,`${vin>=0?'+':''}${vin.toFixed(1)}V`,gc2);
+    // (−) → R1 → GND
+    const xJunc=xL-14;
+    cW(ctx,xL,yNeg,xJunc,yNeg,yc,2);
+    cW(ctx,xJunc,yNeg,xJunc,yNeg+26,yc,1.8);
+    cTxt(ctx,xJunc-4,yNeg+16,`R1=${r1}kΩ`,yc,9,'left',true);
+    cGND(ctx,xJunc,yNeg+26,gc);
+    // R2 귀환: output → top → (−) junction
+    const yFeed=18, xFeedR=xR+16;
+    cW(ctx,xR,cy,xFeedR,cy,rc,1.8);
+    cW(ctx,xFeedR,cy,xFeedR,yFeed,rc,1.8);
+    cRes(ctx,xJunc+6,xFeedR-4,yFeed,rc,2);
+    cTxt(ctx,(xJunc+xFeedR)/2,yFeed-12,`R2=${r2}kΩ`,rc,9,'center',true);
+    cW(ctx,xJunc,yFeed,xJunc,yNeg,rc,1.8);
+    cDot(ctx,xJunc,yNeg,yc,3.5);
+  }
+
+  // 출력선
+  const xOutEnd=W-24;
+  cW(ctx,xR,cy,xOutEnd,cy,clipped?rc:bc,2);
+  cDot(ctx,xR,cy,clipped?rc:bc,3.5);
+  cTxt(ctx,xOutEnd-4,cy-10,`${vout.toFixed(2)}V`,clipped?rc:bc,11,'right',true);
+  if(clipped) cTxt(ctx,xOutEnd-4,cy+12,'⚠ 클리핑',rc,9,'right');
+
+  // 하단 수식 박스
+  cRoundRect(ctx,W*.04,H-40,W*.92,32,5,'#0e1525','#283060',1.5);
+  cTxt(ctx,W/2,H-26,isInv?`이득 G = −R2/R1 = −${r2}/${r1} = −${gain.toFixed(1)}배`:`이득 G = 1+R2/R1 = 1+${r2}/${r1} = ${gain.toFixed(1)}배`,yc,10,'center',true);
+  cTxt(ctx,W/2,H-12,`Vout = ${vout_ideal.toFixed(3)}V${clipped?' → 클리핑 → '+vout.toFixed(2)+'V':''}`,clipped?rc:gc2,10,'center');
+  cTxt(ctx,8,H-6,`📊 OP-AMP ${isInv?'반전':'비반전'} 증폭기`,'#4a5568',11,'left');
+}
+
+function drawPullupSchematic(ctx, W, H, p, ex, result) {
+  const vcc=p?.vcc??5, r_pu=p?.r_pu??10;
+  const isPullup = !(p?.mode === 'pulldown');
+  const v_open = isPullup ? vcc : 0;
+  const v_pressed = isPullup ? 0 : vcc;
+  const i_leak = vcc/(r_pu*1000)*1000;
+  const rc='#fc8181', gc='#718096', yc='#f6ad55', gc2='#68d391', bc='#63b3ed';
+
+  // 배경 격자
+  ctx.strokeStyle='rgba(255,255,255,0.025)'; ctx.lineWidth=1;
+  for(let gx=0;gx<W;gx+=24){ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,H);ctx.stroke();}
+  for(let gy=0;gy<H;gy+=24){ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(W,gy);ctx.stroke();}
+
+  const midX=W*0.35, pinX=W*0.60;
+  const yVcc=H*0.17, yTop=yVcc+10, yRes=yTop+12, yJunc=H*0.50, yBtn=H*0.64, yGnd=H*0.78;
+
+  if (isPullup) {
+    cVCC(ctx,midX,yVcc,`${vcc}V`,rc);
+    cW(ctx,midX,yVcc,midX,yRes,rc,2);
+    // 저항 박스 (세로)
+    cRoundRect(ctx,midX-20,yRes,40,28,4,'#0e1525',yc,2);
+    cTxt(ctx,midX,yRes+17,`${r_pu}kΩ`,yc,10,'center',true);
+    cW(ctx,midX,yRes+28,midX,yJunc,rc,2);
+    cDot(ctx,midX,yJunc,bc,4);
+    // 버튼 심볼
+    cW(ctx,midX,yJunc,midX,yBtn-18,bc,2);
+    cW(ctx,midX-10,yBtn-18,midX+10,yBtn-18,yc,2.5);
+    cW(ctx,midX-10,yBtn-8,midX+10,yBtn-8,yc,2.5);
+    cTxt(ctx,midX+18,yBtn-11,'BTN',gc,9,'left');
+    cW(ctx,midX,yBtn,midX,yGnd,gc,2);
+    cGND(ctx,midX,yGnd,gc);
+  } else {
+    cVCC(ctx,midX,yVcc,`${vcc}V`,rc);
+    cW(ctx,midX,yVcc,midX,yBtn-18,rc,2);
+    // 버튼 심볼
+    cW(ctx,midX-10,yBtn-18,midX+10,yBtn-18,yc,2.5);
+    cW(ctx,midX-10,yBtn-8,midX+10,yBtn-8,yc,2.5);
+    cTxt(ctx,midX+18,yBtn-11,'BTN',gc,9,'left');
+    cW(ctx,midX,yBtn,midX,yJunc,bc,2);
+    cDot(ctx,midX,yJunc,bc,4);
+    // 저항 박스
+    cRoundRect(ctx,midX-20,yJunc+6,40,28,4,'#0e1525',yc,2);
+    cTxt(ctx,midX,yJunc+23,`${r_pu}kΩ`,yc,10,'center',true);
+    cW(ctx,midX,yJunc+34,midX,yGnd,gc,2);
+    cGND(ctx,midX,yGnd,gc);
+  }
+
+  // MCU 핀 연결
+  cW(ctx,midX,yJunc,pinX,yJunc,bc,2);
+  cTxt(ctx,pinX+8,yJunc-2,'MCU 핀',bc,10,'left',true);
+  cTxt(ctx,pinX+8,yJunc+12,`열림: ${v_open.toFixed(1)}V (${isPullup?'HIGH':'LOW'})`,gc2,9,'left');
+  cTxt(ctx,pinX+8,yJunc+24,`눌림: ${v_pressed.toFixed(1)}V (${isPullup?'LOW':'HIGH'})`,rc,9,'left');
+  cTxt(ctx,pinX+8,yJunc+36,`누설: ${i_leak.toFixed(3)}mA`,yc,9,'left');
+
+  cRoundRect(ctx,W*.04,H-34,W*.92,26,5,'#0e1525','#283060',1.5);
+  cTxt(ctx,W/2,H-20,`누설전류 = ${vcc}V ÷ ${r_pu}kΩ = ${i_leak.toFixed(3)}mA  |  ${isPullup?'HIGH → LOW (버튼 활성)':'LOW → HIGH (버튼 활성)'}`,yc,10,'center',true);
+  cTxt(ctx,8,H-6,`🔗 ${isPullup?'풀업':'풀다운'} 저항 회로`,'#4a5568',11,'left');
+}
+
+function drawDiodeRectSchematic(ctx, W, H, p, ex, result) {
+  const vpeak=p?.vpeak??12, rl=p?.rl??1000;
+  const isFull = (p?.type === 'full');
+  const Vf=0.7, vDrop=isFull?2*Vf:Vf;
+  const vout_peak=Math.max(0,vpeak-vDrop);
+  const vavg=isFull?(2*vout_peak/Math.PI):(vout_peak/Math.PI);
+  const rc='#fc8181', gc='#718096', yc='#f6ad55', gc2='#68d391', bc='#63b3ed', oc='#9171e8';
+
+  // 배경 격자
+  ctx.strokeStyle='rgba(255,255,255,0.025)'; ctx.lineWidth=1;
+  for(let gx=0;gx<W;gx+=24){ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,H);ctx.stroke();}
+  for(let gy=0;gy<H;gy+=24){ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(W,gy);ctx.stroke();}
+
+  // 다이오드 심볼 헬퍼 (수평)
+  function dSym(x1,x2,y,col,lw=2) {
+    const m=(x1+x2)/2, s=(x2-x1)*.32;
+    cW(ctx,x1,y,m-s,y,col,lw);
+    cW(ctx,m+s,y,x2,y,col,lw);
+    ctx.strokeStyle=col; ctx.fillStyle=col+'55'; ctx.lineWidth=lw;
+    ctx.beginPath(); ctx.moveTo(m-s,y-s); ctx.lineTo(m-s,y+s); ctx.lineTo(m+s,y); ctx.closePath();
+    ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(m+s,y-s); ctx.lineTo(m+s,y+s); ctx.stroke();
+  }
+
+  const y0=H*.44; // 중심선
+
+  if (!isFull) {
+    // 반파 정류: AC → D1 → RL
+    const xAC=40, xD1s=W*.28, xD1e=W*.46, xRL=W*.64, xEnd=W-36;
+    // AC 원 심볼
+    cRoundRect(ctx,xAC-18,y0-18,36,36,18,'#0e1525','#9171e8',2);
+    ctx.strokeStyle=oc; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.arc(xAC,y0,8,Math.PI,0); ctx.stroke();
+    ctx.beginPath(); ctx.arc(xAC,y0,8,0,Math.PI); ctx.stroke();
+    cTxt(ctx,xAC,y0-24,'AC',oc,9,'center',true);
+
+    cW(ctx,xAC+18,y0,xD1s,y0,oc,2);
+    dSym(xD1s,xD1e,y0,gc2,2.5);
+    cTxt(ctx,(xD1s+xD1e)/2,y0-16,'D1',gc2,9,'center',true);
+    cW(ctx,xD1e,y0,xRL-16,y0,gc2,2);
+    // RL 부하
+    cRoundRect(ctx,xRL-16,y0-14,32,28,4,'#0e1525',yc,2);
+    cTxt(ctx,xRL,y0+1,`RL`,yc,9,'center',true);
+    cW(ctx,xRL+16,y0,xEnd,y0,gc2,2);
+    // GND return
+    const yGnd=H*.74;
+    cW(ctx,xEnd,y0,xEnd,yGnd,gc,1.8);
+    cW(ctx,xAC-18,yGnd,xEnd,yGnd,gc,1.8);
+    cW(ctx,xAC-18,y0,xAC-18,yGnd,gc,1.8);
+    cGND(ctx,(xAC+xEnd)/2,yGnd,gc);
+    // Vout 레이블
+    cTxt(ctx,xEnd+8,y0-4,`Vout`,bc,10,'left',true);
+    cTxt(ctx,xEnd+8,y0+10,`${vout_peak.toFixed(1)}Vpk`,bc,9,'left');
+    cTxt(ctx,xEnd+8,y0+23,`avg ${vavg.toFixed(1)}V`,gc2,9,'left');
+  } else {
+    // 전파 브리지: 4 다이오드
+    const bCx=W*0.46, bCy=H*0.44, bR=36;
+    // 브리지 4 다이오드
+    const pts = {top:[bCx,bCy-bR], bot:[bCx,bCy+bR], lft:[bCx-bR*1.3,bCy], rgt:[bCx+bR*1.3,bCy]};
+    // D1: top→rgt, D2: bot→rgt, D3: lft→top, D4: lft→bot (simplified as 4 diagonal lines)
+    const dPairs = [[pts.lft,pts.top,'#63b3ed'],[pts.bot,pts.lft,'#63b3ed'],[pts.top,pts.rgt,'#fc8181'],[pts.rgt,pts.bot,'#fc8181']];
+    dPairs.forEach(([a,b,col])=>{
+      const mx=(a[0]+b[0])/2, my=(a[1]+b[1])/2;
+      const dx=b[0]-a[0], dy=b[1]-a[1];
+      const len=Math.sqrt(dx*dx+dy*dy);
+      const nx=dx/len, ny=dy/len;
+      const s=len*.25;
+      cW(ctx,a[0],a[1],mx-nx*s,my-ny*s,col,2);
+      // small triangle head at mid
+      ctx.strokeStyle=col; ctx.fillStyle=col+'55'; ctx.lineWidth=2;
+      ctx.save(); ctx.translate(mx,my); ctx.rotate(Math.atan2(dy,dx));
+      ctx.beginPath(); ctx.moveTo(-s,s*.6); ctx.lineTo(-s,-s*.6); ctx.lineTo(s,0); ctx.closePath();
+      ctx.fill(); ctx.stroke(); ctx.restore();
+      cW(ctx,mx+nx*s,my+ny*s,b[0],b[1],col,2);
+    });
+    // AC input (left)
+    const xAC=34;
+    cRoundRect(ctx,xAC-16,bCy-18,32,36,16,'#0e1525',oc,2);
+    ctx.strokeStyle=oc; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.arc(xAC,bCy-3,6,Math.PI,0); ctx.stroke();
+    ctx.beginPath(); ctx.arc(xAC,bCy+3,6,0,Math.PI); ctx.stroke();
+    cTxt(ctx,xAC,bCy-24,'AC',oc,9,'center',true);
+    cW(ctx,xAC+16,bCy-8,pts.lft[0],bCy-8,oc,1.8);
+    cW(ctx,xAC+16,bCy+8,pts.lft[0],bCy+8,oc,1.8);
+    cDot(ctx,pts.lft[0],bCy-8,oc,3); cDot(ctx,pts.lft[0],bCy+8,oc,3);
+    // DC output (right)
+    const xOut=W-30;
+    cW(ctx,pts.rgt[0],bCy,xOut,bCy,gc2,2);
+    cTxt(ctx,xOut+6,bCy-2,`+${vout_peak.toFixed(1)}V`,gc2,10,'left',true);
+    cTxt(ctx,xOut+6,bCy+12,`avg ${vavg.toFixed(1)}V`,bc,9,'left');
+    // GND (bottom)
+    cW(ctx,pts.bot[0],pts.bot[1],pts.bot[0],H*.78,gc,2);
+    cGND(ctx,pts.bot[0],H*.78,gc);
+    cTxt(ctx,pts.top[0]+4,pts.top[1]-4,'AC',oc,8,'left');
+    cTxt(ctx,pts.bot[0]+4,pts.bot[1]+4,'AC',oc,8,'left');
+    cTxt(ctx,pts.rgt[0]+4,pts.rgt[1],'DC+',gc2,8,'left');
+    cTxt(ctx,pts.lft[0]-4,pts.lft[1],'DC−',gc,8,'right');
+  }
+
+  // 하단 수식 박스
+  cRoundRect(ctx,W*.04,H-40,W*.92,32,5,'#0e1525','#283060',1.5);
+  cTxt(ctx,W/2,H-26,`${isFull?'전파':'반파'}: Vpeak−${vDrop}V = ${vout_peak.toFixed(1)}V`,yc,10,'center',true);
+  cTxt(ctx,W/2,H-12,`Vavg = ${isFull?'2':'1'}×${vout_peak.toFixed(1)}÷π = ${vavg.toFixed(2)}V   │   리플 ${isFull?120:60}Hz`,gc2,10,'center');
+  cTxt(ctx,8,H-6,`🔌 다이오드 ${isFull?'전파 브리지':'반파'} 정류`,'#4a5568',11,'left');
 }
 
 function drawLEDViz(ctx, W, H, ex) {
@@ -7258,13 +8107,18 @@ async function loadCcExperiment(issueNumber) {
 
   requestAnimationFrame(() => {
     const sim = SIM_TYPES[simType];
-    const inputs = document.getElementById('sim-params').querySelectorAll('input[type=range]');
-    sim.params.forEach((param, i) => {
+    sim.params.forEach(param => {
+      const el = document.getElementById('sim-params').querySelector(`[data-param-id="${param.id}"]`);
       const saved = data.params?.[param.id];
-      if (inputs[i] && saved !== undefined) {
-        inputs[i].value = saved;
-        const el = document.getElementById(`val-${param.id}`);
-        if (el) el.textContent = saved + ' ' + param.unit;
+      if (!el || saved === undefined) return;
+      if (el.tagName === 'SELECT') {
+        el.value = saved;
+        const vEl = document.getElementById(`val-${param.id}`);
+        if (vEl && el.options[el.selectedIndex]) vEl.textContent = el.options[el.selectedIndex].text;
+      } else {
+        el.value = saved;
+        const vEl = document.getElementById(`val-${param.id}`);
+        if (vEl) vEl.textContent = saved + ' ' + param.unit;
       }
     });
     runSim();
