@@ -1036,6 +1036,18 @@
     .history-fav-section { margin-bottom:18px; }
     .history-fav-empty { font-size:0.83rem; color:var(--text-muted); padding:16px 0; text-align:center; }
 
+    /* ── 기록 메모 ── */
+    .hist-memo-area { margin-top:8px; padding-top:8px; border-top:1px solid var(--border); width:100%; box-sizing:border-box; }
+    .hist-memo-display { font-size:0.79rem; color:#8a97b2; font-style:italic; cursor:pointer; padding:3px 0; }
+    .hist-memo-display:hover { color:#b4bfd4; }
+    .hist-memo-input { width:100%; box-sizing:border-box; background:#0f1117; border:1px solid #2d3250; border-radius:6px; color:#c6cad8; padding:7px 10px; font-size:0.8rem; font-family:inherit; resize:vertical; min-height:42px; }
+    .hist-memo-input:focus { outline:none; border-color:#4a9eff; }
+    .hist-memo-row { display:flex; gap:6px; align-items:center; margin-top:6px; }
+    /* ── 이미지 첨부 (공유) ── */
+    .img-attach-btn { background:#0f1117; border:1.5px dashed #2d3250; color:#8a97b2; border-radius:8px; padding:7px 14px; font-size:0.82rem; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:border-color .18s,color .18s; }
+    .img-attach-btn:hover { border-color:#4a9eff; color:#63b3ed; }
+    .img-preview { max-width:100%; max-height:200px; border-radius:8px; border:1px solid #2d3250; display:block; margin-top:8px; }
+    .cc-image { max-width:100%; max-height:260px; border-radius:8px; margin:8px 0; display:block; cursor:pointer; }
     /* ── 난이도 배지 ── */
     .level-badge { display:inline-flex; align-items:center; gap:3px; font-size:0.68rem; font-weight:700; padding:2px 7px; border-radius:20px; margin-bottom:6px; }
     .level-1 { background:rgba(78,206,138,0.13); color:#4ece8a; border:1px solid rgba(78,206,138,0.25); }
@@ -1478,6 +1490,18 @@
       <textarea id="share-desc" rows="3" placeholder="실험을 통해 배운 점, 흥미로운 결과, 주의사항 등을 공유해 보세요" style="resize:vertical"></textarea>
     </div>
 
+    <!-- 이미지 첨부 (선택) -->
+    <div class="input-group" style="margin-bottom:14px">
+      <label>📷 이미지 첨부 <span style="color:#6c7a98;font-weight:400">(선택 · 실험 사진 등)</span></label>
+      <input type="file" id="share-img-input" accept="image/*" style="display:none" onchange="handleShareImage(this)">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <button type="button" class="img-attach-btn" onclick="document.getElementById('share-img-input').click()">📎 이미지 선택</button>
+        <button type="button" id="share-img-clear-btn" onclick="clearShareImage()" style="display:none;background:none;border:none;color:#fc8181;cursor:pointer;font-size:0.82rem;padding:4px">✕ 제거</button>
+        <span id="share-img-size-info" style="font-size:0.75rem;color:#6c7a98"></span>
+      </div>
+      <img id="share-img-preview" class="img-preview" style="display:none" alt="첨부 이미지">
+    </div>
+
     <!-- 오류 표시 -->
     <div id="share-error" style="display:none;background:#3a1a1a;border:1px solid #822727;border-radius:8px;padding:12px;margin-bottom:12px;color:#fc8181;font-size:0.83rem;line-height:1.6"></div>
 
@@ -1616,6 +1640,123 @@
         <button class="ohm-preset" onclick="ohmPreset(5,null,1000)">5V · 1kΩ</button>
         <button class="ohm-preset" onclick="ohmPreset(null,null,null)">초기화</button>
       </div>
+    </div>
+  </div>
+
+  <!-- LED 저항 계산기 -->
+  <div class="card">
+    <div class="card-title">💡 LED 저항 계산기</div>
+    <div class="tool-section">
+      <div style="font-size:0.8rem;color:#8a97b2;margin-bottom:12px">LED를 안전하게 켜기 위한 직렬 저항값을 계산합니다. R = (Vcc − Vf) ÷ I</div>
+      <div class="ohm-grid">
+        <div class="ohm-cell">
+          <label>Vcc — 공급 전압 (V)</label>
+          <input type="number" id="led-calc-vcc" value="5" oninput="calcLEDRes()" step="0.1" min="1">
+        </div>
+        <div class="ohm-cell">
+          <label>LED 종류 (Vf)</label>
+          <select id="led-calc-vf-sel" onchange="calcLEDRes()" style="width:100%;background:#0f1117;border:1px solid #2d3250;border-radius:8px;color:#c6cad8;padding:8px 10px;font-size:0.88rem">
+            <option value="2.0">빨강 / 노랑 — 2.0V</option>
+            <option value="2.1">주황 — 2.1V</option>
+            <option value="3.2">녹색 — 3.2V</option>
+            <option value="3.3">파랑 / 흰색 / UV — 3.3V</option>
+            <option value="1.8">적외선 — 1.8V</option>
+            <option value="custom">직접 입력...</option>
+          </select>
+        </div>
+        <div class="ohm-cell" id="led-calc-custom-cell" style="display:none">
+          <label>Vf 직접 입력 (V)</label>
+          <input type="number" id="led-calc-vf-custom" value="2.0" oninput="calcLEDRes()" step="0.1" min="0.5" max="4">
+        </div>
+        <div class="ohm-cell">
+          <label>목표 전류 (mA)</label>
+          <input type="number" id="led-calc-ma" value="20" oninput="calcLEDRes()" step="1" min="1" max="30">
+        </div>
+      </div>
+      <div class="tool-result-box" id="led-calc-result">
+        <div>
+          <div class="tool-result-num" id="led-calc-r-exact">—</div>
+          <div class="tool-result-label">정확한 저항값</div>
+        </div>
+        <div>
+          <div class="tool-result-num" id="led-calc-r-std" style="font-size:1rem;color:#f6ad55">—</div>
+          <div class="tool-result-label">E24 표준 저항값</div>
+        </div>
+        <div>
+          <div class="tool-result-num" id="led-calc-i-actual" style="font-size:1rem;color:#68d391">—</div>
+          <div class="tool-result-label">표준값 사용 시 실제 전류</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 분압기 계산기 -->
+  <div class="card">
+    <div class="card-title">✂️ 분압기 계산기</div>
+    <div class="tool-section">
+      <div style="font-size:0.8rem;color:#8a97b2;margin-bottom:12px">Vout = Vin × R2 / (R1 + R2) — 센서 풀업·아날로그 레벨 변환에 활용</div>
+      <div class="ohm-grid">
+        <div class="ohm-cell">
+          <label>Vin — 입력 전압 (V)</label>
+          <input type="number" id="div-vin" value="5" oninput="calcDivider()" step="0.1">
+        </div>
+        <div class="ohm-cell">
+          <label>R1 — 상단 저항 (Ω)</label>
+          <input type="number" id="div-r1" value="10000" oninput="calcDivider()" step="100">
+        </div>
+        <div class="ohm-cell">
+          <label>R2 — 하단 저항 (Ω)</label>
+          <input type="number" id="div-r2" value="10000" oninput="calcDivider()" step="100">
+        </div>
+      </div>
+      <div class="tool-result-box" id="div-result">
+        <div>
+          <div class="tool-result-num" id="div-vout">—</div>
+          <div class="tool-result-label">Vout</div>
+        </div>
+        <div>
+          <div class="tool-result-num" id="div-ratio" style="font-size:1.1rem;color:#f6ad55">—</div>
+          <div class="tool-result-label">분압비 (R2 / (R1+R2))</div>
+        </div>
+        <div>
+          <div class="tool-result-num" id="div-current" style="font-size:1rem;color:#68d391">—</div>
+          <div class="tool-result-label">전류 (μA)</div>
+        </div>
+      </div>
+      <div id="div-hint" style="margin-top:10px;font-size:0.78rem;color:#9f7aea"></div>
+    </div>
+  </div>
+
+  <!-- RC 시정수 계산기 -->
+  <div class="card">
+    <div class="card-title">🔋 RC 시정수 계산기</div>
+    <div class="tool-section">
+      <div style="font-size:0.8rem;color:#8a97b2;margin-bottom:12px">τ = R × C — 커패시터가 63.2% 충전되는 시간. 5τ에서 완충.</div>
+      <div class="ohm-grid">
+        <div class="ohm-cell">
+          <label>R — 저항 (Ω)</label>
+          <input type="number" id="rc-r" value="1000" oninput="calcRCTool()" step="100" min="1">
+        </div>
+        <div class="ohm-cell">
+          <label>C — 커패시터 (μF)</label>
+          <input type="number" id="rc-c" value="100" oninput="calcRCTool()" step="1" min="0.001">
+        </div>
+      </div>
+      <div class="tool-result-box" id="rc-tool-result">
+        <div>
+          <div class="tool-result-num" id="rc-tau">—</div>
+          <div class="tool-result-label">시정수 τ</div>
+        </div>
+        <div>
+          <div class="tool-result-num" id="rc-5tau" style="font-size:1rem;color:#f6ad55">—</div>
+          <div class="tool-result-label">완충 시간 (5τ)</div>
+        </div>
+        <div>
+          <div class="tool-result-num" id="rc-fc" style="font-size:1rem;color:#9f7aea">—</div>
+          <div class="tool-result-label">차단주파수 fc</div>
+        </div>
+      </div>
+      <div id="rc-table" style="margin-top:12px;font-size:0.8rem;color:#b4bfd4;line-height:1.9"></div>
     </div>
   </div>
 
@@ -2219,6 +2360,127 @@ function calcResistor() {
 function initTools() {
   buildResBands();
   showPinmap('uno', document.querySelector('.pinmap-tab'));
+  calcLEDRes();
+  calcDivider();
+  calcRCTool();
+}
+
+// ── LED 저항 계산기 ──
+const E24_SERIES = [10,11,12,13,15,16,18,20,22,24,27,30,33,36,39,43,47,51,56,62,68,75,82,91];
+function nearestE24(ohm) {
+  if (ohm <= 0) return 0;
+  const exp = Math.floor(Math.log10(ohm));
+  const base = Math.pow(10, exp);
+  let best = E24_SERIES[0] * base, bestDiff = Infinity;
+  for (const v of E24_SERIES) {
+    for (const mult of [base, base*10]) {
+      const candidate = v * mult / 10;
+      const diff = Math.abs(candidate - ohm);
+      if (diff < bestDiff) { bestDiff = diff; best = candidate; }
+    }
+  }
+  return best;
+}
+function formatOhm(v) {
+  if (v >= 1000000) return (v/1000000).toFixed(v%1000000?2:0) + 'MΩ';
+  if (v >= 1000) return (v/1000).toFixed(v%1000?1:0) + 'kΩ';
+  return v.toFixed(0) + 'Ω';
+}
+function calcLEDRes() {
+  const vcc = parseFloat(document.getElementById('led-calc-vcc')?.value) || 5;
+  const sel = document.getElementById('led-calc-vf-sel')?.value;
+  const isCustom = sel === 'custom';
+  document.getElementById('led-calc-custom-cell').style.display = isCustom ? 'block' : 'none';
+  const vf = isCustom ? (parseFloat(document.getElementById('led-calc-vf-custom')?.value) || 2.0) : parseFloat(sel);
+  const ma = parseFloat(document.getElementById('led-calc-ma')?.value) || 20;
+  const rExact = (vcc - vf) / (ma / 1000);
+  const rStd = nearestE24(rExact);
+  const iActual = (vcc - vf) / rStd * 1000;
+  const status = iActual < 1 ? '⚠ 전류 너무 낮음' : iActual > 30 ? '⚠ LED 손상 위험' : '✓ 안전';
+  document.getElementById('led-calc-r-exact').textContent = rExact > 0 ? formatOhm(rExact) : 'Vcc ≤ Vf';
+  document.getElementById('led-calc-r-std').textContent = rExact > 0 ? formatOhm(rStd) : '—';
+  document.getElementById('led-calc-i-actual').textContent = rExact > 0 ? `${iActual.toFixed(1)} mA  ${status}` : '—';
+  document.getElementById('led-calc-result').style.display = 'flex';
+}
+
+// ── 분압기 계산기 ──
+function calcDivider() {
+  const vin = parseFloat(document.getElementById('div-vin')?.value) || 5;
+  const r1 = parseFloat(document.getElementById('div-r1')?.value) || 10000;
+  const r2 = parseFloat(document.getElementById('div-r2')?.value) || 10000;
+  if (r1 + r2 === 0) return;
+  const vout = vin * r2 / (r1 + r2);
+  const ratio = r2 / (r1 + r2);
+  const current_ua = vin / (r1 + r2) * 1e6;
+  document.getElementById('div-vout').textContent = vout.toFixed(3) + ' V';
+  document.getElementById('div-ratio').textContent = ratio.toFixed(4) + ` (≈${(ratio*100).toFixed(1)}%)`;
+  document.getElementById('div-current').textContent = current_ua >= 1000 ? (current_ua/1000).toFixed(2)+' mA' : current_ua.toFixed(1)+' μA';
+  const hint = vout <= 3.3 + 0.05 && vout >= 3.3 - 0.05 ? '✓ 3.3V 레벨 변환에 적합'
+    : vout <= 2.5 + 0.05 && vout >= 2.5 - 0.05 ? '✓ 2.5V 기준 전압으로 사용 가능'
+    : vout >= vin * 0.99 ? '⚠ R1이 너무 작아 분압 효과 없음'
+    : vout <= vin * 0.01 ? '⚠ R2가 너무 작음' : '';
+  document.getElementById('div-hint').textContent = hint;
+  document.getElementById('div-result').style.display = 'flex';
+}
+
+// ── RC 시정수 계산기 ──
+function calcRCTool() {
+  const r = parseFloat(document.getElementById('rc-r')?.value) || 1000;
+  const c = parseFloat(document.getElementById('rc-c')?.value) || 100;
+  const tau = r * c / 1000; // ms
+  const fc = 1 / (2 * Math.PI * r * c / 1e6);
+  const fmtTau = tau >= 1000 ? (tau/1000).toFixed(2)+'s' : tau >= 1 ? tau.toFixed(2)+'ms' : (tau*1000).toFixed(1)+'μs';
+  const fmt5tau = tau*5 >= 1000 ? (tau*5/1000).toFixed(2)+'s' : tau*5 >= 1 ? (tau*5).toFixed(2)+'ms' : (tau*5*1000).toFixed(1)+'μs';
+  const fmtFc = fc >= 1000 ? (fc/1000).toFixed(1)+'kHz' : fc.toFixed(1)+'Hz';
+  document.getElementById('rc-tau').textContent = fmtTau;
+  document.getElementById('rc-5tau').textContent = fmt5tau;
+  document.getElementById('rc-fc').textContent = fmtFc;
+  document.getElementById('rc-tool-result').style.display = 'flex';
+  // 충전 테이블
+  const rows = [[1,63.2],[2,86.5],[3,95.0],[4,98.2],[5,99.3]];
+  document.getElementById('rc-table').innerHTML = rows.map(([n,pct]) => {
+    const t = tau*n;
+    const tStr = t>=1000?(t/1000).toFixed(2)+'s':t>=1?t.toFixed(2)+'ms':(t*1000).toFixed(1)+'μs';
+    return `<span style="margin-right:18px">${n}τ = ${tStr} → ${pct}% 충전</span>`;
+  }).join('');
+}
+
+// ── 이미지 첨부 처리 ──
+let _shareImageData = null;
+function handleShareImage(input) {
+  const file = input.files?.[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) { showToast('이미지 파일을 선택하세요'); return; }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      // 최대 400px로 리사이즈 후 JPEG 압축
+      const maxW = 400, maxH = 300;
+      let w = img.width, h = img.height;
+      if (w > maxW) { h = h * maxW / w; w = maxW; }
+      if (h > maxH) { w = w * maxH / h; h = maxH; }
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(w); canvas.height = Math.round(h);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.65);
+      _shareImageData = dataUrl;
+      const preview = document.getElementById('share-img-preview');
+      preview.src = dataUrl; preview.style.display = 'block';
+      document.getElementById('share-img-clear-btn').style.display = 'inline';
+      const kb = Math.round(dataUrl.length * 0.75 / 1024);
+      document.getElementById('share-img-size-info').textContent = `${canvas.width}×${canvas.height}px · 약 ${kb}KB`;
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function clearShareImage() {
+  _shareImageData = null;
+  document.getElementById('share-img-preview').style.display = 'none';
+  document.getElementById('share-img-clear-btn').style.display = 'none';
+  document.getElementById('share-img-size-info').textContent = '';
+  document.getElementById('share-img-input').value = '';
 }
 
 // ── 옴의 법칙 ──
@@ -3203,6 +3465,45 @@ function saveToHistory() {
 }
 
 // ── 기록 즐겨찾기 ──
+// ── 기록 메모 ──
+function getHistMemos() {
+  try { return JSON.parse(localStorage.getItem(userKey('cm_hist_memo')) || '{}'); } catch(e) { return {}; }
+}
+function saveHistMemoItem(id, text) {
+  const memos = getHistMemos();
+  if (text.trim()) memos[id] = text.trim();
+  else delete memos[id];
+  localStorage.setItem(userKey('cm_hist_memo'), JSON.stringify(memos));
+}
+function editHistMemo(id) {
+  const area = document.getElementById(`memo-area-${id}`);
+  if (!area) return;
+  const memos = getHistMemos();
+  const cur = memos[id] || '';
+  area.innerHTML = `
+    <div class="hist-memo-area" style="padding-top:8px;border-top:1px solid var(--border)">
+      <textarea class="hist-memo-input" id="memo-input-${id}" placeholder="메모를 입력하세요 (학습 내용, 주의사항 등)">${escHtml(cur)}</textarea>
+      <div class="hist-memo-row">
+        <button class="btn-primary" style="font-size:0.78rem;padding:5px 12px" onclick="saveHistMemoFromInput(${id})">저장</button>
+        <button class="btn-secondary" style="font-size:0.78rem;padding:5px 10px" onclick="renderHistory()">취소</button>
+        ${cur ? `<button style="font-size:0.78rem;padding:5px 10px;background:none;border:none;color:#fc8181;cursor:pointer" onclick="deleteHistMemo(${id})">메모 삭제</button>` : ''}
+      </div>
+    </div>`;
+  document.getElementById(`memo-input-${id}`)?.focus();
+}
+function saveHistMemoFromInput(id) {
+  const input = document.getElementById(`memo-input-${id}`);
+  if (!input) return;
+  saveHistMemoItem(id, input.value);
+  showToast(input.value.trim() ? '메모가 저장되었습니다 ✓' : '메모가 삭제되었습니다');
+  renderHistory();
+}
+function deleteHistMemo(id) {
+  saveHistMemoItem(id, '');
+  showToast('메모가 삭제되었습니다');
+  renderHistory();
+}
+
 function getHistFavs() {
   try { return new Set(JSON.parse(localStorage.getItem(userKey('cm_hist_fav')) || '[]')); } catch(e) { return new Set(); }
 }
@@ -3253,6 +3554,18 @@ function renderHistory() {
   aiSection.style.display  = (tab === 'all' || tab === 'ai')  ? 'block' : 'none';
   simSection.style.display = (tab === 'all' || tab === 'sim') ? 'block' : 'none';
 
+  const memos = getHistMemos();
+
+  const buildMemoArea = (id) => {
+    const memo = memos[id] || '';
+    return `<div class="hist-memo-area" id="memo-area-${id}">
+      ${memo
+        ? `<div class="hist-memo-display" onclick="editHistMemo(${id})" title="클릭하여 편집">📝 ${escHtml(memo)}</div>`
+        : `<div class="hist-memo-display" onclick="editHistMemo(${id})" style="color:#4a5568">+ 메모 추가...</div>`
+      }
+    </div>`;
+  };
+
   const buildAiCard = ({ item, idx }) => {
     const compStr = (item.meta?.components || []).map(c => `${c.name} ×${c.quantity}`).join(', ');
     const dateStr = new Date(item.meta?.date || item.id).toLocaleDateString('ko-KR');
@@ -3269,6 +3582,7 @@ function renderHistory() {
           <button class="btn-secondary" onclick="reanalyze(${idx})" style="font-size:0.8rem;padding:7px 12px">재분석</button>
           <button class="btn-icon danger" onclick="deleteHistory(${idx})">✕</button>
         </div>
+        ${buildMemoArea(item.id)}
       </div>`;
   };
 
@@ -3291,6 +3605,7 @@ function renderHistory() {
           <button onclick="openShareModal('hist',${idx})" style="font-size:0.8rem;padding:7px 12px;background:#1a3a2e;color:#68d391;border:1px solid #2d5a3e;border-radius:8px;cursor:pointer">📤 공유</button>
           <button class="btn-icon danger" onclick="deleteHistory(${idx})">✕</button>
         </div>
+        ${buildMemoArea(item.id)}
       </div>`;
   };
 
@@ -4001,6 +4316,100 @@ Arduino tone() 함수로 제어: <code>tone(8, ${p.freq});</code>`,
     }
   },
   {
+    id: 'transistor',
+    name: '🔌 트랜지스터',
+    desc: 'NPN 트랜지스터(2N2222, BC547 등)를 스위치로 사용하는 회로입니다. 베이스 전류로 컬렉터 전류를 제어하고, 포화·활성·차단 3가지 동작 영역을 직접 확인합니다.',
+    params: [
+      { id: 'vcc',  label: '컬렉터 전압 (Vcc)', unit: 'V',  min: 1.5, max: 12,    step: 0.5, def: 5    },
+      { id: 'vb',   label: '베이스 입력 (Vb)',   unit: 'V',  min: 0,   max: 5,     step: 0.1, def: 5    },
+      { id: 'rb',   label: '베이스 저항 (Rb)',   unit: 'kΩ', min: 1,   max: 100,   step: 1,   def: 10   },
+      { id: 'rc',   label: '컬렉터 저항 (Rc)',   unit: 'Ω',  min: 100, max: 10000, step: 100, def: 1000 },
+      { id: 'beta', label: '전류 증폭률 (β/hFE)', unit: '',  min: 20,  max: 500,   step: 10,  def: 100  },
+    ],
+    availableExtra: [
+      { id:'re', label:'이미터 저항 (Re)', unit:'Ω', min:0, max:1000, def:100, step:10, tip:'이미터에 저항을 추가하면 열 안정화 효과가 있습니다. Vce와 동작점에 영향.' },
+    ],
+    run(p, ex = {}) {
+      const Vbe = 0.7, Vce_sat = 0.2;
+      const rb_ohm = p.rb * 1000;
+      const Ib = Math.max(0, (p.vb - Vbe) / rb_ohm * 1000); // mA
+      const Ic_sat = (p.vcc - Vce_sat) / (p.rc + (ex.re || 0)) * 1000;
+      const Ic_active = p.beta * Ib;
+      const Ic = Math.min(Ic_active, Ic_sat);
+      const Vce = Ic >= Ic_sat * 0.99 ? Vce_sat : p.vcc - (Ic / 1000) * (p.rc + (ex.re || 0));
+      const state = Ib <= 0 ? '차단' : (Ic >= Ic_sat * 0.99 ? '포화' : '활성');
+      const Pd = (Ic / 1000) * Vce * 1000;
+      const rows = [];
+      for (let vb2 = 0; vb2 <= 5; vb2 += 0.25) {
+        const ib2 = Math.max(0, (vb2 - Vbe) / rb_ohm * 1000);
+        const ic_a2 = p.beta * ib2;
+        const ic2 = Math.min(ic_a2, Ic_sat);
+        const vce2 = ic2 >= Ic_sat * 0.99 ? Vce_sat : p.vcc - (ic2 / 1000) * p.rc;
+        const st2 = ib2 <= 0 ? '차단' : (ic2 >= Ic_sat * 0.99 ? '포화' : '활성');
+        rows.push({ 'Vb(V)': vb2.toFixed(2), 'Ib(μA)': (ib2*1000).toFixed(1), 'Ic(mA)': ic2.toFixed(2), 'Vce(V)': vce2.toFixed(2), '상태': st2 });
+      }
+      const stColor = state === '포화' ? '#68d391' : state === '활성' ? '#f6ad55' : '#fc8181';
+      return {
+        values: [
+          { num: (Ib*1000).toFixed(1), unit: 'μA', label: '베이스 전류 Ib',  color: '#63b3ed' },
+          { num: Ic.toFixed(2),        unit: 'mA', label: '컬렉터 전류 Ic',  color: '#f6ad55' },
+          { num: Vce.toFixed(2),       unit: 'V',  label: 'Vce 전압',        color: '#9f7aea' },
+          { num: Ic_sat.toFixed(2),    unit: 'mA', label: '포화 전류 (최대)', color: '#fc8181' },
+          { num: Pd.toFixed(1),        unit: 'mW', label: '소비전력',         color: '#68d391' },
+        ],
+        rows, type: 'transistor',
+        extra: { state, Ib, Ic, Vce, Ic_sat, beta: p.beta, vcc: p.vcc, stColor },
+        interpretation: `NPN 트랜지스터 동작: <b style="color:${stColor}">${state} 영역</b><br>
+베이스 전류 Ib = (${p.vb}V − 0.7V) ÷ ${p.rb}kΩ = <b>${(Ib*1000).toFixed(1)}μA</b><br>
+컬렉터 포화 전류 = (${p.vcc}V − 0.2V) ÷ ${p.rc}Ω = <b>${Ic_sat.toFixed(2)}mA</b><br>
+${state === '포화' ? '✅ 포화 영역 — β×Ib > Ic_sat, 트랜지스터가 완전히 ON (LED 등 부하가 켜집니다)' : state === '차단' ? '🔴 차단 영역 — Vb < 0.7V, 트랜지스터가 OFF (전류 차단)' : `⚡ 활성 영역 — Ic = β × Ib = ${p.beta} × ${(Ib*1000).toFixed(1)}μA = ${Ic.toFixed(2)}mA (증폭 동작 중)`}`,
+      };
+    }
+  },
+  {
+    id: 'rc_charge',
+    name: '🔋 RC 충방전',
+    desc: 'RC 회로에서 커패시터가 충전·방전되는 과정을 시뮬레이션합니다. 시정수 τ=RC에 따라 전압이 지수함수적으로 변화하며, 1τ(63.2%)·3τ(95%)·5τ(99.3%)에서의 충전 상태를 확인합니다.',
+    params: [
+      { id: 'vcc', label: '전원 전압',  unit: 'V',  min: 1,   max: 12,     step: 0.5, def: 5    },
+      { id: 'r',   label: '저항',       unit: 'Ω',  min: 100, max: 100000, step: 100, def: 1000 },
+      { id: 'c',   label: '커패시터',   unit: 'μF', min: 1,   max: 10000,  step: 10,  def: 100  },
+    ],
+    availableExtra: [
+      { id:'r2', label:'방전 저항 (병렬)', unit:'Ω', min:100, max:100000, def:10000, step:100, tip:'커패시터와 병렬로 연결된 방전 저항. 방전 경로를 추가합니다.' },
+    ],
+    run(p, ex = {}) {
+      const tau = p.r * p.c / 1000; // ms
+      const steps = 40;
+      const rows = [];
+      for (let i = 0; i <= steps; i++) {
+        const t = (5 * tau * i) / steps;
+        const vc = p.vcc * (1 - Math.exp(-t / tau));
+        const ic = (p.vcc - vc) / p.r * 1000;
+        rows.push({ '시간(ms)': t.toFixed(2), '커패시터 전압(V)': vc.toFixed(3), '충전전류(mA)': ic.toFixed(3), '충전률(%)': (vc / p.vcc * 100).toFixed(1) });
+      }
+      const fc = 1 / (2 * Math.PI * p.r * p.c / 1e6);
+      const tauStr = tau >= 1000 ? (tau/1000).toFixed(2)+'s' : tau.toFixed(2)+'ms';
+      const extraVals = ex.r2 ? [{ num: (p.r*ex.r2/(p.r+ex.r2)).toFixed(0), unit:'Ω', label:'합성 방전저항', color:'#f6ad55' }] : [];
+      return {
+        values: [
+          { num: tauStr,                      unit: '',   label: '시정수 τ',       color: '#63b3ed' },
+          { num: (tau*5).toFixed(1),           unit: 'ms', label: '완충 시간 (5τ)', color: '#f6ad55' },
+          { num: fc.toFixed(1),                unit: 'Hz', label: '차단주파수 fc',  color: '#9f7aea' },
+          { num: (p.vcc*0.632).toFixed(2),     unit: 'V',  label: '1τ 전압 (63%)', color: '#68d391' },
+          ...extraVals,
+        ],
+        rows, type: 'rc_charge',
+        extra: { tau, vcc: p.vcc, r: p.r, c: p.c },
+        interpretation: `RC 충전 회로 — 시정수 τ = ${p.r}Ω × ${p.c}μF = <b>${tauStr}</b><br>
+1τ (${tau.toFixed(1)}ms): ${(p.vcc*0.632).toFixed(2)}V → <b>63.2% 충전</b><br>
+3τ (${(tau*3).toFixed(1)}ms): ${(p.vcc*0.950).toFixed(2)}V → <b>95.0% 충전</b><br>
+5τ (${(tau*5).toFixed(1)}ms): ${(p.vcc*0.993).toFixed(2)}V → <b>99.3% (실질적 완충)</b><br>
+저역통과 필터 사용 시 차단주파수 fc = <b>${fc.toFixed(1)}Hz</b>`,
+      };
+    }
+  },
+  {
     id: 'servo',
     name: '🔁 서보모터',
     schematic: false,
@@ -4256,8 +4665,10 @@ function drawResultGraph(r) {
     resistor:  { x:'전압(V)',      lines:[{k:'직렬전류(mA)',c:'#63b3ed'},{k:'R2 전압(V)',c:'#9171e8'}] },
     dht11:     { x:'시간(초)',     lines:[{k:'온도(°C)',c:'#fc8181'},{k:'습도(%)',c:'#63b3ed'}] },
     ultrasonic:{ x:'측정#',       lines:[{k:'거리(cm)',c:'#63b3ed'},{k:'오차(cm)',c:'#fc8181'}] },
-    pwm:       { x:'듀티사이클(%)',lines:[{k:'평균전압(V)',c:'#9171e8'},{k:'밝기(%)',c:'#f59e36'}] },
-    motor:     { x:'전압(V)',      lines:[{k:'RPM',c:'#63b3ed'},{k:'전류(A)',c:'#fc8181'}] },
+    pwm:        { x:'듀티사이클(%)', lines:[{k:'평균전압(V)',c:'#9171e8'},{k:'밝기(%)',c:'#f59e36'}] },
+    motor:      { x:'전압(V)',       lines:[{k:'RPM',c:'#63b3ed'},{k:'전류(A)',c:'#fc8181'}] },
+    transistor: { x:'Vb(V)',        lines:[{k:'Ic(mA)',c:'#f6ad55'},{k:'Ib(μA)',c:'#63b3ed'}] },
+    rc_charge:  { x:'시간(ms)',      lines:[{k:'커패시터 전압(V)',c:'#63b3ed'},{k:'충전전류(mA)',c:'#fc8181'}] },
   };
   const cfg = GRAPH_CONFIG[r.type];
   if (!cfg) { card.style.display = 'none'; return; }
@@ -4393,6 +4804,8 @@ function drawCircuit(typeId, p, ex, result) {
   else if (typeId === 'ldr')        drawLDRSchematic(ctx, W, H, p, ex, result);
   else if (typeId === 'buzzer')     drawBuzzerSchematic(ctx, W, H, p, ex, result);
   else if (typeId === 'servo')      drawServoWiring(ctx, W, H, p, ex, result);
+  else if (typeId === 'transistor') drawTransistorSchematic(ctx, W, H, p, ex, result);
+  else if (typeId === 'rc_charge')  drawRCChargeSchematic(ctx, W, H, p, ex, result);
 }
 
 // ── 공통 드로잉 헬퍼 ──
@@ -5196,6 +5609,196 @@ function drawServoWiring(ctx, W, H, p, ex, result) {
   cTxt(ctx,8,H-4,'🔁 서보모터 배선도','#2d3a50',11,'left');
 }
 
+// ── NPN 트랜지스터 도식 ──
+function drawTransistorSchematic(ctx, W, H, p, ex, result) {
+  const vcc=p?.vcc??5, vb=p?.vb??5, rb=p?.rb??10, rc=p?.rc??1000, beta=p?.beta??100;
+  const extra=result?.extra??{};
+  const state=extra.state??'포화';
+  const Ib=extra.Ib??0, Ic=extra.Ic??0, Vce=extra.Vce??0.2;
+  const stColor=extra.stColor??(state==='포화'?'#68d391':state==='활성'?'#f6ad55':'#fc8181');
+  const on=state!=='차단';
+
+  const mx=W*.52, my=H*.44; // 트랜지스터 중심
+  const wc='#4a9eff',gc='#718096',rc2='#fc8181',yc='#f6ad55',gc2='#68d391';
+
+  // 배경 격자
+  ctx.strokeStyle='rgba(255,255,255,0.025)';ctx.lineWidth=1;
+  for(let gx=0;gx<W;gx+=24){ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,H);ctx.stroke();}
+  for(let gy=0;gy<H;gy+=24){ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(W,gy);ctx.stroke();}
+
+  // ── 컬렉터 회로: Vcc → Rc → C단 ──
+  const rcX1=W*.60, rcX2=W*.74, topRailY=H*.18;
+  const cPinY=my-28;  // 컬렉터 핀 Y
+  cW(ctx,rcX2,topRailY,W-52,topRailY,rc2,2); // Vcc 레일
+  cVCC(ctx,W-52,topRailY,`${vcc}V`,rc2);
+  cW(ctx,rcX2,topRailY,rcX2,cPinY,rc2,2);   // 수직선 to R
+  cRes(ctx,rcX1,rcX2,cPinY,yc,2.5);         // Rc 저항
+  cTxt(ctx,(rcX1+rcX2)/2,cPinY+20,`Rc=${rc}Ω`,yc,10,'center',true);
+  // 컬렉터 → 트랜지스터 C단
+  cW(ctx,mx+18,cPinY,rcX1,cPinY,on?'#f59e36':gc,2.5);
+  if(on) cArrow(ctx,(mx+18+rcX1)/2,cPinY-14,'right',gc2);
+
+  // ── 이미터 회로: E단 → (Re) → GND ──
+  const ePinY=my+28; // 이미터 핀 Y
+  const btmRailY=H*.82;
+  if(ex?.re){
+    const reY=ePinY+18, reX1=mx+4, reX2=mx+4+46;
+    cW(ctx,mx+18,ePinY,reX1,reY,gc,2);
+    cRes(ctx,reX1,reX2,reY,gc,2.5);
+    cTxt(ctx,(reX1+reX2)/2,reY+18,`Re=${ex.re}Ω`,gc,10,'center');
+    cW(ctx,reX2,reY,reX2,btmRailY,gc,2);
+    cW(ctx,reX2,btmRailY,W-52,btmRailY,gc,2);
+  } else {
+    cW(ctx,mx+18,ePinY,mx+18,btmRailY,gc,2);
+    cW(ctx,mx+18,btmRailY,W-52,btmRailY,gc,2);
+  }
+  cGND(ctx,W-52,btmRailY,gc);
+
+  // ── 베이스 회로: Vb → Rb → B단 ──
+  const bPinX=mx-18, bPinY=my;
+  const rbX1=52, rbX2=W*.25;
+  cW(ctx,52,H*.30,52,bPinY,rc2,2);
+  cVCC(ctx,52,H*.30,`${vb}V`,'#9f7aea');
+  cW(ctx,52,bPinY,rbX1,bPinY,rc2,2);
+  cRes(ctx,rbX1,rbX2,bPinY,yc,2.5);
+  cTxt(ctx,(rbX1+rbX2)/2,bPinY+20,`Rb=${rb}kΩ`,yc,10,'center',true);
+  cW(ctx,rbX2,bPinY,bPinX,bPinY,'#9f7aea',2.5);
+  if(Ib>0) cArrow(ctx,(rbX2+bPinX)/2,bPinY-14,'right','#9f7aea');
+  cTxt(ctx,(rbX2+bPinX)/2,bPinY-24,`Ib=${(Ib*1000).toFixed(1)}μA`,'#9f7aea',9,'center',true);
+
+  // ── NPN 트랜지스터 기호 ──
+  const ts=32;
+  // 본체 원
+  ctx.strokeStyle=stColor;ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(mx,my,ts,0,Math.PI*2);ctx.stroke();
+  // 베이스 수직선
+  cW(ctx,mx-ts*.6,my-ts*.7,mx-ts*.6,my+ts*.7,stColor,2.5);
+  // 베이스 → 원
+  cW(ctx,mx-ts*.6,my,mx-18,my,stColor,2.5);
+  // 컬렉터 (위) + 화살 없음
+  cW(ctx,mx-ts*.6+4,my-ts*.5,mx+18,cPinY,stColor,2.5);
+  // 이미터 (아래) + 화살표 방향
+  cW(ctx,mx-ts*.6+4,my+ts*.5,mx+18,ePinY,stColor,2.5);
+  // 이미터 화살표
+  if(on){
+    ctx.strokeStyle=stColor;ctx.lineWidth=2;ctx.beginPath();
+    const ex2=mx+18,ey2=ePinY;
+    const angle2=Math.atan2(ey2-(my+ts*.5),ex2-(mx-ts*.6+4));
+    ctx.moveTo(ex2-8*Math.cos(angle2-0.4),ey2-8*Math.sin(angle2-0.4));
+    ctx.lineTo(ex2,ey2);
+    ctx.lineTo(ex2-8*Math.cos(angle2+0.4),ey2-8*Math.sin(angle2+0.4));
+    ctx.stroke();
+  }
+  // B, C, E 라벨
+  cTxt(ctx,mx-ts*.6-8,my+4,'B',stColor,11,'right',true);
+  cTxt(ctx,mx+ts+6,cPinY-4,'C',rc2,11,'left',true);
+  cTxt(ctx,mx+ts+6,ePinY+4,'E',gc,11,'left',true);
+  cTxt(ctx,mx,my+4,'NPN',stColor,10,'center',true);
+
+  // ── LED 부하 (컬렉터에 연결된 LED 표시) ──
+  const ledX=W*.86, ledY=H*.44;
+  const ledGlow=on?Math.min(1,Ic/20):0;
+  const ledCol=on?`hsl(${8+ledGlow*20},100%,${40+ledGlow*25}%)`:'#555555';
+  cW(ctx,rcX1,cPinY,rcX1,ledY-18,on?'#f59e36':gc,2);
+  cLEDsym(ctx,ledX,ledY,20,ledCol,ledGlow);
+  cW(ctx,ledX+16,ledY,ledX+26,ledY,gc,1.5);
+  cW(ctx,ledX+26,ledY,ledX+26,btmRailY,gc,1.5);
+  cW(ctx,ledX+26,btmRailY,W-52,btmRailY,gc,1.5);
+  cTxt(ctx,rcX1,cPinY-8,`LED`,on?ledCol:'#718096',9,'center');
+  if(on) cArrow(ctx,rcX1,cPinY+10,'down',gc2);
+
+  // ── 상태 박스 ──
+  const sbX=W*.04, sbY=H*.06;
+  cRoundRect(ctx,sbX,sbY,W*.38,26,6,null,stColor,1.5);
+  cTxt(ctx,sbX+W*.19,sbY+14,`${state} 영역   Ic=${Ic.toFixed(2)}mA   Vce=${Vce.toFixed(2)}V`,stColor,10,'center',true);
+
+  // 하단 수식
+  cRoundRect(ctx,W*.05,btmRailY+7,W*.9,22,5,null,'rgba(99,179,237,0.22)',1);
+  cTxt(ctx,W/2,btmRailY+20,`Ib=(${vb}V−0.7V)÷${rb}kΩ=${(Ib*1000).toFixed(1)}μA   Ic=β×Ib=${beta}×${(Ib*1000).toFixed(1)}μA=${Ic.toFixed(2)}mA`,wc,10,'center',true);
+
+  cTxt(ctx,8,H-6,'🔌 NPN 트랜지스터 스위치 회로','#4a5568',11,'left');
+}
+
+// ── RC 충방전 회로 도식 ──
+function drawRCChargeSchematic(ctx, W, H, p, ex, result) {
+  const vcc=p?.vcc??5, r=p?.r??1000, c=p?.c??100;
+  const tau=r*c/1000; // ms
+  const Vc=result?parseFloat(result.values[3]?.num):(vcc*0.632);
+  const fc=1/(2*Math.PI*r*c/1e6);
+  const pct=Math.min(1,Vc/vcc);
+
+  const topY=H*.32, btmY=H*.80;
+  const x0=52, xR1=W*.22, xR2=W*.44, xCcx=W*.62, xGND=W-52;
+  const wc='#4a9eff',gc='#718096',rc='#fc8181',yc='#f6ad55',gc2='#68d391',vc2='#9f7aea';
+
+  // 배경 격자
+  ctx.strokeStyle='rgba(255,255,255,0.025)';ctx.lineWidth=1;
+  for(let gx=0;gx<W;gx+=24){ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,H);ctx.stroke();}
+  for(let gy=0;gy<H;gy+=24){ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(W,gy);ctx.stroke();}
+
+  // 주 전선
+  cW(ctx,x0,topY,xR1,topY,rc,2.5);
+  cW(ctx,xR2,topY,xCcx-14,topY,wc,2.5);
+  cW(ctx,xCcx+14,topY,xGND,topY,wc,2.5);
+  cW(ctx,x0,topY,x0,btmY,rc,2);
+  cW(ctx,x0,btmY,xGND,btmY,gc,2);
+  cW(ctx,xGND,btmY,xGND,topY,gc,2);
+  cDot(ctx,x0,topY,rc,4); cDot(ctx,xGND,topY,gc,4);
+  cVCC(ctx,x0,topY,`${vcc}V`,rc);
+  cGND(ctx,xGND,topY,gc);
+
+  // 저항
+  const rMid=(xR1+xR2)/2;
+  cRes(ctx,xR1,xR2,topY,yc,2.5);
+  cTxt(ctx,rMid,topY+20,`R = ${r>=1000?(r/1000).toFixed(1)+'kΩ':r+'Ω'}`,yc,10,'center',true);
+  cArrow(ctx,rMid,topY-14,'right',gc2);
+  cTxt(ctx,rMid,topY-24,`→ 충전전류`,gc2,9,'center');
+
+  // 커패시터
+  const cCW=16;
+  // 수직 커패시터 기호 (두 평행선, 가로로 배치)
+  cW(ctx,xCcx-14,topY,xCcx-cCW/2,topY,wc,2.5);
+  cW(ctx,xCcx+cCW/2,topY,xCcx+14,topY,wc,2.5);
+  ctx.strokeStyle=vc2;ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(xCcx-cCW/2,topY-18);ctx.lineTo(xCcx-cCW/2,topY+18);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(xCcx+cCW/2,topY-18);ctx.lineTo(xCcx+cCW/2,topY+18);ctx.stroke();
+  cTxt(ctx,xCcx,topY+28,`C = ${c}μF`,vc2,10,'center',true);
+  cDot(ctx,xCcx-cCW/2-14,topY,wc,3.5);
+
+  // 커패시터 전압 표시 (충전 상태 막대)
+  const barH=36, barW=12;
+  const barX=xCcx+26, barBtm=topY+barH/2, barTop=topY-barH/2;
+  cRoundRect(ctx,barX,barTop,barW,barH,3,'rgba(99,179,237,0.08)','rgba(99,179,237,0.3)',1);
+  const fillH=barH*pct;
+  if(fillH>1){
+    cRoundRect(ctx,barX+1,barBtm-fillH,barW-2,fillH,2,`rgba(99,179,237,${0.3+pct*.5})`,null,0);
+  }
+  cTxt(ctx,barX+barW/2,barTop-8,`Vc`,vc2,9,'center');
+  cTxt(ctx,barX+barW/2,barBtm+12,`${(pct*100).toFixed(0)}%`,'#63b3ed',9,'center',true);
+
+  // Vout 탭선
+  const tapX=xGND-30;
+  cDot(ctx,tapX,topY,vc2,3.5);
+  cW(ctx,tapX,topY,tapX,topY+36,vc2,1.5);
+  cTxt(ctx,tapX,topY+48,`Vc=${Vc.toFixed(2)}V`,vc2,10,'center',true);
+
+  // 병렬 방전 저항
+  if(ex?.r2){
+    const prY=topY+54;
+    cW(ctx,xCcx-cCW/2-14,topY,xCcx-cCW/2-14,prY,'#f6ad55');
+    cW(ctx,xGND,topY,xGND,prY,'#f6ad55');
+    cRes(ctx,xCcx-cCW/2-14,xGND,prY,'#f6ad55');
+    cDot(ctx,xCcx-cCW/2-14,topY,'#f6ad55'); cDot(ctx,xGND,topY,'#f6ad55');
+    cTxt(ctx,(xCcx-cCW/2-14+xGND)/2,prY+18,`R2=${ex.r2>=1000?(ex.r2/1000).toFixed(1)+'kΩ':ex.r2+'Ω'}`,'#f6ad55',10);
+  }
+
+  // 시정수 표시 (하단)
+  const tauStr=tau>=1000?(tau/1000).toFixed(2)+'s':tau.toFixed(2)+'ms';
+  cRoundRect(ctx,W*.05,btmY+7,W*.9,22,5,null,'rgba(99,179,237,0.22)',1);
+  cTxt(ctx,W/2,btmY+20,`τ = R×C = ${r}Ω × ${c}μF = ${tauStr}   │   5τ = ${(tau*5).toFixed(1)}ms   │   fc = ${fc.toFixed(1)}Hz`,wc,10,'center',true);
+
+  cTxt(ctx,8,H-6,'🔋 RC 충방전 회로','#4a5568',11,'left');
+}
 
 function drawLEDViz(ctx, W, H, ex) {
   // 배경
@@ -6199,6 +6802,7 @@ function buildCcCard(issue) {
         </div>
         <div class="cc-author">${data?.cmAuthor ? `<span style="color:var(--blue);font-weight:700">${escHtml(data.cmAuthor)}</span> <span style="color:var(--text-muted);font-size:0.7rem">(GitHub: @${escHtml(issue.user.login)})</span>` : `@${escHtml(issue.user.login)}`}</div>
         ${extractDescription(issue.body) ? `<div class="cc-desc">${escHtml(extractDescription(issue.body))}</div>` : ''}
+        ${data?.image ? `<img src="${data.image}" class="cc-image" loading="lazy" alt="첨부 이미지" onclick="this.style.maxHeight=this.style.maxHeight==='none'?'260px':'none'">` : ''}
         ${settingsHtml}
         ${resultsHtml}
         <div class="cc-footer">
@@ -6343,6 +6947,7 @@ function selectShareHistItem(idx) {
 function openShareModal(source, histIdx) {
   if (!currentUser) { showToast('로그인 후 공유할 수 있습니다'); openAuthModal(); return; }
   shareAttachData = null;
+  clearShareImage();
   const errEl = document.getElementById('share-error');
   if (errEl) errEl.style.display = 'none';
   document.getElementById('share-title').value = '';
@@ -6453,6 +7058,7 @@ function openShareModal(source, histIdx) {
 function closeShareModal() {
   document.getElementById('share-modal').style.display = 'none';
   shareAttachData = null;
+  clearShareImage();
 }
 
 async function ensureCcLabel(token) {
@@ -6489,6 +7095,9 @@ async function submitShare() {
 
   // CircuitMind 계정 닉네임 삽입
   if (currentUser) attachData.cmAuthor = currentUser.username;
+
+  // 이미지 첨부
+  if (_shareImageData) attachData.image = _shareImageData;
 
   const body = `${desc}\n\n<!--CIRCUITMIND:${JSON.stringify(attachData)}-->`;
 
