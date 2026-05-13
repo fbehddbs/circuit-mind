@@ -1029,6 +1029,13 @@
       color: #a8d8ff !important;
     }
 
+    /* ── 즐겨찾기 버튼 ── */
+    .fav-btn { background:none; border:none; cursor:pointer; font-size:1rem; padding:4px 6px; border-radius:6px; transition:transform .15s; line-height:1; color:var(--text-muted); }
+    .fav-btn:hover { transform:scale(1.2); }
+    .fav-btn.active { color:#f6ad55; }
+    .history-fav-section { margin-bottom:18px; }
+    .history-fav-empty { font-size:0.83rem; color:var(--text-muted); padding:16px 0; text-align:center; }
+
     /* ── 난이도 배지 ── */
     .level-badge { display:inline-flex; align-items:center; gap:3px; font-size:0.68rem; font-weight:700; padding:2px 7px; border-radius:20px; margin-bottom:6px; }
     .level-1 { background:rgba(78,206,138,0.13); color:#4ece8a; border:1px solid rgba(78,206,138,0.25); }
@@ -1406,7 +1413,7 @@
       <button class="filter-tab" onclick="setCcFilter('pwm')">🔵 PWM</button>
       <button class="filter-tab" onclick="setCcFilter('motor')">⚙️ 모터</button>
       <button class="filter-tab" onclick="setCcFilter('ai-analysis')">🤖 AI분석</button>
-      <button class="filter-tab" onclick="setCcFilter('bookmarks')">⭐ 북마크</button>
+      <button class="filter-tab" onclick="setCcFilter('bookmarks')">⭐ 즐겨찾기</button>
     </div>
   </div>
 
@@ -1510,11 +1517,28 @@
 
 <!-- ── 기록 뷰 ── -->
 <div id="view-history" class="view">
+  <!-- 필터 탭 -->
+  <div class="card" style="padding:12px 16px;margin-bottom:0">
+    <div class="filter-tabs">
+      <button class="filter-tab active" id="hist-tab-all"   onclick="setHistTab('all')">전체</button>
+      <button class="filter-tab"        id="hist-tab-fav"   onclick="setHistTab('fav')">⭐ 즐겨찾기</button>
+      <button class="filter-tab"        id="hist-tab-ai"    onclick="setHistTab('ai')">🤖 AI 분석</button>
+      <button class="filter-tab"        id="hist-tab-sim"   onclick="setHistTab('sim')">🔬 모의실험</button>
+    </div>
+  </div>
   <div class="card">
-    <div class="history-cat">🤖 AI 분석 기록</div>
-    <div id="history-ai-list"></div>
-    <div class="history-cat">🔬 모의실험 기록</div>
-    <div id="history-sim-list"></div>
+    <!-- 즐겨찾기 전용 목록 -->
+    <div id="history-fav-list" style="display:none"></div>
+    <!-- AI 기록 -->
+    <div id="history-ai-section">
+      <div class="history-cat">🤖 AI 분석 기록</div>
+      <div id="history-ai-list"></div>
+    </div>
+    <!-- 모의실험 기록 -->
+    <div id="history-sim-section">
+      <div class="history-cat">🔬 모의실험 기록</div>
+      <div id="history-sim-list"></div>
+    </div>
   </div>
 </div>
 
@@ -3178,62 +3202,119 @@ function saveToHistory() {
   showToast('기록에 저장되었습니다 ✓');
 }
 
+// ── 기록 즐겨찾기 ──
+function getHistFavs() {
+  try { return new Set(JSON.parse(localStorage.getItem(userKey('cm_hist_fav')) || '[]')); } catch(e) { return new Set(); }
+}
+function saveHistFavs(set) { localStorage.setItem(userKey('cm_hist_fav'), JSON.stringify([...set])); }
+function toggleHistFav(id, btn) {
+  const favs = getHistFavs();
+  if (favs.has(id)) {
+    favs.delete(id);
+    if (btn) { btn.textContent = '☆'; btn.classList.remove('active'); btn.title = '즐겨찾기 추가'; }
+    showToast('즐겨찾기가 해제되었습니다');
+  } else {
+    favs.add(id);
+    if (btn) { btn.textContent = '★'; btn.classList.add('active'); btn.title = '즐겨찾기 해제'; }
+    showToast('즐겨찾기에 추가되었습니다 ⭐');
+  }
+  saveHistFavs(favs);
+  // 즐겨찾기 탭 보고 있으면 바로 갱신
+  if (document.getElementById('hist-tab-fav')?.classList.contains('active')) renderHistory();
+}
+
+let _histTab = 'all';
+function setHistTab(tab) {
+  _histTab = tab;
+  ['all','fav','ai','sim'].forEach(t => {
+    document.getElementById(`hist-tab-${t}`)?.classList.toggle('active', t === tab);
+  });
+  renderHistory();
+}
+
 function renderHistory() {
   const history = getHistory();
   const aiList  = document.getElementById('history-ai-list');
   const simList = document.getElementById('history-sim-list');
   if (!aiList || !simList) return;
 
-  const aiItems  = history.map((item, idx) => ({ item, idx })).filter(({ item }) => !item.type || item.type === 'ai');
-  const simItems = history.map((item, idx) => ({ item, idx })).filter(({ item }) => item.type === 'sim');
+  const favs = getHistFavs();
+  const allWithIdx = history.map((item, idx) => ({ item, idx }));
+  const aiItems  = allWithIdx.filter(({ item }) => !item.type || item.type === 'ai');
+  const simItems = allWithIdx.filter(({ item }) => item.type === 'sim');
+  const favItems = allWithIdx.filter(({ item }) => favs.has(item.id));
+
+  const favList   = document.getElementById('history-fav-list');
+  const aiSection = document.getElementById('history-ai-section');
+  const simSection= document.getElementById('history-sim-section');
+
+  const tab = _histTab || 'all';
+  favList.style.display    = tab === 'fav'  ? 'block' : 'none';
+  aiSection.style.display  = (tab === 'all' || tab === 'ai')  ? 'block' : 'none';
+  simSection.style.display = (tab === 'all' || tab === 'sim') ? 'block' : 'none';
+
+  const buildAiCard = ({ item, idx }) => {
+    const compStr = (item.meta?.components || []).map(c => `${c.name} ×${c.quantity}`).join(', ');
+    const dateStr = new Date(item.meta?.date || item.id).toLocaleDateString('ko-KR');
+    const isFav = favs.has(item.id);
+    return `
+      <div class="history-item" style="flex-wrap:wrap;gap:8px">
+        <button class="fav-btn ${isFav ? 'active' : ''}" onclick="toggleHistFav(${item.id}, this)" title="${isFav ? '즐겨찾기 해제' : '즐겨찾기 추가'}">${isFav ? '★' : '☆'}</button>
+        <div class="history-info" onclick="loadHistory(${idx})" style="flex:1;cursor:pointer;min-width:0">
+          <div class="history-title"><span class="history-tag tag-ai">AI</span>${escHtml(item.result?.title || '분석 결과')}</div>
+          <div class="history-meta">${escHtml(compStr)} · ${dateStr} · ${escHtml(item.meta?.purpose || '')}</div>
+        </div>
+        <div class="history-actions" style="flex-wrap:wrap">
+          <button class="btn-secondary" onclick="openSimPicker(${idx})" style="font-size:0.8rem;padding:7px 12px;border-color:#2d5a3e;color:#68d391">🔬 모의실험</button>
+          <button class="btn-secondary" onclick="reanalyze(${idx})" style="font-size:0.8rem;padding:7px 12px">재분석</button>
+          <button class="btn-icon danger" onclick="deleteHistory(${idx})">✕</button>
+        </div>
+      </div>`;
+  };
+
+  const buildSimCard = ({ item, idx }) => {
+    const dateStr = new Date(item.date || item.id).toLocaleDateString('ko-KR');
+    const extraStr = (item.extraParts || []).length > 0
+      ? ' · ' + item.extraParts.map(p => `${p.label} ${p.value}${p.unit}`).join(', ') : '';
+    const valSummary = (item.result?.values || []).slice(0, 3).map(v => `${v.label} ${v.num}${v.unit}`).join(' / ');
+    const isFav = favs.has(item.id);
+    return `
+      <div class="history-item">
+        <button class="fav-btn ${isFav ? 'active' : ''}" onclick="toggleHistFav(${item.id}, this)" title="${isFav ? '즐겨찾기 해제' : '즐겨찾기 추가'}">${isFav ? '★' : '☆'}</button>
+        <div class="history-info" onclick="reloadSim(${idx})" style="flex:1;cursor:pointer">
+          <div class="history-title"><span class="history-tag tag-sim">실험</span>${escHtml(item.simTypeName || '모의실험')}</div>
+          <div class="history-meta">${dateStr}${escHtml(extraStr)}</div>
+          <div class="history-meta" style="color:#6c7a98;margin-top:2px;font-size:0.78rem">${escHtml(valSummary)}</div>
+        </div>
+        <div class="history-actions" style="flex-wrap:wrap;gap:6px">
+          <button class="btn-secondary" onclick="reloadSim(${idx})" style="font-size:0.8rem;padding:7px 12px">불러오기</button>
+          <button onclick="openShareModal('hist',${idx})" style="font-size:0.8rem;padding:7px 12px;background:#1a3a2e;color:#68d391;border:1px solid #2d5a3e;border-radius:8px;cursor:pointer">📤 공유</button>
+          <button class="btn-icon danger" onclick="deleteHistory(${idx})">✕</button>
+        </div>
+      </div>`;
+  };
+
+  // 즐겨찾기 탭
+  if (tab === 'fav') {
+    if (favItems.length === 0) {
+      favList.innerHTML = '<div class="history-fav-empty">⭐ 즐겨찾기한 실험이 없습니다.<br>기록 항목의 ☆ 버튼을 눌러 추가하세요.</div>';
+    } else {
+      favList.innerHTML = favItems.map(entry =>
+        (!entry.item.type || entry.item.type === 'ai') ? buildAiCard(entry) : buildSimCard(entry)
+      ).join('');
+    }
+    return;
+  }
 
   // AI 기록
-  if (aiItems.length === 0) {
-    aiList.innerHTML = '<div class="history-empty-sub">저장된 AI 분석 기록이 없습니다.</div>';
-  } else {
-    aiList.innerHTML = aiItems.map(({ item, idx }) => {
-      const compStr = (item.meta?.components || []).map(c => `${c.name} ×${c.quantity}`).join(', ');
-      const dateStr = new Date(item.meta?.date || item.id).toLocaleDateString('ko-KR');
-      return `
-        <div class="history-item" style="flex-wrap:wrap;gap:8px">
-          <div class="history-info" onclick="loadHistory(${idx})" style="flex:1;cursor:pointer;min-width:0">
-            <div class="history-title"><span class="history-tag tag-ai">AI</span>${escHtml(item.result?.title || '분석 결과')}</div>
-            <div class="history-meta">${escHtml(compStr)} · ${dateStr} · ${escHtml(item.meta?.purpose || '')}</div>
-          </div>
-          <div class="history-actions" style="flex-wrap:wrap">
-            <button class="btn-secondary" onclick="openSimPicker(${idx})" style="font-size:0.8rem;padding:7px 12px;border-color:#2d5a3e;color:#68d391">🔬 모의실험</button>
-            <button class="btn-secondary" onclick="reanalyze(${idx})" style="font-size:0.8rem;padding:7px 12px">재분석</button>
-            <button class="btn-icon danger" onclick="deleteHistory(${idx})">✕</button>
-          </div>
-        </div>`;
-    }).join('');
-  }
+  aiList.innerHTML = aiItems.length === 0
+    ? '<div class="history-empty-sub">저장된 AI 분석 기록이 없습니다.</div>'
+    : aiItems.map(buildAiCard).join('');
 
   // 모의실험 기록
-  if (simItems.length === 0) {
-    simList.innerHTML = '<div class="history-empty-sub">저장된 모의실험 기록이 없습니다.</div>';
-  } else {
-    simList.innerHTML = simItems.map(({ item, idx }) => {
-      const dateStr = new Date(item.date || item.id).toLocaleDateString('ko-KR');
-      const extraStr = (item.extraParts || []).length > 0
-        ? ' · ' + item.extraParts.map(p => `${p.label} ${p.value}${p.unit}`).join(', ')
-        : '';
-      const valSummary = (item.result?.values || []).slice(0, 3).map(v => `${v.label} ${v.num}${v.unit}`).join(' / ');
-      return `
-        <div class="history-item">
-          <div class="history-info" onclick="reloadSim(${idx})" style="flex:1;cursor:pointer">
-            <div class="history-title"><span class="history-tag tag-sim">실험</span>${escHtml(item.simTypeName || '모의실험')}</div>
-            <div class="history-meta">${dateStr}${escHtml(extraStr)}</div>
-            <div class="history-meta" style="color:#6c7a98;margin-top:2px;font-size:0.78rem">${escHtml(valSummary)}</div>
-          </div>
-          <div class="history-actions" style="flex-wrap:wrap;gap:6px">
-            <button class="btn-secondary" onclick="reloadSim(${idx})" style="font-size:0.8rem;padding:7px 12px">불러오기</button>
-            <button onclick="openShareModal('hist',${i})" style="font-size:0.8rem;padding:7px 12px;background:#1a3a2e;color:#68d391;border:1px solid #2d5a3e;border-radius:8px;cursor:pointer">📤 공유</button>
-            <button class="btn-icon danger" onclick="deleteHistory(${idx})">✕</button>
-          </div>
-        </div>`;
-    }).join('');
-  }
+  simList.innerHTML = simItems.length === 0
+    ? '<div class="history-empty-sub">저장된 모의실험 기록이 없습니다.</div>'
+    : simItems.map(buildSimCard).join('');
 }
 
 function loadHistory(idx) {
@@ -4166,25 +4247,28 @@ function drawSimCanvas(r) {
 
 function drawResultGraph(r) {
   const card = document.getElementById('sim-graph-card');
-  const canvas = document.getElementById('sim-graph-canvas');
   const legendEl = document.getElementById('sim-graph-legend');
   if (!r.rows || r.rows.length < 2) { card.style.display = 'none'; return; }
 
-  // 시뮬레이션별 축 설정
+  // 시뮬레이션별 축 설정 (rows의 실제 키와 일치시킴)
   const GRAPH_CONFIG = {
-    led:      { x:'전압(V)',  lines:[{k:'전류(mA)',c:'#63b3ed'},{k:'밝기(%)',c:'#4ece8a'}] },
-    resistor: { x:'전압(V)',  lines:[{k:'직렬전류(mA)',c:'#63b3ed'},{k:'R2 전압(V)',c:'#9171e8'}] },
-    dht11:    { x:'시간(초)', lines:[{k:'온도(°C)',c:'#fc8181'},{k:'습도(%)',c:'#63b3ed'}] },
-    ultrasonic:{ x:'측정#',  lines:[{k:'거리(cm)',c:'#63b3ed'}] },
-    pwm:      { x:'듀티(%)', lines:[{k:'평균전압(V)',c:'#9171e8'},{k:'주파수(Hz)',c:'#f59e36'}] },
-    motor:    { x:'전압(V)', lines:[{k:'RPM',c:'#63b3ed'},{k:'전류(A)',c:'#fc8181'}] },
+    led:       { x:'전압(V)',      lines:[{k:'전류(mA)',c:'#63b3ed'},{k:'밝기(%)',c:'#4ece8a'}] },
+    resistor:  { x:'전압(V)',      lines:[{k:'직렬전류(mA)',c:'#63b3ed'},{k:'R2 전압(V)',c:'#9171e8'}] },
+    dht11:     { x:'시간(초)',     lines:[{k:'온도(°C)',c:'#fc8181'},{k:'습도(%)',c:'#63b3ed'}] },
+    ultrasonic:{ x:'측정#',       lines:[{k:'거리(cm)',c:'#63b3ed'},{k:'오차(cm)',c:'#fc8181'}] },
+    pwm:       { x:'듀티사이클(%)',lines:[{k:'평균전압(V)',c:'#9171e8'},{k:'밝기(%)',c:'#f59e36'}] },
+    motor:     { x:'전압(V)',      lines:[{k:'RPM',c:'#63b3ed'},{k:'전류(A)',c:'#fc8181'}] },
   };
   const cfg = GRAPH_CONFIG[r.type];
   if (!cfg) { card.style.display = 'none'; return; }
 
   card.style.display = 'block';
+
+  // rAF으로 레이아웃 반영 후 그리기 (display:none → block 직후 width=0 방지)
+  requestAnimationFrame(() => {
+  const canvas = document.getElementById('sim-graph-canvas');
   const dpr = window.devicePixelRatio || 1;
-  const W = canvas.parentElement.clientWidth;
+  const W = card.clientWidth - 40 || 400;  // card padding 보정
   const H = 220;
   canvas.width = W * dpr; canvas.height = H * dpr;
   canvas.style.height = H + 'px'; canvas.style.width = W + 'px';
@@ -4267,6 +4351,7 @@ function drawResultGraph(r) {
   legendEl.innerHTML = lines.map(ln =>
     `<div class="graph-legend-item"><div class="graph-legend-dot" style="background:${ln.c}"></div>${ln.k}</div>`
   ).join('');
+  }); // requestAnimationFrame 끝
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -6033,7 +6118,7 @@ function buildCcCard(issue) {
               style="font-size:0.75rem;padding:5px 10px">💬 댓글 ${commentCount > 0 ? commentCount : ''}</button>
             <button class="btn-secondary" onclick="toggleBookmark(${issue.number}, this)"
               style="font-size:0.75rem;padding:5px 10px;${isBookmarked ? 'color:#f6ad55' : ''}"
-              >${isBookmarked ? '★ 저장됨' : '⭐ 북마크'}</button>
+              >${isBookmarked ? '★ 즐겨찾기됨' : '⭐ 즐겨찾기'}</button>
           </div>
         </div>
         <div class="cc-comments-section" id="cc-comments-${issue.number}">
@@ -6084,11 +6169,11 @@ function toggleBookmark(issueNumber, btn) {
   if (bm.has(issueNumber)) {
     bm.delete(issueNumber);
     if (btn) { btn.textContent = '⭐ 북마크'; btn.style.color = ''; }
-    showToast('북마크가 해제되었습니다');
+    showToast('즐겨찾기가 해제되었습니다');
   } else {
     bm.add(issueNumber);
     if (btn) { btn.textContent = '★ 저장됨'; btn.style.color = '#f6ad55'; }
-    showToast('북마크에 추가되었습니다 ⭐');
+    showToast('즐겨찾기에 추가되었습니다 ⭐');
   }
   saveBookmarks(bm);
 }
