@@ -4500,56 +4500,88 @@ function drawLEDSchematic(ctx, W, H, p, ex, result) {
   const vcc=p?.vcc??5, r=p?.r??220, vf=p?.vf??2.0;
   const er=ex?.r_series||0, el=ex?.led_series||0;
   const totalR=r+er, totalVf=vf+el;
-  const brightness=result?.extra?.brightness??0.5;
-  const glow=result?brightness:0.4;
   const I=result?parseFloat(result.values[0]?.num):null;
   const Vr=result?parseFloat(result.values[1]?.num):null;
+  const Pw=result?parseFloat(result.values[2]?.num):null;
+  const brightness=result?.extra?.brightness??null;
+  const Icalc=I!==null?I:Math.max(0,(vcc-totalVf)/totalR*1000);
+  const Vrcalc=Vr!==null?Vr:Math.max(0,vcc-totalVf);
+  const glow=brightness!==null?brightness:Math.min(1,Icalc/20);
 
-  const topY=H*.36, btmY=H*.82;
-  const x0=48, xR1=W*.26, xR2=W*.48, xLC=W*.66, xGND=W-48;
-  const lW=22, xL1=xLC-lW*.8, xL2=xLC+lW*.6;
-  const wc='#4a9eff', gc='#718096', rc='#fc8181';
+  const topY=H*.40, btmY=H*.80;
+  const x0=58, xR1=W*.27, xR2=W*.47, xLC=W*.66, xL1=xLC-22, xL2=xLC+17, xGND=W-58;
+  const wc='#4a9eff', gc='#718096', rc='#fc8181', yc='#f6ad55', gc2='#68d391';
+  const rMid=(xR1+xR2)/2;
 
-  // 전선
-  cW(ctx,x0,topY,xR1,topY,wc); cW(ctx,xR2,topY,xL1,topY,wc);
-  cW(ctx,xL2,topY,xGND,topY,wc);
-  cW(ctx,x0,topY,x0,btmY,wc); cW(ctx,x0,btmY,xGND,btmY,gc);
-  cW(ctx,xGND,btmY,xGND,topY,gc);
+  // 배경 격자
+  ctx.strokeStyle='rgba(255,255,255,0.03)'; ctx.lineWidth=1;
+  for(let gx=0;gx<W;gx+=24){ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,H);ctx.stroke();}
+  for(let gy=0;gy<H;gy+=24){ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(W,gy);ctx.stroke();}
 
-  // 부품
-  cRes(ctx,xR1,xR2,topY);
-  cLEDsym(ctx,xLC,topY,lW,glow>0.08?`hsl(${8+glow*20},100%,${40+glow*25}%)`:'#555555',glow);
+  // 주 전선
+  cW(ctx,x0,topY,xR1,topY,rc,2.5);
+  cW(ctx,xR2,topY,xL1,topY,wc,2.5);
+  cW(ctx,xL2,topY,xGND,topY,wc,2.5);
+  cW(ctx,x0,topY,x0,btmY,rc,2);
+  cW(ctx,x0,btmY,xGND,btmY,gc,2);
+  cW(ctx,xGND,btmY,xGND,topY,gc,2);
+
+  // 노드 점
+  cDot(ctx,x0,topY,rc,4);
+  cDot(ctx,xGND,topY,gc,4);
+  cDot(ctx,xR2,topY,wc,3.5);
+
+  // VCC / GND 심볼
   cVCC(ctx,x0,topY,`${vcc}V`,rc);
   cGND(ctx,xGND,topY,gc);
 
-  // 병렬 저항 (추가 부품)
+  // 전류 방향 화살표 (저항 위)
+  if(Icalc>0){
+    cArrow(ctx,rMid-4,topY-15,'right',gc2);
+    cTxt(ctx,rMid+22,topY-21,`I = ${Icalc.toFixed(2)} mA`,gc2,10,'left',true);
+  }
+
+  // R↔LED 노드 전압 레이블
+  const nodeX=(xR2+xL1)/2;
+  cTxt(ctx,nodeX,topY-8,`${totalVf.toFixed(1)}V`,'#9f7aea',9,'center',true);
+
+  // 저항
+  cRes(ctx,xR1,xR2,topY,yc,2.5);
+  cTxt(ctx,rMid,topY+20,er?`R=${r}+${er}=${totalR} Ω`:`R = ${totalR} Ω`,yc,10,'center',true);
+  cTxt(ctx,rMid,topY+33,`↕ Vr = ${Vrcalc.toFixed(2)} V`,'#a0aec0',9,'center');
+
+  // LED
+  const ledCol=glow>0.08?`hsl(${8+glow*20},100%,${40+glow*25}%)`:'#666666';
+  cLEDsym(ctx,xLC,topY,24,ledCol,glow);
+  cTxt(ctx,xL1-5,topY-9,'A',rc,9,'right',true);
+  cTxt(ctx,xL2+5,topY-9,'K',gc,9,'left',true);
+  cTxt(ctx,xLC,topY+20,`Vf = ${totalVf.toFixed(1)} V`,glow>0.1?ledCol:'#718096',10,'center',true);
+  if(el) cTxt(ctx,xLC,topY+33,`(${vf}+${el})`,'#a0aec0',9,'center');
+
+  // 병렬 저항
   if(ex?.r_parallel){
     const prY=topY+50;
     cW(ctx,xR1,topY,xR1,prY,'#f6ad55'); cW(ctx,xR2,topY,xR2,prY,'#f6ad55');
     cRes(ctx,xR1,xR2,prY,'#f6ad55');
     cDot(ctx,xR1,topY,'#f6ad55'); cDot(ctx,xR2,topY,'#f6ad55');
-    cTxt(ctx,(xR1+xR2)/2,prY+18,`R‖ ${ex.r_parallel}Ω`,'#f6ad55',10);
+    cTxt(ctx,rMid,prY+18,`R‖ ${ex.r_parallel} Ω`,'#f6ad55',10);
   }
-  // 커패시터 (추가 부품)
+  // 커패시터
   if(ex?.cap){
-    const cX=xL2+26, cY=topY;
+    const cX=xL2+30;
     cW(ctx,xL2,topY,cX-13,topY,'#9f7aea');
-    cW(ctx,cX+13,topY,xL2+50,topY,'#9f7aea');
-    cCap(ctx,cX,cY,'#9f7aea');
+    cW(ctx,cX+13,topY,cX+40,topY,'#9f7aea');
+    cCap(ctx,cX,topY,'#9f7aea');
     cDot(ctx,xL2,topY,'#9f7aea');
-    cTxt(ctx,cX,topY+28,`${ex.cap}μF`,'#9f7aea',10);
+    cTxt(ctx,cX,topY+28,`${ex.cap} μF`,'#9f7aea',10);
   }
 
-  // 라벨
-  cTxt(ctx,(xR1+xR2)/2,topY+22,er?`R ${r}+${er}=${totalR}Ω`:`R ${totalR}Ω`,'#f6ad55',10);
-  cTxt(ctx,xLC,topY+26,el?`Vf ${vf}+${el}=${totalVf.toFixed(1)}V`:`Vf ${totalVf.toFixed(1)}V`,glow>0.1?'#ff8888':'#718096',10);
+  // 하단 수식 박스
+  cRoundRect(ctx,W*.05,btmY+6,W*.9,22,5,null,'rgba(104,211,145,0.25)',1);
+  const pwStr=Pw!==null?`   소비 ${Pw.toFixed(1)} mW`:'';
+  cTxt(ctx,W/2,btmY+20,`I = (${vcc}V − ${totalVf.toFixed(1)}V) ÷ ${totalR}Ω = ${Icalc.toFixed(2)} mA${pwStr}`,gc2,11,'center',true);
 
-  // 결과 표시
-  if(I!==null){
-    cArrow(ctx,(xR1+xR2)/2,topY-16,'right','#68d391');
-    cTxt(ctx,W/2,btmY+18,`전류 I = ${I.toFixed(2)} mA   저항 전압 ${Vr?.toFixed(2)??''}V`,'#68d391',12,'center',true);
-  }
-  cTxt(ctx,8,H-6,'💡 LED 회로 도식','#2d3a50',11,'left');
+  cTxt(ctx,8,H-6,'💡 LED 기본 점등 회로','#4a5568',11,'left');
 }
 
 // ── 저항 회로 ──
@@ -4694,56 +4726,118 @@ function drawUltrasonicWiring(ctx, W, H, p, ex, result) {
 function drawPWMSchematic(ctx, W, H, p, ex, result) {
   const duty=p?.duty??50, freq=p?.freq??1000, vcc=p?.vcc??5;
   const vavg=result?parseFloat(result.values[0]?.num):vcc*duty/100;
-  const topY=H*.35, btmY=H*.82;
-  const x0=48, xGND=W-48;
+  const period=result?parseFloat(result.values[2]?.num):(1/freq*1000);
+  const ton=result?parseFloat(result.values[3]?.num):(period*duty/100);
+  const toff=result?parseFloat(result.values[4]?.num):(period*(1-duty/100));
+  const glow=Math.max(0,Math.min(1,duty/100));
+  const ledCol=glow>0.08?`hsl(${8+glow*20},100%,${40+glow*25}%)`:'#555555';
+
+  // 아두이노 블록 치수
+  const aW=W*.20, aH=112, aX=24, aY=(H-aH)/2;
+  const pin5V_y=aY+aH*.18, pinD3_y=aY+aH*.50, pinGND_y=aY+aH*.80;
+  const xAout=aX+aW+14;
+
+  // 파형 박스
+  const waveW=86, xWaveEnd=xAout+waveW;
+
+  // 부품 X 좌표
+  const xLED=W*.72, xL1=xLED-20, xL2=xLED+16;
+  const hasLoadR=!!ex?.load_r;
+  const xR1=hasLoadR?W*.54:0, xR2=hasLoadR?W*.64:0;
+  const xGND=W-44;
+
+  const wc='#4a9eff', gc='#718096', rc='#fc8181', yc='#f6ad55', gc2='#68d391';
+
+  // 배경 격자
+  ctx.strokeStyle='rgba(255,255,255,0.03)'; ctx.lineWidth=1;
+  for(let gx=0;gx<W;gx+=24){ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,H);ctx.stroke();}
+  for(let gy=0;gy<H;gy+=24){ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(W,gy);ctx.stroke();}
 
   // 아두이노 블록
-  const aW=W*.2, aH=65, aX=x0-10, aY=topY-32;
-  cChip(ctx,aX,aY,aW,aH,'Arduino','','#63b3ed');
-  cPin(ctx,aX+aW,aY+aH*.4,'D3','right','#63b3ed');
-  cPin(ctx,aX+aW,aY+aH*.75,'GND','right','#718096');
+  cChip(ctx,aX,aY,aW,aH,'Arduino','Uno','#63b3ed');
+  cPin(ctx,aX+aW,pin5V_y,'5V','right',rc);
+  cPin(ctx,aX+aW,pinD3_y,'D3~','right','#63b3ed');
+  cPin(ctx,aX+aW,pinGND_y,'GND','right',gc);
 
-  const pwmX=aX+aW+14;
-  const ledCX=W*.62;
-  const rX1=W*.48, rX2=W*.57;
+  // 5V 전원 심볼
+  cVCC(ctx,xAout,pin5V_y,`${vcc}V`,rc);
 
-  // PWM 전선
-  cW(ctx,pwmX,aY+aH*.4,rX1,topY,'#63b3ed',2);
-  cW(ctx,rX2,topY,ledCX-16,topY,'#63b3ed');
-  cW(ctx,ledCX+14,topY,xGND,topY,'#4a9eff');
-  cW(ctx,aX+aW+14,aY+aH*.75,aX+aW+14,btmY,'#718096');
-  cW(ctx,aX+aW+14,btmY,xGND,btmY,'#718096');
-  cW(ctx,xGND,btmY,xGND,topY,'#718096');
+  // GND 레일: Arduino GND → 오른쪽 하단 코너 → 위로 올라와 LED 캐소드 연결
+  cW(ctx,xAout,pinGND_y,xGND,pinGND_y,gc,2);
+  cW(ctx,xGND,pinGND_y,xGND,pinD3_y,gc,2);
+  cDot(ctx,xGND,pinD3_y,gc,4);
+  cGND(ctx,xAout,pinGND_y,gc);
 
-  // 부하 저항 (있으면)
-  if(ex?.load_r){
-    cRes(ctx,rX1,rX2,topY,'#f6ad55');
-    cTxt(ctx,(rX1+rX2)/2,topY+18,`${ex.load_r}Ω`,'#f6ad55',10);
+  // 신호선: 파형 끝 → [R] → LED → 우측 GND
+  if(hasLoadR){
+    cW(ctx,xWaveEnd,pinD3_y,xR1,pinD3_y,'#63b3ed',2.5);
+    cRes(ctx,xR1,xR2,pinD3_y,yc,2.5);
+    cTxt(ctx,(xR1+xR2)/2,pinD3_y+19,`${ex.load_r} Ω`,yc,10,'center',true);
+    cW(ctx,xR2,pinD3_y,xL1,pinD3_y,'#63b3ed',2.5);
   } else {
-    cW(ctx,rX1,topY,rX2,topY,'#63b3ed');
+    cW(ctx,xWaveEnd,pinD3_y,xL1,pinD3_y,'#63b3ed',2.5);
   }
+  cW(ctx,xL2,pinD3_y,xGND,pinD3_y,wc,2.5);
 
-  // LED (부하)
-  const glow=duty/100;
-  cLEDsym(ctx,ledCX,topY,20,glow>.08?`hsl(${8+glow*20},100%,${40+glow*25}%)`:'#555555',glow);
+  // LED
+  cLEDsym(ctx,xLED,pinD3_y,22,ledCol,glow);
+  cTxt(ctx,xL1-4,pinD3_y-10,'A',rc,9,'right',true);
+  cTxt(ctx,xL2+4,pinD3_y-10,'K',gc,9,'left',true);
+  cTxt(ctx,xLED,pinD3_y+19,`Vavg = ${vavg.toFixed(2)} V`,glow>0.1?ledCol:'#718096',10,'center',true);
 
-  // RC 필터 (있으면)
-  if(ex?.r_out && ex?.cap_filter){
-    const fcX=W*.35, fcY=topY-40;
-    cTxt(ctx,fcX,fcY,`RC 필터: ${ex.r_out}Ω + ${ex.cap_filter}μF`,'#9f7aea',10,'center');
+  // ── PWM 파형 (인라인) ──
+  const wX=xAout+2, wEndX=xWaveEnd-2;
+  const wHigh=pinD3_y-26, wLow=pinD3_y+9;
+  const wTW=wEndX-wX;
+  const numCyc=2.5, cycW=wTW/numCyc, onW=cycW*(duty/100);
+
+  // 파형 배경
+  cRoundRect(ctx,wX-4,wHigh-10,wTW+8,wLow-wHigh+18,4,'rgba(99,179,237,0.08)','rgba(99,179,237,0.35)',1);
+
+  // 파형 그리기 (2.5 사이클)
+  ctx.strokeStyle='#63b3ed'; ctx.lineWidth=2; ctx.setLineDash([]);
+  ctx.beginPath();
+  let wx=wX; ctx.moveTo(wx,wLow);
+  for(let c=0;c<4;c++){
+    if(wx+1>wEndX) break;
+    const fallX=Math.min(wx+onW,wEndX);
+    const nextX=Math.min(wx+cycW,wEndX);
+    if(duty>0){ctx.lineTo(wx,wLow);ctx.lineTo(wx,wHigh);ctx.lineTo(fallX,wHigh);}
+    ctx.lineTo(fallX,wLow);
+    if(duty<100) ctx.lineTo(nextX,wLow);
+    wx+=cycW;
+  }
+  ctx.stroke();
+
+  // Vavg 점선
+  const vavgY=wHigh+(wLow-wHigh)*(1-duty/100);
+  ctx.strokeStyle='rgba(104,211,145,0.55)'; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(wX,vavgY); ctx.lineTo(wEndX,vavgY); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // HIGH / LOW / duty / freq 레이블
+  cTxt(ctx,wX-4,wHigh+4,`${vcc}V`,'rgba(252,129,129,0.85)',8,'right');
+  cTxt(ctx,wX-4,wLow+4,'0V','rgba(113,128,150,0.85)',8,'right');
+  cTxt(ctx,wX-4,vavgY+4,`${vavg.toFixed(1)}V`,'rgba(104,211,145,0.7)',8,'right');
+  if(duty>6&&duty<94) cTxt(ctx,wX+onW*.5,wHigh-5,`${duty}%`,'#63b3ed',9,'center',true);
+  cTxt(ctx,(wX+wEndX)/2,wLow+14,freq>=1000?(freq/1000).toFixed(freq%1000?1:0)+'kHz':freq+'Hz','#63b3ed',9,'center');
+
+  // RC 필터
+  if(ex?.r_out&&ex?.cap_filter){
     const fc=1/(2*Math.PI*ex.r_out*ex.cap_filter/1e6);
-    cTxt(ctx,fcX,fcY+14,`fc = ${fc.toFixed(0)}Hz`,'#9f7aea',10,'center');
+    cTxt(ctx,(xWaveEnd+xLED)/2,pinD3_y-34,`RC: ${ex.r_out}Ω + ${ex.cap_filter}μF   fc=${fc.toFixed(0)}Hz`,'#9f7aea',9,'center');
   }
 
-  cGND(ctx,xGND,topY,'#718096');
-  cTxt(ctx,ledCX,topY+24,`Vavg ${vavg.toFixed(2)}V`,glow>.1?'#ff8888':'#718096',10);
-  cTxt(ctx,W*.35,topY-12,`Duty ${duty}%   ${freq}Hz`,'#63b3ed',11,'center',true);
-
-  if(result){
-    cArrow(ctx,W*.42,topY-16,'right','#68d391');
-    cTxt(ctx,W/2,btmY+18,`평균 출력 ${vavg.toFixed(2)}V   밝기 ${duty}%`,'#68d391',12,'center',true);
+  // 하단 정보 박스
+  const fY=pinGND_y+8;
+  if(fY+22<H-12){
+    cRoundRect(ctx,W*.04,fY,W*.92,22,5,null,'rgba(99,179,237,0.22)',1);
+    cTxt(ctx,W/2,fY+14,
+      `듀티 ${duty}%  │  ${freq>=1000?(freq/1000).toFixed(0)+'kHz':freq+'Hz'}  │  Vavg ${vavg.toFixed(2)}V  │  T=${period.toFixed(2)}ms  (ON:${ton.toFixed(2)}  OFF:${toff.toFixed(2)})`,
+      '#63b3ed',10,'center',true);
   }
-  cTxt(ctx,8,H-6,'🔵 PWM 회로 도식','#2d3a50',11,'left');
+
+  cTxt(ctx,8,H-6,'🔵 PWM 밝기 제어 회로','#4a5568',11,'left');
 }
 
 // ── DC 모터 회로 ──
