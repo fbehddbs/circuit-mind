@@ -1029,6 +1029,28 @@
       color: #a8d8ff !important;
     }
 
+    /* ── 난이도 배지 ── */
+    .level-badge { display:inline-flex; align-items:center; gap:3px; font-size:0.68rem; font-weight:700; padding:2px 7px; border-radius:20px; margin-bottom:6px; }
+    .level-1 { background:rgba(78,206,138,0.13); color:#4ece8a; border:1px solid rgba(78,206,138,0.25); }
+    .level-2 { background:rgba(245,158,54,0.13); color:#f59e36; border:1px solid rgba(245,158,54,0.25); }
+    .level-3 { background:rgba(245,101,101,0.13); color:#f56565; border:1px solid rgba(245,101,101,0.25); }
+
+    /* ── 커뮤니티 검색 ── */
+    .cc-search-wrap { position:relative; }
+    .cc-search-input { width:100%; padding:9px 14px 9px 36px; background:var(--bg-input); border:1px solid var(--border); border-radius:var(--r-sm); color:var(--text-primary); font-size:0.85rem; font-family:inherit; transition:border-color .15s; }
+    .cc-search-input:focus { outline:none; border-color:var(--border-active); }
+    .cc-search-icon { position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:0.9rem; pointer-events:none; }
+
+    /* ── 결과 그래프 ── */
+    #sim-graph-canvas { width:100%; border-radius:8px; display:block; }
+    .graph-legend { display:flex; gap:14px; flex-wrap:wrap; margin-top:10px; }
+    .graph-legend-item { display:flex; align-items:center; gap:5px; font-size:0.77rem; color:var(--text-secondary); }
+    .graph-legend-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+
+    /* ── 계정 모달 섹션 구분 ── */
+    .account-section { margin-top:16px; padding-top:16px; border-top:1px solid var(--border); }
+    .account-section-title { font-size:0.82rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:12px; }
+
     /* ── 도움말 모달 ── */
     .help-section { margin-bottom: 28px; }
     .help-section:last-child { margin-bottom: 0; }
@@ -1213,6 +1235,13 @@
       <button class="btn-secondary" onclick="exportCSV()" style="margin-top:14px;width:100%">📥 CSV 내보내기</button>
     </div>
 
+    <!-- 결과 그래프 -->
+    <div class="card" id="sim-graph-card" style="display:none">
+      <div class="card-title">결과 그래프</div>
+      <canvas id="sim-graph-canvas"></canvas>
+      <div class="graph-legend" id="sim-graph-legend"></div>
+    </div>
+
     <!-- 해석 -->
     <div class="card" style="border-color:#9f7aea40">
       <div class="card-title">실험 해석</div>
@@ -1355,6 +1384,14 @@
     <div style="display:flex;gap:8px">
       <button class="btn-secondary" onclick="openShareModal()" style="font-size:0.85rem">📤 실험 공유하기</button>
       <button class="btn-secondary" onclick="openCommunitySettings()" style="font-size:0.85rem">🔑 GitHub 설정</button>
+    </div>
+  </div>
+
+  <!-- 검색 -->
+  <div class="card" style="padding:12px 16px">
+    <div class="cc-search-wrap">
+      <span class="cc-search-icon">🔍</span>
+      <input class="cc-search-input" id="cc-search" placeholder="제목이나 내용으로 검색..." oninput="onCcSearch(this.value)">
     </div>
   </div>
 
@@ -1729,8 +1766,10 @@
 
 <!-- ── 계정 설정 모달 ── -->
 <div class="modal-overlay" id="account-modal" style="display:none" onclick="if(event.target===this)closeAccountModal()">
-  <div class="modal" style="max-width:420px">
+  <div class="modal" style="max-width:420px;max-height:88vh;overflow-y:auto">
     <div class="modal-title">⚙ 계정 설정</div>
+
+    <!-- 사용자 정보 -->
     <div class="account-user-box">
       <div class="account-avatar" id="account-avatar-letter">?</div>
       <div>
@@ -1738,6 +1777,8 @@
         <div class="account-label">CircuitMind 계정</div>
       </div>
     </div>
+
+    <!-- API 키 -->
     <div class="input-group">
       <label>Claude API 키</label>
       <input type="password" id="account-api-key-input" placeholder="sk-ant-..." autocomplete="off">
@@ -1745,12 +1786,47 @@
         AI 분석에 필요합니다. <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:#63b3ed">console.anthropic.com</a>에서 발급
       </div>
     </div>
-    <div class="row" style="margin-top:16px">
+    <div class="row" style="margin-top:14px">
       <button class="btn-primary" onclick="saveAccountSettings()">저장</button>
       <button class="btn-secondary" onclick="closeAccountModal()">취소</button>
     </div>
-    <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+
+    <!-- 비밀번호 변경 -->
+    <div class="account-section">
+      <div class="account-section-title">비밀번호 변경</div>
+      <div class="input-group">
+        <label>현재 비밀번호</label>
+        <input type="password" id="account-cur-pw" placeholder="현재 비밀번호" autocomplete="current-password">
+      </div>
+      <div class="input-group">
+        <label>새 비밀번호</label>
+        <input type="password" id="account-new-pw" placeholder="새 비밀번호 (4자 이상)" autocomplete="new-password">
+      </div>
+      <div class="input-group">
+        <label>새 비밀번호 확인</label>
+        <input type="password" id="account-new-pw2" placeholder="새 비밀번호 재입력" autocomplete="new-password">
+      </div>
+      <div class="auth-error" id="account-pw-error"></div>
+      <button class="btn-secondary" onclick="changePassword()" style="width:100%;margin-top:6px">비밀번호 변경</button>
+    </div>
+
+    <!-- 데이터 내보내기/가져오기 -->
+    <div class="account-section">
+      <div class="account-section-title">데이터 백업</div>
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:10px">기록·북마크·설정을 JSON 파일로 저장하거나 복원합니다.</div>
+      <div class="row">
+        <button class="btn-secondary" onclick="exportUserData()" style="flex:1">📤 내보내기</button>
+        <label class="btn-secondary" style="flex:1;text-align:center;cursor:pointer;padding:8px 14px">
+          📥 가져오기
+          <input type="file" accept=".json" onchange="importUserData(event)" style="display:none">
+        </label>
+      </div>
+    </div>
+
+    <!-- 로그아웃 / 계정 삭제 -->
+    <div class="account-section">
       <button class="logout-btn" onclick="logout()">로그아웃</button>
+      <button class="logout-btn" onclick="confirmDeleteAccount()" style="margin-top:8px;opacity:0.7">계정 삭제</button>
     </div>
   </div>
 </div>
@@ -1798,7 +1874,7 @@ let lastMeta = null;
 // ── 실험 프리셋 데이터 ──
 const EXPERIMENTS = [
   {
-    icon: '💡', name: 'LED 기본 점등',
+    icon: '💡', name: 'LED 기본 점등', level: 1,
     desc: '직렬 저항으로 전류를 제한해 LED를 안전하게 켜는 가장 기초적인 회로',
     purpose: 'LED 점등',
     parts: [
@@ -1808,7 +1884,7 @@ const EXPERIMENTS = [
     ]
   },
   {
-    icon: '🔘', name: '버튼으로 LED 제어',
+    icon: '🔘', name: '버튼으로 LED 제어', level: 1,
     desc: '버튼 입력을 읽어 LED를 켜고 끄는 디지털 입출력(GPIO) 기초 실험',
     purpose: '버튼으로 LED 제어',
     parts: [
@@ -1820,7 +1896,7 @@ const EXPERIMENTS = [
     ]
   },
   {
-    icon: '🌈', name: 'RGB LED 제어',
+    icon: '🌈', name: 'RGB LED 제어', level: 2,
     desc: 'R·G·B 채널의 PWM 듀티를 조합해 다양한 색을 만드는 색 혼합 실험',
     purpose: '아두이노로 LED PWM 제어',
     parts: [
@@ -1830,7 +1906,7 @@ const EXPERIMENTS = [
     ]
   },
   {
-    icon: '🌡️', name: '온도/습도 측정',
+    icon: '🌡️', name: '온도/습도 측정', level: 2,
     desc: 'DHT11 센서로 주변 온도와 습도를 읽고 시리얼 모니터에 출력하는 실험',
     purpose: '센서 데이터 읽기',
     parts: [
@@ -1840,7 +1916,7 @@ const EXPERIMENTS = [
     ]
   },
   {
-    icon: '📡', name: '초음파 거리 측정',
+    icon: '📡', name: '초음파 거리 측정', level: 2,
     desc: 'HC-SR04가 음파 왕복 시간으로 물체까지의 거리를 cm 단위로 측정하는 실험',
     purpose: '센서 데이터 읽기',
     parts: [
@@ -1849,7 +1925,7 @@ const EXPERIMENTS = [
     ]
   },
   {
-    icon: '⚙️', name: 'DC 모터 제어',
+    icon: '⚙️', name: 'DC 모터 제어', level: 3,
     desc: 'L298N 드라이버로 DC 모터의 방향과 속도를 PWM으로 제어하는 실험',
     purpose: '모터 제어',
     parts: [
@@ -1859,7 +1935,7 @@ const EXPERIMENTS = [
     ]
   },
   {
-    icon: '🔁', name: '서보모터 제어',
+    icon: '🔁', name: '서보모터 제어', level: 2,
     desc: 'PWM 펄스 폭으로 SG90 서보모터의 각도를 0~180° 범위에서 정밀 제어',
     purpose: '모터 제어',
     parts: [
@@ -1868,7 +1944,7 @@ const EXPERIMENTS = [
     ]
   },
   {
-    icon: '🔢', name: '7세그먼트 숫자 표시',
+    icon: '🔢', name: '7세그먼트 숫자 표시', level: 3,
     desc: '7개의 LED 세그먼트를 조합해 숫자 0~9를 순서대로 표시하는 디스플레이 실험',
     purpose: '기타',
     purposeCustom: '7세그먼트 디스플레이로 숫자 0~9 순서대로 표시',
@@ -1879,7 +1955,7 @@ const EXPERIMENTS = [
     ]
   },
   {
-    icon: '📺', name: 'LCD 문자 출력',
+    icon: '📺', name: 'LCD 문자 출력', level: 2,
     desc: 'I2C 또는 병렬 방식으로 LCD 1602에 문자와 숫자를 출력하는 실험',
     purpose: '기타',
     purposeCustom: 'LCD 1602에 텍스트 출력',
@@ -1890,7 +1966,7 @@ const EXPERIMENTS = [
     ]
   },
   {
-    icon: '☀️', name: '조도 감지 LED',
+    icon: '☀️', name: '조도 감지 LED', level: 2,
     desc: 'LDR의 저항 변화를 분압 회로로 읽어 주변이 어두워지면 LED가 자동으로 켜지는 실험',
     purpose: '센서 데이터 읽기',
     parts: [
@@ -1902,7 +1978,7 @@ const EXPERIMENTS = [
     ]
   },
   {
-    icon: '🔊', name: '부저 알람',
+    icon: '🔊', name: '부저 알람', level: 1,
     desc: 'tone() 함수로 피에조 부저에 주파수를 보내 멜로디를 연주하는 실험',
     purpose: '기타',
     purposeCustom: '피에조 부저로 멜로디 출력',
@@ -1913,7 +1989,7 @@ const EXPERIMENTS = [
     ]
   },
   {
-    icon: '⚡', name: '저항 분압 회로',
+    icon: '⚡', name: '저항 분압 회로', level: 2,
     desc: '두 저항을 직렬 연결해 전압을 나누는 분압 원리 — 센서 풀업 회로의 핵심 개념',
     purpose: '직렬/병렬 저항 분압',
     parts: [
@@ -1953,16 +2029,20 @@ function showView(name) {
 }
 
 // ── 실험 추천 렌더링 ──
+const LEVEL_LABELS = { 1: ['초급','level-1'], 2: ['중급','level-2'], 3: ['고급','level-3'] };
 function renderExperiments() {
   const grid = document.getElementById('exp-grid');
-  grid.innerHTML = EXPERIMENTS.map((exp, i) => `
+  grid.innerHTML = EXPERIMENTS.map((exp, i) => {
+    const [lbl, cls] = LEVEL_LABELS[exp.level] || ['',''];
+    return `
     <div class="exp-card" onclick="applyExperiment(${i})">
       <div class="exp-icon">${exp.icon}</div>
+      ${lbl ? `<span class="level-badge ${cls}">${lbl}</span>` : ''}
       <div class="exp-name">${exp.name}</div>
       ${exp.desc ? `<div class="exp-desc">${exp.desc}</div>` : ''}
       <div class="exp-parts">${exp.parts.map(p => `${p.name} ×${p.quantity}`).join('<br>')}</div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 function applyExperiment(i) {
@@ -2635,6 +2715,99 @@ function saveAccountSettings() {
   closeAccountModal();
   checkApiKey();
   showToast('설정이 저장되었습니다');
+}
+
+async function changePassword() {
+  if (!currentUser) return;
+  const curPw  = document.getElementById('account-cur-pw').value;
+  const newPw  = document.getElementById('account-new-pw').value;
+  const newPw2 = document.getElementById('account-new-pw2').value;
+  const errEl  = document.getElementById('account-pw-error');
+  errEl.style.display = 'none';
+  if (!curPw || !newPw || !newPw2) { errEl.textContent = '모든 항목을 입력하세요'; errEl.style.display = 'block'; return; }
+  if (newPw.length < 4) { errEl.textContent = '새 비밀번호는 4자 이상이어야 합니다'; errEl.style.display = 'block'; return; }
+  if (newPw !== newPw2) { errEl.textContent = '새 비밀번호가 일치하지 않습니다'; errEl.style.display = 'block'; return; }
+  const accounts = getAccounts();
+  const account = accounts[currentUser.username];
+  const curHash = await hashPassword(curPw);
+  if (curHash !== account.passwordHash) { errEl.textContent = '현재 비밀번호가 올바르지 않습니다'; errEl.style.display = 'block'; return; }
+  accounts[currentUser.username].passwordHash = await hashPassword(newPw);
+  saveAccounts(accounts);
+  document.getElementById('account-cur-pw').value = '';
+  document.getElementById('account-new-pw').value = '';
+  document.getElementById('account-new-pw2').value = '';
+  showToast('비밀번호가 변경되었습니다 ✓');
+}
+
+function confirmDeleteAccount() {
+  if (!currentUser) return;
+  if (!confirm(`'${currentUser.username}' 계정을 삭제하시겠습니까?\n기록·북마크·설정이 모두 삭제됩니다.`)) return;
+  const accounts = getAccounts();
+  delete accounts[currentUser.username];
+  saveAccounts(accounts);
+  // 해당 계정 데이터 삭제
+  ['cm_history','cm_bookmarks','cm_cc_token'].forEach(k => localStorage.removeItem(`${k}_${currentUser.username}`));
+  currentUser = null;
+  clearSession();
+  localStorage.removeItem('cm_api_key');
+  updateNavUser();
+  closeAccountModal();
+  checkApiKey();
+  renderHistory();
+  showToast('계정이 삭제되었습니다');
+}
+
+function exportUserData() {
+  if (!currentUser) return;
+  const u = currentUser.username;
+  const accounts = getAccounts();
+  const data = {
+    version: 1,
+    username: u,
+    exportedAt: new Date().toISOString(),
+    history:   JSON.parse(localStorage.getItem(`cm_history_${u}`)   || '[]'),
+    bookmarks: JSON.parse(localStorage.getItem(`cm_bookmarks_${u}`) || '[]'),
+    ccToken:   localStorage.getItem(`cm_cc_token_${u}`) || '',
+    apiKey:    accounts[u]?.apiKey || '',
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `circuitmind_${u}_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  showToast('데이터를 내보냈습니다 ✓');
+}
+
+function importUserData(event) {
+  if (!currentUser) return;
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.version !== 1) { showToast('지원하지 않는 파일 형식입니다'); return; }
+      if (!confirm(`'${data.username}' 계정의 데이터를 현재 계정에 가져오시겠습니까?\n기존 기록·북마크가 덮어씌워집니다.`)) return;
+      const u = currentUser.username;
+      if (data.history?.length)   localStorage.setItem(`cm_history_${u}`,   JSON.stringify(data.history));
+      if (data.bookmarks?.length) localStorage.setItem(`cm_bookmarks_${u}`, JSON.stringify(data.bookmarks));
+      if (data.ccToken) localStorage.setItem(`cm_cc_token_${u}`, data.ccToken);
+      if (data.apiKey) {
+        const accounts = getAccounts();
+        if (accounts[u]) { accounts[u].apiKey = data.apiKey; saveAccounts(accounts); }
+        currentUser.apiKey = data.apiKey;
+        localStorage.setItem('cm_api_key', data.apiKey);
+      }
+      renderHistory();
+      checkApiKey();
+      closeAccountModal();
+      showToast('데이터를 가져왔습니다 ✓');
+    } catch(err) {
+      showToast('파일을 읽는 중 오류가 발생했습니다');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
 }
 
 function logout() {
@@ -3961,6 +4134,9 @@ function renderSimResult(r) {
 
   // 시각화
   drawSimCanvas(r);
+
+  // 결과 그래프
+  drawResultGraph(r);
 }
 
 function drawSimCanvas(r) {
@@ -3986,6 +4162,111 @@ function drawSimCanvas(r) {
   else if (r.type === 'ldr')        drawLDRViz(ctx, W, H, r.extra);
   else if (r.type === 'buzzer')     drawBuzzerViz(ctx, W, H, r.extra);
   else if (r.type === 'servo')      drawServoViz(ctx, W, H, r.extra);
+}
+
+function drawResultGraph(r) {
+  const card = document.getElementById('sim-graph-card');
+  const canvas = document.getElementById('sim-graph-canvas');
+  const legendEl = document.getElementById('sim-graph-legend');
+  if (!r.rows || r.rows.length < 2) { card.style.display = 'none'; return; }
+
+  // 시뮬레이션별 축 설정
+  const GRAPH_CONFIG = {
+    led:      { x:'전압(V)',  lines:[{k:'전류(mA)',c:'#63b3ed'},{k:'밝기(%)',c:'#4ece8a'}] },
+    resistor: { x:'전압(V)',  lines:[{k:'직렬전류(mA)',c:'#63b3ed'},{k:'R2 전압(V)',c:'#9171e8'}] },
+    dht11:    { x:'시간(초)', lines:[{k:'온도(°C)',c:'#fc8181'},{k:'습도(%)',c:'#63b3ed'}] },
+    ultrasonic:{ x:'측정#',  lines:[{k:'거리(cm)',c:'#63b3ed'}] },
+    pwm:      { x:'듀티(%)', lines:[{k:'평균전압(V)',c:'#9171e8'},{k:'주파수(Hz)',c:'#f59e36'}] },
+    motor:    { x:'전압(V)', lines:[{k:'RPM',c:'#63b3ed'},{k:'전류(A)',c:'#fc8181'}] },
+  };
+  const cfg = GRAPH_CONFIG[r.type];
+  if (!cfg) { card.style.display = 'none'; return; }
+
+  card.style.display = 'block';
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.parentElement.clientWidth;
+  const H = 220;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.height = H + 'px'; canvas.style.width = W + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const pad = { t:20, r:20, b:40, l:54 };
+  const gW = W - pad.l - pad.r;
+  const gH = H - pad.t - pad.b;
+
+  ctx.fillStyle = '#0a0d14';
+  ctx.fillRect(0, 0, W, H);
+
+  // 데이터 준비
+  const xVals = r.rows.map(row => parseFloat(row[cfg.x]) || 0);
+  const lines = cfg.lines.filter(ln => r.rows[0][ln.k] !== undefined);
+  if (!lines.length) { card.style.display = 'none'; return; }
+
+  const allY = lines.flatMap(ln => r.rows.map(row => parseFloat(row[ln.k]) || 0));
+  const yMin = Math.min(0, ...allY);
+  const yMax = Math.max(...allY) * 1.08 || 1;
+  const xMin = Math.min(...xVals);
+  const xMax = Math.max(...xVals) || 1;
+
+  const toX = v => pad.l + (v - xMin) / (xMax - xMin) * gW;
+  const toY = v => pad.t + gH - (v - yMin) / (yMax - yMin) * gH;
+
+  // 그리드
+  ctx.strokeStyle = '#1e2540'; ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.t + gH * i / 4;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l + gW, y); ctx.stroke();
+    const val = yMax - (yMax - yMin) * i / 4;
+    ctx.fillStyle = '#6c7a98'; ctx.font = '10px monospace'; ctx.textAlign = 'right';
+    ctx.fillText(val.toFixed(val < 10 ? 1 : 0), pad.l - 6, y + 4);
+  }
+  for (let i = 0; i <= 5; i++) {
+    const x = pad.l + gW * i / 5;
+    ctx.beginPath(); ctx.moveTo(x, pad.t); ctx.lineTo(x, pad.t + gH); ctx.stroke();
+    const val = xMin + (xMax - xMin) * i / 5;
+    ctx.fillStyle = '#6c7a98'; ctx.font = '10px monospace'; ctx.textAlign = 'center';
+    ctx.fillText(val.toFixed(val < 10 ? 1 : 0), x, H - 8);
+  }
+
+  // 축 레이블
+  ctx.fillStyle = '#a8b4cc'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText(cfg.x, pad.l + gW / 2, H - 2);
+
+  // 현재 값 강조선 (x축 현재 파라미터)
+  const curX = xVals[Math.floor(xVals.length / 2)];
+  ctx.strokeStyle = 'rgba(255,255,255,0.07)'; ctx.lineWidth = 1;
+  ctx.setLineDash([4, 4]);
+  const cx = toX(curX);
+  ctx.beginPath(); ctx.moveTo(cx, pad.t); ctx.lineTo(cx, pad.t + gH); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // 라인 그리기
+  lines.forEach(ln => {
+    const yVals = r.rows.map(row => parseFloat(row[ln.k]) || 0);
+    ctx.strokeStyle = ln.c; ctx.lineWidth = 2;
+    ctx.shadowColor = ln.c; ctx.shadowBlur = 4;
+    ctx.beginPath();
+    yVals.forEach((y, i) => {
+      const px = toX(xVals[i]), py = toY(y);
+      i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    });
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // 영역 채우기 (반투명)
+    ctx.fillStyle = ln.c + '18';
+    ctx.beginPath();
+    ctx.moveTo(toX(xVals[0]), toY(0));
+    yVals.forEach((y, i) => ctx.lineTo(toX(xVals[i]), toY(y)));
+    ctx.lineTo(toX(xVals[xVals.length - 1]), toY(0));
+    ctx.closePath(); ctx.fill();
+  });
+
+  // 레전드
+  legendEl.innerHTML = lines.map(ln =>
+    `<div class="graph-legend-item"><div class="graph-legend-dot" style="background:${ln.c}"></div>${ln.k}</div>`
+  ).join('');
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -5657,6 +5938,19 @@ async function loadCommunityPosts() {
       + '<button class="btn-secondary" onclick="loadCommunityPosts()" style="font-size:0.82rem">다시 시도</button>'
       + '</div>';
   }
+}
+
+let ccSearchQuery = '';
+function onCcSearch(q) {
+  ccSearchQuery = q.trim().toLowerCase();
+  const filtered = ccSearchQuery
+    ? ccPosts.filter(p => {
+        const title = (p.title || '').toLowerCase();
+        const body  = (p.body  || '').toLowerCase();
+        return title.includes(ccSearchQuery) || body.includes(ccSearchQuery);
+      })
+    : ccPosts;
+  renderCommunityPosts(filtered);
 }
 
 function renderCommunityPosts(posts) {
